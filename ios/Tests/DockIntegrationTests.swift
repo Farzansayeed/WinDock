@@ -44,7 +44,7 @@ final class DockIntegrationTests: XCTestCase {
         throw NSError(domain: "WinDockTests", code: 1, userInfo: [NSLocalizedDescriptionKey: description])
     }
 
-    private func js(_ script: String) async throws -> Any {
+    private func js(_ script: String) async throws -> Any? {
         let web = try XCTUnwrap(controller.webView)
         return try await web.evaluateJavaScript(script)
     }
@@ -56,9 +56,19 @@ final class DockIntegrationTests: XCTestCase {
         }
     }
 
-    private func screenshot(_ name: String) {
-        let image = UIGraphicsImageRenderer(bounds: controller.view.bounds).image { _ in
-            controller.view.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
+    private func screenshot(_ name: String) async throws {
+        let image: UIImage
+        if let web = controller.webView {
+            // A DOM assertion can pass before WebKit's separate renderer has painted.
+            // Wait for drawer animations, then snapshot that renderer directly.
+            try await Task.sleep(nanoseconds: 350_000_000)
+            let config = WKSnapshotConfiguration()
+            config.afterScreenUpdates = true
+            image = try await web.takeSnapshot(with: config)
+        } else {
+            image = UIGraphicsImageRenderer(bounds: controller.view.bounds).image { _ in
+                controller.view.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
+            }
         }
         let attachment = XCTAttachment(image: image)
         attachment.name = name
@@ -67,26 +77,27 @@ final class DockIntegrationTests: XCTestCase {
     }
 
     func testConnectPairLaunchReconnectAndRememberPC() async throws {
-        screenshot("01-connection")
+        try await screenshot("01-connection")
         controller.address.text = endpoint
         controller.connectButton.sendActions(for: .touchUpInside)
         try await waitForJS("document.getElementById('pair') && !document.getElementById('pair').hidden")
         XCTAssertTrue(controller.view.bounds.width > controller.view.bounds.height, "Landscape presentation")
-        screenshot("02-pairing")
+        try await screenshot("02-pairing")
         _ = try await js("document.getElementById('pin').value='0000'; document.querySelector('#pair-form button').click(); true")
         try await waitForJS("document.getElementById('pair-error').textContent.length > 0")
         _ = try await js("document.getElementById('pin').value='8642'; document.querySelector('#pair-form button').click(); true")
         try await waitForJS("!document.getElementById('app').hidden && document.querySelectorAll('.tile').length === 5")
         try await waitForJS("document.getElementById('conn').textContent === 'Connected'")
+        try await waitForJS("Array.from(document.querySelectorAll('.tile img')).filter(i => i.complete && i.naturalWidth > 0).length === 5")
         let pageCount = try await js("document.querySelectorAll('.dock-page').length") as? Int
         XCTAssertEqual(pageCount, 2)
         _ = try await js("document.querySelector('.tile[data-key=\"ios-1\"]').click(); true")
         try await waitForJS("document.querySelector('.tile[data-key=\"ios-1\"]').classList.contains('is-running')")
         _ = try await js("document.querySelector('.tile[data-key=\"ios-1\"]').click(); true")
-        screenshot("03-dock")
+        try await screenshot("03-dock")
         _ = try await js("document.getElementById('drawer-open').click(); true")
         try await waitForJS("document.getElementById('drawer').open")
-        screenshot("04-drawer")
+        try await screenshot("04-drawer")
         _ = try await js("document.getElementById('drawer-close').click(); true")
         let remembered = defaults.string(forKey: DockViewController.rememberedPCKey)
         XCTAssertEqual(remembered, endpoint)
@@ -113,7 +124,7 @@ final class DockIntegrationTests: XCTestCase {
             XCTAssertNil(controller.webView)
             XCTAssertNil(defaults.string(forKey: DockViewController.rememberedPCKey))
         }
-        screenshot("05-retry")
+        try await screenshot("05-retry")
         controller.address.text = endpoint
         controller.connect()
         try await waitForJS("document.getElementById('pair') && !document.getElementById('pair').hidden")

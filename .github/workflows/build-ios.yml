@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ['ios/**', 'public/**', 'src/**', 'server.js', 'package*.json', '.github/workflows/build-ios.yml']
+    paths: ['ios/**', 'public/**', 'src/**', 'website/assets/*.png', 'server.js', 'package*.json', '.github/workflows/build-ios.yml']
   pull_request:
-    paths: ['ios/**', 'public/**', 'src/**', 'server.js', 'package*.json', '.github/workflows/build-ios.yml']
+    paths: ['ios/**', 'public/**', 'src/**', 'website/assets/*.png', 'server.js', 'package*.json', '.github/workflows/build-ios.yml']
 
 permissions:
   contents: read

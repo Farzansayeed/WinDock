@@ -1,7 +1,7 @@
 // Real WinDock protocol + shared UI, with no native provider or user configuration.
 import { createApp } from '../../server.js';
 import { createConfigStore } from '../../src/config.js';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { resolve } from 'node:path';
 
@@ -10,6 +10,8 @@ await mkdir(dir, { recursive: true });
 const apps = ['Browser', 'Editor', 'Music', 'Terminal', 'Notes'].map((name, i) => ({
   id: `ios-${i + 1}`, name, target: `C:\\Fixture\\app${i + 1}.exe`, args: '', icon: '',
 }));
+const iconFiles = ['chrome', 'vscode', 'spotify', 'obsidian', 'notepad'];
+const icons = await Promise.all(iconFiles.map(name => readFile(resolve(import.meta.dirname, `../../website/assets/${name}.png`))));
 let running = [];
 const events = [];
 async function record(action, app) {
@@ -19,6 +21,7 @@ async function record(action, app) {
 const provider = {
   id: 'ios-simulator', displayName: 'iOS simulator fixture',
   listInstalledApps: async () => apps, listRunningApps: async () => running,
+  appIcon: async app => icons[apps.findIndex(candidate => candidate.id === app.id)],
   launchApp: async app => { running = [{ ...app, pid: 4242 }]; await record('launch', app); },
   focusApp: async app => record('focus', app),
   closeApp: async app => { running = []; await record('close', app); },
