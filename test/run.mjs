@@ -31,6 +31,7 @@ const EXPECTED = {
   "verify-android.mjs": "android verification passed",
   "verify-launcher.mjs": "launcher verification passed",
   "verify-capture.mjs": "capture verification passed",
+  "verify-input.mjs": "input verification passed",
 };
 
 // Guard against an oracle being added to scripts/ but never wired in here.

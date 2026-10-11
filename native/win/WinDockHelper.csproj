@@ -6,6 +6,7 @@
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>WinDockHelper</AssemblyName>
     <RootNamespace>WinDock</RootNamespace>
@@ -18,6 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Using Include="System.IO" />
     <!-- WMI brightness control. WinRT (Windows.Media.Control) needs no package:
          it comes from the windows10.0.19041.0 target framework above. -->
     <PackageReference Include="System.Management" Version="8.0.0" />

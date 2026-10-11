@@ -20,6 +20,8 @@ A Linux provider supports development without the Windows native layer.
 | `src/config.js` | Atomic tile persistence |
 | `src/discovery.js` | UDP responder |
 | `src/sync.js` | WebSocket updates |
+| `src/input-hub.js`, `src/input.js` | Exclusive touchpad channel, bounded input/signature validation |
+| `src/platform/input.js` | Persistent Windows touchpad helper and signature export process |
 | `public/` | Shared dock UI and offline shell |
 | `android/` | Discovery, validated endpoints, landscape WebView |
 | `native/win/` | Windows helper |
@@ -58,6 +60,47 @@ The four-digit PIN and LAN HTTP design are intended for a trusted local network;
 do not expose the host port directly to the internet.
 
 ## Windows configuration and checks
+
+Touchpad input uses a dedicated `/input` WebSocket; the ordinary dock socket
+remains read-only. Upgrades check pairing and origin; messages and the lease
+timer recheck session validity. Only one device owns the input worker at once.
+Frames are limited to 8192 bytes and 240 messages/second; deltas are bounded.
+The phone sends a heartbeat every 500 ms and the host expires an idle input
+session after 2 seconds. The native helper independently releases buttons on
+stdin EOF or a 2-second read timeout, including if the Node host disappears.
+Movement is relative Win32 mouse input; it follows Windows UIPI restrictions.
+Two-finger gestures sample both pointers once per frame and lock to scroll or
+pinch. Zoom accepts only `{type: "zoom", steps: -8..-1 | 1..8}` and sends
+Ctrl + complete 120-unit wheel notches in one native input batch. An existing
+Ctrl press is preserved; partial injection releases the synthetic modifier,
+with teardown retrying a failed release. Text is bounded to 1024 valid UTF-16 code
+units; only named editing keys are accepted. No arbitrary shortcuts are exposed.
+The helper watches UI Automation focus on a separate MTA thread while the input
+session is active. It emits only opaque focus tokens, editability and password
+flags, never field values. Keyboard input requires the current token and foreground
+window, and is refused while physical modifier keys are held. Unicode input uses
+paired Win32 KEYEVENTF_UNICODE packets, preserving emoji surrogate pairs.
+Android's origin-scoped bridge opens a native IME editor. Composition remains
+local until committed; each new target invalidates old input connections and
+discards pending text. The web fallback has a manually opened composer.
+
+`GET /api/input` advertises support. `POST /api/signature` accepts only black/blue
+ink and up to 64 strokes / 2048 normalized points in the existing 64 KiB body
+limit. The helper rasterizes validated vectors to transparent PNG. Clients cannot
+supply output paths, filenames, dimensions, native commands, or arbitrary SVG.
+POST /api/signature/insert uses the same validation, saves a PNG, writes PNG and
+bitmap clipboard formats, and requests Ctrl+V only if foreground focus is unchanged
+and no physical modifier is down. A successful paste request does not prove the
+receiving app accepted an image. Otherwise the clipboard/file remain available.
+Only explicit Save or Insert creates a file; strokes are kept in memory on the phone,
+not persisted to browser storage or added to logs. This is image export, not
+cryptographic document signing.
+
+`scripts/verify-input.mjs` tests protocol validation, authentication, origin,
+ownership, timeout/revocation cleanup, native-process handling and gestures.
+`dotnet run --project native/input-tests/WinDockInputTests.csproj -c Release`
+checks the native INPUT layout, button/modifier cleanup and PNG transparency/rendering
+without moving the desktop cursor. It is also part of Windows CI.
 
 The host prefers physical LAN adapters over VPN/VM adapters. Set `WINDOCK_HOST`
 to choose another assigned local IPv4 address, `PORT` to change the port, or

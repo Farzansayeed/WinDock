@@ -2,6 +2,7 @@ import { renderNowPlaying, renderControlPicker, renderAppIcon, renderControls, e
 import { icon, controlIcon } from "./icons.js";
 import { addAppTile, addControlTile, removeTile, moveTile, toWireTiles, availableControls, tileKey } from "./tiles.js";
 import { normalizeLayout, renderPages, pageCount, moveToTile } from "./launcher.js";
+import { createInputPad } from "./input-pad.js";
 
 const $ = (id) => document.getElementById(id);
 let state = { tiles: [], running: [], verbs: [] };
@@ -105,6 +106,7 @@ function showPair(message = "") {
 function showApp() { paired = true; $("pair").hidden = true; $("app").hidden = false; syncLayout(); paintCapture(); }
 function setConn(on) {
   online = on;
+  if (!on) inputPad.disconnect();
   $("conn").dataset.state = on ? "on" : "off";
   $("conn").textContent = on ? "Connected" : paired ? "Reconnecting" : "Connecting";
   $("drawer-conn").dataset.state = $("conn").dataset.state;
@@ -481,6 +483,8 @@ $("drawer-settings").addEventListener("click", openSettings);
 $("drawer-apps").addEventListener("click", () => { $("drawer").close(); openPicker(); });
 $("drawer-controls").addEventListener("click", () => { $("drawer").close(); $("controls-grid").innerHTML = renderControls(state.verbs, state.allowDestructive); $("controls").showModal(); });
 $("drawer-capture").addEventListener("click", openCapture);
+const inputPad = createInputPad({ api, notify, WebSocketClass: WebSocket, storage: localStorage });
+$("drawer-input").addEventListener("click", () => inputPad.open());
 $("capture-screenshot").addEventListener("click", () => captureAction("screenshot"));
 $("capture-record").addEventListener("click", () => captureAction(captureActive() ? "stop" : "start"));
 $("recording-stop").addEventListener("click", () => captureAction("stop"));

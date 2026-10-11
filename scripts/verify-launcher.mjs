@@ -46,11 +46,32 @@ t.equal(calls, 17, "simultaneous duplicate icon requests share extraction");
 t.ok(peak <= 3, "large libraries limit native extraction concurrency");
 t.equal((await createIconCache({ appIcon: async () => { throw new Error("missing resource"); } })(tiles[0])), null, "missing resource is a graceful fallback");
 
+for (const throws of [false, true]) {
+  let time = 100, attempts = 0;
+  const recovered = Buffer.from("recovered icon");
+  const retryCache = createIconCache({ appIcon: async () => {
+    if (++attempts > 1) return recovered;
+    if (throws) throw new Error("helper temporarily unavailable");
+    return null;
+  } }, { now: () => time, retryAfterMs: 5000 });
+  t.equal(await retryCache(tiles[0]), null, "temporary failure returns a fallback");
+  time += 4999;
+  t.equal(await retryCache(tiles[0]), null, "missing icons back off briefly");
+  t.equal(attempts, 1, "repeated missing icon requests do not flood the helper");
+  time++;
+  const results = await Promise.all([retryCache(tiles[0]), retryCache(tiles[0])]);
+  t.ok(results.every((result) => result === recovered), "real icon recovers after a temporary failure");
+  t.equal(attempts, 2, "concurrent recovery requests share one extraction");
+  time += 5000;
+  t.equal(await retryCache(tiles[0]), recovered, "recovered icons stay cached");
+  t.equal(attempts, 2, "successful icons are not extracted again");
+}
+
 const png = await readFile(new URL("../public/icon-192.png", import.meta.url));
 const nativeCalls = [];
 const provider = createWindowsProvider({ helperPath: "H.exe", exec: async (file, args) => {
-  if (file === "H.exe") { nativeCalls.push(args); return { stdout: JSON.stringify({ png: png.toString("base64") }) }; }
-  return { stdout: args.at(-1).includes("WScript.Shell") ? JSON.stringify([{ name: "App", target: "C:\\Apps\\real.exe", icon: "C:\\Icons\\app.dll,-4" }]) : "[]" };
+  if (file === "H.exe") { nativeCalls.push(args); return { stdout: JSON.stringify({ png: args[1].includes("missing") ? null : png.toString("base64") }) }; }
+  return { stdout: args.at(-1).includes("WScript.Shell") ? JSON.stringify([{ name: "App", target: "C:\\Apps\\real.exe", icon: "C:\\Icons\\app.dll,-4" }, { name: "Missing icon", target: "C:\\Apps\\missing.exe" }]) : "[]" };
 } });
 const dir = await mkdtemp(join(tmpdir(), "windock-icons-"));
 const app = await createApp({ provider, configStore: createConfigStore({ path: join(dir, "config.json") }), trustLoopback: false, pin: "6432" });
@@ -72,6 +93,10 @@ try {
   t.equal(unknown.status, 404, "arbitrary file paths cannot reach the extractor"); await unknown.text();
   const second = await fetch(base + path, { headers: { cookie } }); await second.arrayBuffer();
   t.equal(nativeCalls.length, 1, "repeat requests use the server icon cache");
+  const fallback = await fetch(base + "/api/apps/icon?id=" + encodeURIComponent("c:/apps/missing.exe"), { headers: { cookie } });
+  t.equal(fallback.headers.get("content-type"), "image/svg+xml", "unavailable icons still have a usable placeholder");
+  t.equal(fallback.headers.get("cache-control"), "private, no-store", "phones must never cache a failed icon lookup");
+  await fallback.arrayBuffer();
 } finally {
   app.server.closeAllConnections(); await app.hub.close(); await new Promise((r) => app.server.close(r)); await rm(dir, { recursive: true, force: true });
 }

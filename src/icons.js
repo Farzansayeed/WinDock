@@ -1,26 +1,34 @@
 // Cache extraction results and share concurrent requests. The queue prevents a
 // large library from starting one native process per visible image at once.
-export function createIconCache(provider) {
+export function createIconCache(provider, { now = Date.now, retryAfterMs = 5000 } = {}) {
   const cache = new Map();
   const waiting = [];
   let active = 0;
   const pump = () => {
     while (active < 3 && waiting.length) {
       active++;
-      const { app, resolve } = waiting.shift();
+      const { app, resolve, entry } = waiting.shift();
       Promise.resolve().then(() => provider.appIcon?.(app)).catch(() => null)
-        .then(resolve).finally(() => { active--; pump(); });
+        .then((png) => {
+          // A helper restart or temporary extraction failure must not replace
+          // an app's real icon for the rest of the host session. Briefly back
+          // off missing resources, then allow the next request to try again.
+          if (!png) entry.retryAt = now() + retryAfterMs;
+          resolve(png || null);
+        }).finally(() => { active--; pump(); });
     }
   };
   return (app) => {
     const key = JSON.stringify([app.target, app.icon]);
+    if (cache.has(key) && now() >= cache.get(key).retryAt) cache.delete(key);
     if (!cache.has(key)) {
       if (cache.size >= 512) cache.delete(cache.keys().next().value);
-      const result = new Promise((resolve) => waiting.push({ app, resolve }));
-      cache.set(key, result);
+      const entry = { retryAt: Infinity };
+      entry.promise = new Promise((resolve) => waiting.push({ app, resolve, entry }));
+      cache.set(key, entry);
       pump();
     }
-    return cache.get(key);
+    return cache.get(key).promise;
   };
 }
 

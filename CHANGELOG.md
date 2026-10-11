@@ -1,0 +1,29 @@
+# Version history
+
+## [0.2.0-preview.1](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.0-preview.1) — October 11, 2026
+
+- Use the phone as a full-screen touchpad, with a small grid and blue touch glow.
+- Move, click, drag, scroll with two fingers, adjust pointer speed, and pinch to zoom in apps that support Ctrl + mouse wheel.
+- Open the Android keyboard automatically when a supported PC text field receives focus. Type text and emoji, or open the keyboard manually.
+- Draw signatures in black or blue, save transparent PNGs to the PC, and paste into apps that accept images.
+- Recover real app icons after temporary extraction failures instead of keeping generic placeholders cached.
+- Try touchpad, typing, signature and capture modes in the website demo. The demo never controls a PC or saves files.
+- Browse the version history on the website.
+
+Update both the Windows host and Android app. The APK has version code 3.
+The September 18 public APK used a different debug signing key, so it must be
+uninstalled before installing this APK. Recent local test builds can update
+directly. Re-pair after reinstalling; the dock stored on the PC is preserved.
+
+The Windows installer is unsigned and Android remains debug-signed. Automatic
+keyboard opening depends on the PC app exposing text focus; use the keyboard
+button otherwise. A signature is a handwritten PNG image, not a certificate-based
+digital signature. Pasting requires an app that accepts images.
+
+## [0.1.0-preview.1](https://github.com/aliihsaad/WinDock/releases/tag/v0.1.0-preview.1) — September 18, 2026
+
+- First public Windows installer and Android companion.
+- Landscape app dock with real icons, 4/6/8 icons per page, drag rearranging, backgrounds and glass themes.
+- Local PIN pairing, app launch/focus, media and system controls.
+- Main-monitor PNG screenshots and silent MP4 screen recordings saved to the PC.
+- Interactive website demo and direct EXE/APK downloads.

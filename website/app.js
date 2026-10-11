@@ -1,4 +1,6 @@
 const paths = {
+  keyboard: '<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M10 13h.01M14 13h.01M18 13h.01M8 16h8"/>',
+  pen: '<path d="m15 3 6 6L9 21H3v-6zM12 6l6 6M3 21h18"/>',
   github: '<path fill="currentColor" stroke="none" d="M12 .75a11.25 11.25 0 0 0-3.558 21.922c.563.104.768-.244.768-.542 0-.267-.01-.974-.015-1.912-3.13.68-3.79-1.508-3.79-1.508-.512-1.3-1.25-1.646-1.25-1.646-1.021-.697.077-.683.077-.683 1.13.08 1.724 1.16 1.724 1.16 1.003 1.718 2.632 1.221 3.273.934.102-.727.393-1.222.715-1.503-2.5-.284-5.13-1.25-5.13-5.564 0-1.23.44-2.234 1.16-3.022-.116-.285-.503-1.43.11-2.981 0 0 .945-.303 3.095 1.155a10.79 10.79 0 0 1 5.636 0c2.149-1.458 3.092-1.155 3.092-1.155.614 1.55.228 2.696.112 2.98.722.79 1.158 1.794 1.158 3.023 0 4.325-2.634 5.277-5.144 5.556.404.349.765 1.037.765 2.09 0 1.508-.014 2.726-.014 3.096 0 .3.203.65.774.54A11.25 11.25 0 0 0 12 .75Z"/>',
   camera: '<rect x="3" y="6" width="18" height="14" rx="3"/><path d="m8 6 1-3h6l1 3"/><circle cx="12" cy="13" r="4"/>',
   download: '<path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/>',
@@ -63,6 +65,11 @@ new ResizeObserver(fitPreview).observe(previewScreen);
 fitPreview();
 window.addEventListener('message', event => {
   if (event.source !== frame.contentWindow || event.origin !== location.origin) return;
+  if (event.data?.type === 'windock-preview-typed' && typeof event.data.text === 'string') {
+    document.querySelector('#demo-typing').hidden = false;
+    document.querySelector('#demo-typed-text').textContent = event.data.text.slice(0, 500) || 'Your demo text will appear here.';
+    return;
+  }
   if (event.data?.type === 'windock-preview-opened') {
     previewScreen.scrollIntoView({ block: 'center', behavior: stillEmblem.matches ? 'instant' : 'smooth' });
     return;
@@ -78,6 +85,12 @@ document.querySelector('#preview-drawer').addEventListener('click', () => {
 });
 document.querySelector('#preview-capture').addEventListener('click', () => {
   frame.contentWindow.postMessage({ type: 'windock-preview-capture' }, location.origin);
+});
+for (const mode of ['touchpad', 'signature']) document.querySelector('#preview-' + mode).addEventListener('click', () => {
+  frame.contentWindow.postMessage({ type: 'windock-preview-input', mode }, location.origin);
+});
+document.querySelector('#demo-clear-text').addEventListener('click', () => {
+  frame.contentWindow.postMessage({ type: 'windock-preview-clear-text' }, location.origin);
 });
 
 const downloadStatus = document.querySelector('#download-status');

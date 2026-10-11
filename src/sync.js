@@ -46,6 +46,7 @@ export function createSyncHub({ server, isAuthorized, getState, heartbeatMs = HE
   const alive = new WeakMap();
 
   server.on("upgrade", (req, socket, head) => {
+    if (req.url?.split("?")[0] === "/input") return; // Separate bounded input channel.
     if (!originAllowed(req) || !isAuthorized(req)) {
       socket.write("HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n");
       socket.destroy();

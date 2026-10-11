@@ -22,6 +22,7 @@ import { CONTROL_VERBS, validateControl } from "./contract.js";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { createWindowsCapture } from "./capture.js";
+import { createWindowsInput } from "./input.js";
 
 /** Constant PowerShell: classic shortcuts and the Windows packaged-app catalog. */
 export const INVENTORY_PS = [
@@ -261,6 +262,7 @@ export function createWindowsProvider({ exec, helperPath = process.env.WINDOCK_H
     id: "windows",
     displayName: "Windows",
     capture: createWindowsCapture({ helperPath }),
+    input: createWindowsInput({ helperPath }),
 
     async appIcon(app) {
       const aumid = packagedAppId(app.target);

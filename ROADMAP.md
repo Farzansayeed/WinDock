@@ -157,8 +157,25 @@ The first [GitHub run](https://github.com/aliihsaad/WinDock/actions/runs/3534400
 passed Windows build, installer install/launch/upgrade/uninstall, and Android
 build, unit tests, lint, and signature checks on 2026-09-18.
 
-Still outside v1: macros, remote keyboard/trackpad, monitoring widgets and
+Still outside v1: macros, remote keyboard, monitoring widgets and
 multi-host control.
+
+## Local development: touchpad and handwritten signatures — 2026-09-29
+
+- Shared landscape **Touch & sign** drawer entry, with one-finger cursor motion,
+  tap/left/right click, two-finger scroll/right-tap, pinch zoom for apps supporting
+  Ctrl + mouse wheel, drag toggle, and speed control.
+- Separate authenticated `/input` WebSocket, exclusive device ownership,
+  bounded/rate-limited messages, per-frame session checks, heartbeat expiry,
+  and a persistent Windows helper that releases held buttons on EOF or timeout.
+- Signature canvas with undo, clear, black/blue ink, and transparent 1600×600 PNG
+  export to `Pictures\WinDock\Signatures`; folder accessible from the tray.
+- Existing Android WebView loads the updated shared interface; no new APK needed.
+- Website demo uses simulated input/export and never controls the visitor's PC.
+- Node integration/gesture checks and native input-layout/rendering checks added.
+  Physical-phone feel and actual PC application acceptance still need user testing.
+- User accepted save-to-PC for the first version. Live drawing inside PC apps
+  and pen pressure remain deferred. Current public release remains unchanged.
 
 ## Planned: iOS companion
 
@@ -179,6 +196,18 @@ the Windows host, not a port of the Windows native helper to the iPhone.
 Feasibility references: Apple's [WKWebView documentation](https://developer.apple.com/documentation/webkit/wkwebview),
 [local-network privacy requirements](https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy),
 and [local networking transport setting](https://developer.apple.com/documentation/bundleresources/information-property-list/nsapptransportsecurity/nsallowslocalnetworking).
+
+## Local development: phone keyboard and signature insertion — 2026-10-01
+
+- Windows text-field focus metadata opens the native Android keyboard while
+  using the touchpad. A manual keyboard button covers apps without focus support.
+- Unicode text and emoji use the existing paired input channel. Android keeps
+  composition local until committed and invalidates input when the target changes.
+- Signature insertion saves a transparent PNG, copies it to the Windows clipboard,
+  and requests paste in the active app. That app must support image pasting.
+- Requires the updated Windows host and Android version code 2 for automatic
+  keyboard opening. These changes remain local development work; the public
+  release and website rollout are still pending.
 
 ## Repeatable Windows commands
 

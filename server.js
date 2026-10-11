@@ -14,6 +14,8 @@ import { createProvider } from "./src/platform/index.js";
 import { validateControl, isDestructiveVerb, CONTROL_VERBS } from "./src/platform/contract.js";
 import { createConfigStore } from "./src/config.js";
 import { createSyncHub } from "./src/sync.js";
+import { createInputHub } from "./src/input-hub.js";
+import { validateSignature } from "./src/input.js";
 import { createIconCache, FALLBACK_ICON } from "./src/icons.js";
 import { startDiscovery, primaryAddress, DISCOVERY_PORT } from "./src/discovery.js";
 import {
@@ -230,7 +232,7 @@ export async function createApp({
         res.writeHead(200, {
           "content-type": png ? "image/png" : "image/svg+xml",
           "content-length": body.length,
-          "cache-control": "private, max-age=3600",
+          "cache-control": png ? "private, max-age=3600" : "private, no-store",
           "x-content-type-options": "nosniff",
         });
         return res.end(body);
@@ -302,6 +304,15 @@ export async function createApp({
         return sendJson(res, 200, await provider.systemStats().catch(() => ({})));
       }
 
+      if (path === "/api/input" && req.method === "GET") {
+        return sendJson(res, 200, { available: Boolean(provider.input), keyboard: Boolean(provider.input), signatureInsert: Boolean(provider.input) });
+      }
+      if (["/api/signature", "/api/signature/insert"].includes(path) && req.method === "POST") {
+        const signature = validateSignature(await readJsonBody(req));
+        if (!provider.input) return sendJson(res, 501, { error: "Saving signatures needs the updated Windows host." });
+        return sendJson(res, 200, await provider.input.saveSignature(signature, path.endsWith("/insert")));
+      }
+
       return sendJson(res, 404, { error: "not found" });
     } catch (err) {
       const status = err?.status || 500;
@@ -322,8 +333,11 @@ export async function createApp({
     getState: dockState,
   });
 
-  server.on("close", () => { provider.capture?.dispose().catch(() => {}); });
-  return { server, hub, provider, configStore, dockState, state, sessions, lockout };
+  const inputHub = createInputHub({ server, input: provider.input, isAuthorized: (req) =>
+    authorize({ req, sessions, lockout, remote: req.socket.remoteAddress || "", trustLoopback }).ok,
+  });
+  server.on("close", () => { provider.capture?.dispose().catch(() => {}); provider.input?.dispose(); });
+  return { server, hub, inputHub, provider, configStore, dockState, state, sessions, lockout };
 }
 
 export async function start({ port = Number(process.env.PORT) || DEFAULT_PORT, host = process.env.WINDOCK_HOST || "" } = {}) {

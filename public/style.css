@@ -285,7 +285,7 @@ body.is-immersive .empty .button .icon { width: 36px; height: 36px; }
 .glass-drawer[open] { animation: drawer-in .25s cubic-bezier(.2,.7,.2,1); }
 .drawer-grip { display: block; width: 100%; min-height: 29px; padding: 10px; background: none; border: 0; touch-action: none; }
 .drawer-grip > span { display: block; width: 33px; height: 3px; margin: auto; border-radius: 3px; background: #ebf5f44d; }
-.drawer-actions { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 7px; padding: 6px 0 16px; }
+.drawer-actions { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 7px; padding: 6px 0 16px; }
 .drawer-actions button { display: flex; flex-direction: column; align-items: center; gap: 12px; border: 0; border-radius: 18px; padding: 15px 6px 13px; min-height: 88px; background: #ffffff06; font-size: 11px; color: #eef6f5; }
 .drawer-actions button > [data-icon] { width: 29px; height: 29px; }
 .drawer-actions .icon { width: 27px; height: 27px; }
@@ -354,3 +354,72 @@ body.is-immersive .empty .button .icon { width: 36px; height: 36px; }
 .recording-stop strong { padding-left: 10px; border-left: 1px solid #ffb8ad44; font-weight: 600; }
 .recording-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff988b; }
 @media (max-height: 440px) { .capture-actions button { min-height: 100px; padding: 14px 18px; gap: 5px; } .capture-tip { margin-top: 9px; } }
+
+/* The entire display is the touch surface. Only the bottom controls float above it. */
+.input-pad { position: fixed; inset: 0; width: 100%; height: 100%; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 16px max(20px, env(safe-area-inset-right)) 10px max(20px, env(safe-area-inset-left)); border: 0; border-radius: 0; background: #080b10; color: #e1e7f0; box-shadow: none; overflow: hidden; --accent: #a8c7ff; --muted: #8490a2; }
+.input-pad[open] { display: flex; flex-direction: column; gap: 12px; }
+.input-pad::backdrop { background: #080b10; }
+.input-pad[data-mode="touchpad"] { padding: 0; }
+.input-pad[data-mode="touchpad"] .input-pad__header { display: none; }
+.input-pad__header, .input-pad__tools { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-shrink: 0; }
+.input-pad__tabs { display: flex; gap: 5px; padding: 0; }
+.input-pad__tabs button { display: flex; align-items: center; gap: 9px; padding: 10px 18px; border: 0; border-radius: 10px; background: transparent; font-size: 13px; color: var(--muted); }
+.input-pad__tabs button[aria-pressed="true"] { background: #a8c7ff12; color: var(--accent); }
+.input-pad__tabs .icon { width: 18px; height: 18px; }
+.input-pad__pane { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 12px; }
+#touchpad-pane { position: absolute; inset: 0; }
+.touchpad-surface { position: absolute; inset: 0; border: 0; border-radius: 0; background-color: #080b10; background-image: linear-gradient(#91afd014 1px, transparent 1px), linear-gradient(90deg, #91afd014 1px, transparent 1px); background-size: 24px 24px; touch-action: none; user-select: none; -webkit-user-select: none; cursor: default; overflow: hidden; }
+.touchpad-feedback { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.touchpad-feedback > span { position: absolute; left: 0; top: 0; width: 260px; height: 260px; margin: -130px 0 0 -130px; border-radius: 50%; opacity: 0; pointer-events: none; transition: opacity 220ms ease-out; will-change: transform, opacity; }
+.touchpad-feedback > span::before, .touchpad-feedback > span::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+/* Keep the local grid aligned with the surface, then gently expand it beneath each finger. */
+.touchpad-feedback > span::before { background-color: #080b10; background-image: linear-gradient(#79b9ff66 1px, transparent 1px), linear-gradient(90deg, #79b9ff66 1px, transparent 1px); background-size: 24px 24px; background-position: calc(130px - var(--contact-x, 0px)) calc(130px - var(--contact-y, 0px)); mask-image: radial-gradient(circle, #000 10%, #000a 35%, transparent 68%); transform: scale(1); transition: transform 180ms ease-out; }
+.touchpad-feedback > span::after { background: radial-gradient(circle, #a5e3ff99 0, #5caaff65 18%, #427cff2e 42%, #3758b600 70%); }
+.touchpad-feedback > span.is-touching { opacity: 1; }
+.touchpad-feedback > span.is-touching::before { transform: scale(1.08); }
+@media (prefers-reduced-motion: reduce) { .touchpad-feedback > span.is-touching::before { transform: none; } }
+.touchpad-hint { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; gap: 12px; margin: 0; padding: 24px; pointer-events: none; font-size: 12px; color: #788599; opacity: .7; transition: opacity .3s; }
+.touchpad-hint span { color: #465063; }
+.touchpad-surface[data-used="true"] .touchpad-hint, .touchpad-surface[data-ready="false"] .touchpad-hint { opacity: 0; }
+.touchpad-toolbar { position: absolute; z-index: 2; left: max(14px, env(safe-area-inset-left)); right: max(14px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px; pointer-events: none; }
+.touchpad-toolbar button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 14px; min-height: 46px; padding: 0 16px; background: #ffffff06; color: #9eaabe; font-size: 12px; touch-action: manipulation; }
+.touchpad-toolbar button:hover, .touchpad-toolbar button:focus-visible { background: #a8c7ff14; color: #dbe8ff; }
+.touchpad-toolbar button:active { background: #a8c7ff25; }
+.touchpad-toolbar .icon { width: 19px; height: 19px; }
+.touchpad-navigation { display: flex; gap: 6px; justify-self: start; pointer-events: auto; }
+.touchpad-navigation button { width: 46px; padding: 0; }
+.touchpad-navigation .has-text-focus { color: #a8c7ff; background: #a8c7ff18; }
+.input-pad[data-keyboard="true"] .touchpad-toolbar { visibility: hidden; }
+.remote-keyboard { position: absolute; z-index: 3; bottom: max(8px, env(safe-area-inset-bottom)); left: max(12px, env(safe-area-inset-left)); right: max(12px, env(safe-area-inset-right)); display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 16px; background: #101722f5; }
+.remote-keyboard input { min-width: 0; flex: 1; padding: 10px; font-size: 16px; border: 0; border-radius: 10px; background: #ffffff08; color: #e1e7f0; }
+.remote-keyboard button { min-width: 44px; height: 44px; padding: 8px; border: 0; border-radius: 10px; background: transparent; color: #a8c7ff; font-size: 20px; }
+.remote-keyboard .icon { width: 20px; height: 20px; }
+.signature-actions { display: flex; gap: 8px; }
+.signature-actions .button { padding: 10px 14px; min-height: 42px; font-size: 12px; }
+.touchpad-options { position: relative; justify-self: end; pointer-events: auto; }
+.pointer-options { position: absolute; right: 0; bottom: calc(100% + 12px); width: 240px; padding: 20px; border: 0; border-radius: 18px; background: #151c29f5; box-shadow: 0 12px 45px #0008; backdrop-filter: blur(20px); }
+.pointer-options input { display: block; width: 100%; height: 38px; margin: 10px 0 0; accent-color: var(--accent); touch-action: none; }
+.pointer-speed { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: #c0cada; font-size: 12px; }
+.pointer-speed output { color: var(--accent); font-variant-numeric: tabular-nums; }
+.pointer-speed-scale { display: flex; justify-content: space-between; color: #8490a2; font-size: 10px; }
+.mouse-buttons, .signature-tools { display: flex; align-items: center; gap: 8px; }
+.mouse-buttons { justify-self: center; pointer-events: auto; padding: 3px; gap: 2px; border-radius: 17px; background: #141b2699; backdrop-filter: blur(16px); }
+.mouse-buttons button { background: transparent; min-width: 82px; }
+.mouse-buttons button[aria-pressed="true"] { background: #a8c7ff22; color: #c3d9ff; }
+.signature-tools button { border: 0; background: #ffffff08; border-radius: 12px; padding: 10px 18px; font-size: 12px; min-height: 44px; }
+.input-pad__connection { display: flex; gap: 14px; align-items: center; justify-content: center; flex-shrink: 0; }
+.input-pad[data-mode="touchpad"] .input-pad__connection { position: absolute; top: max(22px, env(safe-area-inset-top)); left: max(24px, env(safe-area-inset-left)); right: max(24px, env(safe-area-inset-right)); z-index: 2; pointer-events: none; }
+.input-pad[data-mode="touchpad"][data-ready="true"][data-demo="false"] .input-pad__connection { visibility: hidden; }
+.input-pad__status { margin: 0; min-height: 18px; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; line-height: 1.5; }
+#input-reconnect { pointer-events: auto; border: 0; border-radius: 12px; padding: 10px 16px; min-height: 44px; background: #a8c7ff18; color: var(--accent); font-size: 12px; flex-shrink: 0; }
+.signature-space { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.signature-paper { position: relative; aspect-ratio: 8 / 3; height: 100%; max-width: 100%; max-height: 100%; border-radius: 15px; overflow: hidden; background: #f2f2ec; }
+#signature-canvas { display: block; width: 100%; height: 100%; touch-action: none; user-select: none; -webkit-user-select: none; cursor: crosshair; }
+#signature-placeholder { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; pointer-events: none; color: #69706f; font-size: clamp(18px, 3vw, 28px); letter-spacing: -.6px; }
+#signature-placeholder span { font-size: 11px; letter-spacing: 0; opacity: .65; }
+.signature-tools label { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
+.signature-tools select { background: #1b2a2a; color: var(--text); border: 1px solid #ffffff25; border-radius: 10px; padding: 9px; font-size: 12px; }
+#signature-save { padding: 10px 18px; min-height: 42px; font-size: 12px; }
+@media (max-height: 450px) { .input-pad { padding-top: 8px; padding-bottom: 8px; } .input-pad[open], .input-pad__pane { gap: 7px; } .input-pad__tabs button { padding: 7px 14px; } .input-pad__status { font-size: 10px; } }
+@media (max-width: 640px) { .input-pad__tools { gap: 8px; } .signature-tools button { padding: 8px 11px; } .touchpad-toolbar { gap: 8px; left: max(8px, env(safe-area-inset-left)); right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); } .touchpad-toolbar button { padding-inline: 12px; font-size: 11px; } .touchpad-navigation { gap: 2px; } .touchpad-navigation button { padding: 0; width: 44px; } .mouse-buttons button { min-width: 66px; } .touchpad-hint { font-size: 10px; gap: 8px; } .pointer-options { width: 220px; } .drawer-actions { gap: 3px; } .drawer-actions button { font-size: 10px; padding-inline: 2px; } }
+@media (orientation: portrait) { .input-pad[open] { visibility: hidden; } }

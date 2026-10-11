@@ -64,9 +64,10 @@ internal sealed partial class TrayApp : ApplicationContext
         _stopRecording = new ToolStripMenuItem("Stop recording", null, async (_, _) => await StopRecording());
         _stopRecording.Enabled = false;
         _icon.ContextMenuStrip.Items.Add(_stopRecording);
-        var captures = new ToolStripMenuItem("Open captures");
+        var captures = new ToolStripMenuItem("Open saved files");
         captures.DropDownItems.Add("Screenshots", null, (_, _) => OpenCaptures(false));
         captures.DropDownItems.Add("Recordings", null, (_, _) => OpenCaptures(true));
+        captures.DropDownItems.Add("Signatures", null, (_, _) => OpenCaptures(false, true));
         _icon.ContextMenuStrip.Items.Add(captures);
         _icon.ContextMenuStrip.Items.Add(new ToolStripSeparator());
         _icon.ContextMenuStrip.Items.Add("Quit WinDock", null, async (_, _) => { if (await StopRecording()) ExitThread(); });
@@ -206,9 +207,11 @@ internal sealed partial class TrayApp : ApplicationContext
             return false;
         }
     }
-    private static void OpenCaptures(bool video)
+    private static void OpenCaptures(bool video, bool signature = false)
     {
-        var folder = Path.Combine(Environment.GetFolderPath(video ? Environment.SpecialFolder.MyVideos : Environment.SpecialFolder.MyPictures), "WinDock");
+        var root = Environment.GetFolderPath(video ? Environment.SpecialFolder.MyVideos : Environment.SpecialFolder.MyPictures);
+        if (string.IsNullOrEmpty(root)) root = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), video ? "Videos" : "Pictures");
+        var folder = signature ? Path.Combine(root, "WinDock", "Signatures") : Path.Combine(root, "WinDock");
         try { Directory.CreateDirectory(folder); Process.Start(new ProcessStartInfo(folder) { UseShellExecute = true }); }
         catch (Exception ex) { MessageBox.Show(ex.Message, "WinDock captures", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
     }

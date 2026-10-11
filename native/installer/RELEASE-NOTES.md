@@ -1,15 +1,33 @@
-WinDock early preview
+## WinDock 0.2.0-preview.1
 
-Download **WinDockSetup.exe** on your Windows PC and follow the installer.
-It includes the required runtimes, adds WinDock to the Start menu, and can
-optionally start with Windows. Pair your phone using the connection info in
-the system tray. Updates and uninstall preserve your personal dock settings.
+Your phone is now a touchpad, keyboard and signature pad for your Windows PC.
 
-Install **WinDock-android-debug.apk** on an Android 7+ phone on the same trusted
-local network. This is a debug-signed preview; a different build signing key
-can require uninstalling the previous Android preview before installing it.
+- **Touchpad:** a full-screen dark grid with blue touch feedback, adjustable speed, click/drag controls, two-finger scrolling and pinch zoom in compatible PC apps.
+- **Keyboard:** use the normal Android keyboard, including emoji. Supported PC text fields open it automatically; a keyboard button is available as a fallback.
+- **Signatures:** draw in black or blue, save transparent PNGs to Pictures / WinDock / Signatures, or paste into a PC app that accepts images.
+- **Icons:** real app icons now recover after temporary loading failures.
+- **Website:** try the updated interactive demo and browse the new version history.
 
-The Windows installer is currently unsigned. Windows foreground activation and
-some hardware-specific controls are still under testing. This release does not
-provide internet remote access, a production Android signature, or automatic
-updates. SHA256SUMS.txt contains the checksums for both downloads.
+### Install or update
+
+Download **WinDockSetup.exe** for Windows 10/11 x64 and
+**WinDock-android-debug.apk** for Android 7.0+. Update both devices.
+Quit WinDock from the PC tray before running the installer. Your dock settings
+are preserved. Keep both devices on the same trusted network and pair using
+the PIN in the Windows tray.
+
+**Updating the September 18 public Android preview:** it used a different debug
+signing key. Uninstall that APK first, install this one, then pair again.
+The recent local keyboard test APK uses the same key as this release and can
+update directly. Your pinned dock remains on the PC.
+
+### Preview limitations
+
+The Windows installer is unsigned and the Android APK is debug-signed. Keyboard
+focus detection depends on the PC app; composed words arrive when the Android
+keyboard commits them. Signature insertion requires image-paste support and
+also saves a PNG. Windows permissions still apply to remote input. Screen
+recordings are video only. iOS is planned; macOS is not supported.
+
+SHA256SUMS.txt contains both download checksums. The full history is in
+[CHANGELOG.md](https://github.com/aliihsaad/WinDock/blob/main/CHANGELOG.md).

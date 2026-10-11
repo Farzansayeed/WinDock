@@ -5,6 +5,10 @@ import android.app.Activity
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.View
+import android.view.Gravity
+import android.webkit.JavascriptInterface
+import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.view.inputmethod.InputMethodManager
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
@@ -18,6 +22,7 @@ import android.widget.TextView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import androidx.core.view.doOnLayout
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
 import java.net.HttpURLConnection
@@ -32,6 +37,10 @@ class MainActivity : Activity() {
     private lateinit var address: EditText
     private lateinit var connectButton: Button
     private lateinit var retryButton: Button
+    private lateinit var keyboardBar: LinearLayout
+    private lateinit var keyboardEditor: RemoteKeyboardEditor
+    private var keyboardTarget: String? = null
+    private var resumed = false
     private val io = Executors.newSingleThreadExecutor()
     @Volatile private var endpoint: String? = null
     private var loadFailed = false
@@ -53,6 +62,7 @@ class MainActivity : Activity() {
         address = findViewById(R.id.address)
         connectButton = findViewById(R.id.connect)
         retryButton = findViewById(R.id.retry)
+        setupRemoteKeyboard()
         address.setText(ServerUrl.load(this).orEmpty())
         connectButton.setOnClickListener {
             val selected = EndpointPolicy.normalize(address.text.toString())
@@ -71,6 +81,7 @@ class MainActivity : Activity() {
             mixedContentMode = WebSettings.MIXED_CONTENT_NEVER_ALLOW
         }
         WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG)
+        web.addJavascriptInterface(KeyboardBridge(), "WinDockAndroid")
         web.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean =
                 !EndpointPolicy.allowsRequest(endpoint, request.url.toString())
@@ -80,6 +91,7 @@ class MainActivity : Activity() {
                 else WebResourceResponse("text/plain", "utf-8", 403, "Blocked", emptyMap(), ByteArrayInputStream(ByteArray(0)))
 
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
+                hideRemoteKeyboard()
                 loadFailed = false
             }
 
@@ -110,9 +122,88 @@ class MainActivity : Activity() {
         }
     }
 
+    private fun setupRemoteKeyboard() {
+        val dp = resources.displayMetrics.density
+        keyboardBar = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding((8 * dp).toInt(), 0, (8 * dp).toInt(), 0)
+            setBackgroundColor(0xff101722.toInt())
+            visibility = View.GONE
+        }
+        keyboardEditor = RemoteKeyboardEditor(this)
+        keyboardEditor.onText = { emitKeyboardInput(JSONObject().put("type", "text").put("text", it)) }
+        keyboardEditor.onRemoteKey = { emitKeyboardInput(JSONObject().put("type", "key").put("key", it)) }
+        val close = Button(this).apply {
+            text = "↓"; contentDescription = "Hide keyboard"
+            setOnClickListener { keyboardEditor.commitDraft(); hideRemoteKeyboard(); emitKeyboardEvent("closed") }
+        }
+        val signature = Button(this).apply {
+            text = "Sign"; contentDescription = "Draw and insert a signature"
+            isAllCaps = false
+            setOnClickListener { keyboardEditor.commitDraft(); hideRemoteKeyboard(); emitKeyboardEvent("signature") }
+        }
+        keyboardBar.addView(close, LinearLayout.LayoutParams((52 * dp).toInt(), (48 * dp).toInt()))
+        keyboardBar.addView(keyboardEditor, LinearLayout.LayoutParams(0, (52 * dp).toInt(), 1f))
+        keyboardBar.addView(signature, LinearLayout.LayoutParams((72 * dp).toInt(), (48 * dp).toInt()))
+        findViewById<FrameLayout>(R.id.root).addView(keyboardBar, FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT, (56 * dp).toInt(), Gravity.BOTTOM))
+    }
+
+    private fun trustedKeyboardPage(): Boolean =
+        resumed && !loadFailed && !connecting && web.visibility == View.VISIBLE &&
+            EndpointPolicy.allowsRequest(endpoint, web.url.orEmpty())
+
+    private fun emitKeyboardInput(message: JSONObject) {
+        val target = keyboardTarget ?: return
+        if (!trustedKeyboardPage()) return
+        message.put("target", target)
+        web.evaluateJavascript("window.dispatchEvent(new CustomEvent('windock-keyboard-input',{detail:$message}))", null)
+    }
+
+    private fun emitKeyboardEvent(action: String) {
+        if (!trustedKeyboardPage()) return
+        val data = JSONObject().put("action", action)
+        web.evaluateJavascript("window.dispatchEvent(new CustomEvent('windock-keyboard-action',{detail:$data}))", null)
+    }
+
+    private fun hideRemoteKeyboard() {
+        if (!::keyboardBar.isInitialized) return
+        keyboardTarget = null
+        keyboardEditor.resetSession()
+        (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
+            .hideSoftInputFromWindow(keyboardEditor.windowToken, 0)
+        keyboardEditor.clearFocus()
+        keyboardBar.visibility = View.GONE
+    }
+
+    private inner class KeyboardBridge {
+        @JavascriptInterface fun showKeyboard(target: String, password: Boolean) {
+            if (!target.matches(Regex("[1-9][0-9]{0,15}"))) return
+            runOnUiThread {
+                if (!trustedKeyboardPage()) return@runOnUiThread
+                if (keyboardTarget != target) keyboardEditor.configure(password)
+                keyboardTarget = target
+                keyboardBar.visibility = View.VISIBLE
+                keyboardEditor.requestFocus()
+                keyboardEditor.post {
+                    if (keyboardTarget == target) showRemoteIme()
+                }
+            }
+        }
+        @JavascriptInterface fun hideKeyboard() { runOnUiThread { hideRemoteKeyboard() } }
+    }
+
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (hasFocus) hideSystemBars()
+        if (hasFocus) { hideSystemBars(); if (keyboardTarget != null) showRemoteIme() }
+    }
+
+    private fun showRemoteIme() {
+        keyboardEditor.doOnLayout {
+            if (keyboardTarget != null && trustedKeyboardPage() && keyboardEditor.hasWindowFocus())
+                WindowCompat.getInsetsController(window, keyboardEditor).show(WindowInsetsCompat.Type.ime())
+        }
     }
 
     private fun setBusy(busy: Boolean) {
@@ -125,6 +216,7 @@ class MainActivity : Activity() {
     }
 
     private fun failConnection(message: Int) {
+        hideRemoteKeyboard()
         loadFailed = true
         setBusy(false)
         web.visibility = View.GONE
@@ -188,6 +280,12 @@ class MainActivity : Activity() {
 
     @Deprecated("Activity back dispatch for the supported API 24+ range")
     override fun onBackPressed() {
+        if (keyboardBar.visibility == View.VISIBLE) {
+            keyboardEditor.commitDraft()
+            hideRemoteKeyboard()
+            emitKeyboardEvent("closed")
+            return
+        }
         if (web.visibility != View.VISIBLE) {
             super.onBackPressed()
             return
@@ -201,8 +299,8 @@ class MainActivity : Activity() {
         }
     }
 
-    override fun onResume() { super.onResume(); if (::web.isInitialized) web.onResume() }
-    override fun onPause() { if (::web.isInitialized) web.onPause(); super.onPause() }
+    override fun onResume() { super.onResume(); resumed = true; if (::web.isInitialized) web.onResume() }
+    override fun onPause() { resumed = false; hideRemoteKeyboard(); if (::web.isInitialized) web.onPause(); super.onPause() }
     override fun onDestroy() {
         io.shutdownNow()
         web.removeCallbacks(loadTimeout)

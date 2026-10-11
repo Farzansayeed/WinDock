@@ -21,12 +21,12 @@ export async function buildWebsiteDemo() {
   html = replaceOnce(html, '<head>', `<head>
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; base-uri 'none'; form-action 'none'">`);
   await writeFile(resolve(destination, 'index.html'), html);
-  for (const file of ['style.css', 'icons.js', 'tiles.js', 'launcher.js']) {
+  for (const file of ['style.css', 'icons.js', 'tiles.js', 'launcher.js', 'input-pad.js', 'touchpad-gestures.js', 'remote-keyboard.js']) {
     await copyFile(resolve(root, 'public', file), resolve(destination, file));
   }
   let dock = await readFile(resolve(root, 'public/dock.js'), 'utf8');
   dock = replaceOnce(dock,
-    'src="/api/apps/icon?v=2&amp;id=${escapeHtml(encodeURIComponent(app.id))}"',
+    'src="/api/apps/icon?v=3&amp;id=${escapeHtml(encodeURIComponent(app.id))}"',
     'src="../assets/${escapeHtml(encodeURIComponent(app.id))}.png"');
   await writeFile(resolve(destination, 'dock.js'), dock);
   let app = await readFile(resolve(root, 'public/app.js'), 'utf8');
@@ -45,6 +45,11 @@ export async function buildWebsiteDemo() {
 // Small parent bridge; every setting still uses the real app's saveLayout.
 window.addEventListener('message', (event) => {
   if (event.source !== parent || event.origin !== location.origin) return;
+  if (event.data?.type === 'windock-preview-input' && paired && ['touchpad', 'signature'].includes(event.data.mode)) {
+    for (const dialog of document.querySelectorAll('dialog[open]')) dialog.close();
+    inputPad.open(event.data.mode);
+    parent.postMessage({ type: 'windock-preview-opened' }, location.origin);
+  }
   if (event.data?.type === 'windock-preview-density' && [4, 6, 8].includes(event.data.perPage)) saveLayout({ perPage: event.data.perPage });
   if (event.data?.type === 'windock-preview-drawer' && paired) {
     openDrawer();

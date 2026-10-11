@@ -9,6 +9,7 @@ screen — all over your local network, with no account or cloud service.
 [Website & interactive demo](https://windock.vercel.app) ·
 [Downloads](https://windock.vercel.app/#download) ·
 [Releases](https://github.com/aliihsaad/WinDock/releases) ·
+[Version history](CHANGELOG.md) ·
 [MIT license](LICENSE)
 
 ![A Windows desktop with WinDock running on a landscape phone beside the keyboard.](website/assets/windock-desktop.png)
@@ -19,8 +20,8 @@ screen — all over your local network, with no account or cloud service.
 
 | Platform | Availability |
 | --- | --- |
-| Windows 10 / 11, x64 | [Download the installer](https://github.com/aliihsaad/WinDock/releases/download/v0.1.0-preview.1/WinDockSetup.exe) |
-| Android 7.0+ | [Download the APK](https://github.com/aliihsaad/WinDock/releases/download/v0.1.0-preview.1/WinDock-android-debug.apk) |
+| Windows 10 / 11, x64 | [Download the installer](https://github.com/aliihsaad/WinDock/releases/download/v0.2.0-preview.1/WinDockSetup.exe) |
+| Android 7.0+ | [Download the APK](https://github.com/aliihsaad/WinDock/releases/download/v0.2.0-preview.1/WinDock-android-debug.apk) |
 | iOS | Coming soon — an iPhone companion is planned; no release date yet. |
 
 1. **Install on your PC.** Open `WinDockSetup.exe`. It includes the required
@@ -36,7 +37,7 @@ screen — all over your local network, with no account or cloud service.
 The Windows installer is currently unsigned and the Android APK is debug-signed.
 Windows may show a publisher warning. An APK signed with a different key can
 require uninstalling an earlier Android build before installing the new one.
-See the [release notes and checksums](https://github.com/aliihsaad/WinDock/releases/tag/v0.1.0-preview.1).
+See the [release notes and checksums](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.0-preview.1).
 
 ## What you can do
 
@@ -58,6 +59,42 @@ Pinned apps and their order sync through the PC. Layout density, background,
 and glass preferences stay on each device. The Windows tray also opens your
 capture folders and offers optional startup with Windows during installation.
 
+## Touchpad, keyboard and signatures
+
+Swipe up and choose **Touch & sign**. The touchpad moves the PC cursor with one
+finger, taps for left-click, and uses two fingers for scrolling or right-click.
+The dark, edge-to-edge surface shows a soft glow under each finger. Back and
+Signature sit at the bottom left, click/drag controls in the middle, and Speed
+at the right. The controls stay visible; Speed opens a small slider above them.
+Spread two fingers to zoom in or pinch them together to zoom out in PC apps
+that support **Ctrl + mouse wheel**. Move the cursor over the image or document first.
+The **Drag** button holds the left button until you release it. Leaving the
+touchpad or losing the connection releases held buttons; Reconnect appears if
+the session pauses or disconnects.
+
+While using the touchpad in the updated Android app, clicking a supported PC text
+field opens your phone's own keyboard, with emoji and its normal word composition.
+Words appear on the PC when the keyboard commits them (usually at a space or a
+suggestion). The keyboard button opens it manually for apps that don't expose text
+focus. Existing PC text is not copied to the phone. Browsers have a manual keyboard
+composer; automatic opening needs the updated Android APK.
+
+Choose **Sign** beside the keyboard, or switch to **Signature**, and draw with a
+finger or stylus. **Insert into PC** copies the image to the Windows clipboard and
+requests a paste in the active app. The app must accept pasted images; plain text
+fields cannot contain a signature image. **Save to PC** remains available.
+Black or blue ink is exported as a transparent 1600×600 PNG in
+`Pictures\WinDock\Signatures`. Open that folder from the Windows tray:
+**Open saved files → Signatures**. Both saving and inserting keep a PNG here.
+If an app cannot paste it, use that app's image insertion command with the saved
+file. Undo and Clear stay on the phone.
+
+These features are included in **0.2.0-preview.1**. Update both the Windows host
+and Android app (version code 3). Direct drawing inside PC apps is deferred.
+The PNG is a handwritten signature image, not a certificate-based digital signature.
+Touchpad control follows Windows permissions and cannot operate secure prompts
+or applications running with higher privileges than WinDock.
+
 ## How it works
 
 The Windows companion serves the dock interface on your local network. The
@@ -68,16 +105,18 @@ performs the Windows actions. You can also open the tray address in a browser.
 Your app actions and captures stay on your PC. WinDock is designed for a trusted
 home or office network, not internet remote access. Sessions reset when the PC
 host restarts. The website's interactive demo uses sample apps and simulated
-capture actions; it never connects to your PC.
+touchpad, typing, signature and capture actions; it never connects to your PC.
 
 ## Current release
 
-[0.1.0-preview.1](https://github.com/aliihsaad/WinDock/releases/tag/v0.1.0-preview.1)
-is the first public release. Both downloads are built by
-[GitHub Actions](https://github.com/aliihsaad/WinDock/actions/workflows/build-release.yml).
-The published build passed all **16 verification scripts / 930 assertions**,
-Windows install/launch/upgrade/uninstall checks, and Android build, unit-test,
-lint, and signature checks.
+[0.2.0-preview.1](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.0-preview.1)
+adds touchpad, keyboard, signatures and icon recovery. See the
+[version history](CHANGELOG.md) for changes and upgrade notes.
+
+The Windows installer and Android APK are built from this source.
+[GitHub Actions](https://github.com/aliihsaad/WinDock/actions/workflows/build-release.yml)
+checks Windows installation and Android builds. Published Android APKs use the
+local preview signing key; disposable CI debug APKs may use a different key.
 
 Some behavior still depends on the PC and device:
 

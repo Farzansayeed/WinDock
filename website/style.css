@@ -80,7 +80,23 @@ h1>span{color:#426652}
 /* The phone shell and embedded app above retain their existing styling. */
 .demo-toolbar{color:#5f6c59}
 .demo-toolbar{flex-wrap:wrap}
-.demo-shortcuts{display:flex;align-items:center;gap:22px}
+.demo-shortcuts{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.demo-toolbar{flex-wrap:wrap}
+.demo-typing{max-width:790px;margin:16px auto 0;padding:14px 18px;border:1px solid var(--line);border-radius:14px;display:flex;align-items:center;gap:16px;text-align:left;font-size:12px;background:#fff8}
+.demo-typing[hidden]{display:none}
+.demo-typing>span{font:9px var(--mono);text-transform:uppercase;white-space:nowrap;color:var(--muted)}
+.demo-typing output{flex:1;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;max-height:110px;overflow:auto}
+.demo-typing button{border:0;background:transparent;color:var(--mint);font:inherit;padding:8px}
+.history{display:grid;grid-template-columns:1.05fr 1fr;gap:95px;scroll-margin-top:100px;border-top:1px solid var(--line)}
+.release-entry{padding:0 0 36px;margin-bottom:36px;border-bottom:1px solid var(--line)}
+.release-entry:last-child{margin-bottom:0}
+.release-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}
+.release-heading time{font:10px var(--mono);color:var(--muted)}
+.release-entry h3{font-size:28px;letter-spacing:-1px;margin:0 0 10px}
+.release-title{font-size:16px;margin:0 0 18px}
+.release-entry ul{padding-left:18px;color:var(--muted);font-size:13px;line-height:1.8;margin:0 0 22px}
+.release-entry li+li{margin-top:7px}
+.release-entry>a{font-size:12px;color:var(--mint)}
 .demo-note{font-size:10px;line-height:1.7;color:#5f6c59;max-width:790px;margin:12px auto 0;text-align:left}
 .segmented{background:#e5e8df;border-color:#323b2210}
 .segmented button{color:#65725e}
@@ -309,3 +325,5 @@ h2{font-size:43px;letter-spacing:-2.3px}
 .preview-heading .eyebrow{max-width:100px;line-height:1.8}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+@media(max-width:900px){.history{gap:45px}.footer-bottom{flex-wrap:wrap}.footer-links{flex-wrap:wrap}}
+@media(max-width:600px){.history{grid-template-columns:1fr;gap:32px}.release-heading{flex-wrap:wrap;gap:12px}.release-entry h3{font-size:24px}.demo-typing{padding:10px;gap:10px;font-size:11px}.demo-toolbar{gap:10px}.demo-shortcuts{width:100%;justify-content:space-between;gap:10px}.density-control{margin-left:auto}}

@@ -1,4 +1,4 @@
-param([string]$DownloadBase = './downloads')
+param([string]$DownloadBase = './downloads', [string]$ReleaseVersion = '')
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $downloadRoot = Join-Path $projectRoot 'artifacts\website-downloads'
@@ -22,6 +22,10 @@ function Get-DownloadHash([string]$Path) {
 $windowsHash = Get-DownloadHash $windowsFile.FullName
 $androidHash = Get-DownloadHash $androidFile.FullName
 $version = (Get-Content -LiteralPath (Join-Path $projectRoot 'package.json') -Raw | ConvertFrom-Json).version
+if ($ReleaseVersion) {
+    if ($ReleaseVersion -notmatch '^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$') { throw 'Invalid release version.' }
+    $version = $ReleaseVersion
+}
 $manifest = [ordered]@{
     version = $version
     available = $true

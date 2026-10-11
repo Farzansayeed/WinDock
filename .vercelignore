@@ -9,3 +9,4 @@ config.json
 *.log
 .claude
 .unlazy
+Codex Image*.png

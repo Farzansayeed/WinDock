@@ -42,7 +42,7 @@ export function glyphFor(tile) {
 
 export function renderAppIcon(app, lazy = false) {
   const initial = glyphFor({ ...app, label: app.name || app.label });
-  return `<span class="app-icon"><span class="app-icon__fallback">${escapeHtml(initial)}</span><img src="/api/apps/icon?v=2&amp;id=${escapeHtml(encodeURIComponent(app.id))}" alt="" width="48" height="48" decoding="async"${lazy ? ' loading="lazy"' : ""}></span>`;
+  return `<span class="app-icon"><span class="app-icon__fallback">${escapeHtml(initial)}</span><img src="/api/apps/icon?v=3&amp;id=${escapeHtml(encodeURIComponent(app.id))}" alt="" width="48" height="48" decoding="async"${lazy ? ' loading="lazy"' : ""}></span>`;
 }
 
 /**

@@ -21,6 +21,7 @@ namespace WinDock;
 
 internal static class Program
 {
+    [STAThread]
     private static int Main(string[] args)
     {
         if (args.Length == 0)
@@ -43,6 +44,9 @@ internal static class Program
                 "volume" => ReadVolume(),
                 "brightness" => ReadBrightness(args),
                 "capture" => ScreenCapture.Run(args),
+                "touchpad" when args.Length == 1 => Touchpad.Run(),
+                "signature" when args.Length == 1 => Signature.Save(),
+                "signature-insert" when args.Length == 1 => Signature.Save(insert: true),
                 "icon" => ReadIcon(args),
                 _ => Usage($"unknown verb: {args[0]}"),
             };
