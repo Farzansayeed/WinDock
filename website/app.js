@@ -52,6 +52,58 @@ hero.addEventListener('pointerleave', resetEmblem);
 window.addEventListener('blur', resetEmblem);
 stillEmblem.addEventListener('change', resetEmblem);
 
+// Keep the introduction in view while ordinary page scrolling advances the story.
+const featureStory = document.querySelector('.features');
+const featureSteps = [...featureStory.querySelectorAll('.feature-list article')];
+const featureDesktop = matchMedia('(min-width: 801px) and (min-height: 700px)');
+const featureProgress = document.createElement('div');
+featureProgress.className = 'feature-progress';
+featureProgress.setAttribute('aria-hidden', 'true');
+const featureCount = document.createElement('span');
+const featureTrack = document.createElement('span');
+featureTrack.className = 'feature-progress-track';
+const featureMarkers = featureSteps.map(() => featureTrack.appendChild(document.createElement('i')));
+featureProgress.append(featureCount, featureTrack);
+featureStory.querySelector('.section-intro').append(featureProgress);
+let featureFrame = 0;
+let activeFeature = -1;
+function updateFeatureStory() {
+  featureFrame = 0;
+  if (!featureDesktop.matches) return;
+  const focusY = (128 + innerHeight) / 2;
+  let closest = 0;
+  let distance = Infinity;
+  featureSteps.forEach((step, index) => {
+    const box = step.getBoundingClientRect();
+    const offset = Math.abs(box.top + box.height / 2 - focusY);
+    if (offset < distance) { distance = offset; closest = index; }
+  });
+  if (closest === activeFeature) return;
+  activeFeature = closest;
+  featureSteps.forEach((step, index) => {
+    step.toggleAttribute('data-active', index === closest);
+    featureMarkers[index].toggleAttribute('data-active', index === closest);
+  });
+  featureCount.textContent = `${String(closest + 1).padStart(2, '0')} / ${String(featureSteps.length).padStart(2, '0')}`;
+}
+function scheduleFeatureStory() {
+  if (!featureFrame) featureFrame = requestAnimationFrame(updateFeatureStory);
+}
+function configureFeatureStory() {
+  featureStory.toggleAttribute('data-feature-scroll', featureDesktop.matches);
+  window.removeEventListener('scroll', scheduleFeatureStory);
+  window.removeEventListener('resize', scheduleFeatureStory);
+  cancelAnimationFrame(featureFrame);
+  featureFrame = 0;
+  if (featureDesktop.matches) {
+    window.addEventListener('scroll', scheduleFeatureStory, { passive: true });
+    window.addEventListener('resize', scheduleFeatureStory);
+    scheduleFeatureStory();
+  }
+}
+featureDesktop.addEventListener('change', configureFeatureStory);
+configureFeatureStory();
+
 const frame = document.querySelector('#demo-frame');
 const previewScreen = document.querySelector('#demo-screen');
 function fitPreview() {

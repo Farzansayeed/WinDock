@@ -119,6 +119,24 @@ h2 span{color:#7e897a}
 .feature-list p{font-size:13px;line-height:1.85;color:var(--muted);margin-top:14px;max-width:350px}
 .feature-list article>span:last-child{margin-left:auto;color:#7c8f77;padding-top:5px}
 .feature-list article>span:last-child svg{width:19px;height:19px}
+/* Let the page carry the feature story; no nested scroller or wheel capture. */
+.feature-progress{display:none}
+@media(min-width:801px) and (min-height:700px){
+  .features{align-items:start}
+  .features>.section-intro{position:sticky;top:128px}
+  .features .feature-list{padding-top:0}
+  .features .feature-list article{position:relative;min-height:64svh;align-items:center;padding:72px 0}
+  .features .feature-list h3{font-size:clamp(26px,2.4vw,34px);line-height:1.15;letter-spacing:-1px}
+  .features .feature-list p{font-size:14px;line-height:1.9;max-width:370px}
+  .features .feature-number,.features .feature-list article>span:last-child{padding-top:0;transition:color .25s}
+  .features .feature-list article::before{content:"";position:absolute;top:-1px;left:0;width:0;height:2px;background:var(--mint);transition:width .3s ease}
+  .features .feature-list article[data-active]::before{width:48px}
+  .features .feature-list article[data-active]>.feature-number,.features .feature-list article[data-active]>span:last-child{color:var(--mint)}
+  .features[data-feature-scroll] .feature-progress{display:flex;align-items:center;gap:18px;margin-top:42px;color:var(--muted);font:10px var(--mono)}
+  .feature-progress-track{display:flex;gap:5px}
+  .feature-progress-track i{width:22px;height:2px;background:#252e2725;transition:background .25s}
+  .feature-progress-track i[data-active]{background:var(--mint)}
+}
 .local-section{position:relative;display:flex;align-items:center;gap:65px;background:#25342e;color:#f0f3e9;border-radius:8px;padding:63px 58px;overflow:hidden}
 .local-section::after{content:"";position:absolute;width:280px;height:280px;border:1px solid #d8eed417;right:-100px;bottom:-170px;border-radius:50%;box-shadow:0 0 0 30px #d8eed405,0 0 0 60px #d8eed404;pointer-events:none}
 .local-section .eyebrow{color:#a3b9a2;font-size:9px}
