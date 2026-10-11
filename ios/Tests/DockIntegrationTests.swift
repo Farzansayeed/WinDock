@@ -64,7 +64,13 @@ final class DockIntegrationTests: XCTestCase {
             try await Task.sleep(nanoseconds: 350_000_000)
             let config = WKSnapshotConfiguration()
             config.afterScreenUpdates = true
-            image = try await web.takeSnapshot(with: config)
+            image = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<UIImage, Error>) in
+                web.takeSnapshot(with: config) { image, error in
+                    if let error { continuation.resume(throwing: error) }
+                    else if let image { continuation.resume(returning: image) }
+                    else { continuation.resume(throwing: NSError(domain: "WinDockSnapshot", code: 1)) }
+                }
+            }
         } else {
             image = UIGraphicsImageRenderer(bounds: controller.view.bounds).image { _ in
                 controller.view.drawHierarchy(in: controller.view.bounds, afterScreenUpdates: true)
