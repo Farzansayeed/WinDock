@@ -22,7 +22,7 @@ screen — all over your local network, with no account or cloud service.
 | --- | --- |
 | Windows 10 / 11, x64 | [Download the installer](https://github.com/aliihsaad/WinDock/releases/download/v0.2.0-preview.1/WinDockSetup.exe) |
 | Android 7.0+ | [Download the APK](https://github.com/aliihsaad/WinDock/releases/download/v0.2.0-preview.1/WinDock-android-debug.apk) |
-| iOS | Coming soon — an iPhone companion is planned; no release date yet. |
+| iOS | Coming soon — [native companion development & GitHub builds](ios/README.md); no installable public release yet. |
 
 1. **Install on your PC.** Open `WinDockSetup.exe`. It includes the required
    runtimes and adds WinDock to your Start menu and system tray.
@@ -117,6 +117,11 @@ The Windows installer and Android APK are built from this source.
 [GitHub Actions](https://github.com/aliihsaad/WinDock/actions/workflows/build-release.yml)
 checks Windows installation and Android builds. Published Android APKs use the
 local preview signing key; disposable CI debug APKs may use a different key.
+
+The initial [iPhone companion](ios/README.md) connects by PC address and reuses the
+same dock and PIN pairing. A separate [macOS build workflow](https://github.com/aliihsaad/WinDock/actions/workflows/build-ios.yml)
+builds it and runs simulator tests. Its unsigned device archive needs signing before
+it can be installed on an iPhone; TestFlight and physical-device testing are pending.
 
 Some behavior still depends on the PC and device:
 

@@ -177,21 +177,23 @@ multi-host control.
 - User accepted save-to-PC for the first version. Live drawing inside PC apps
   and pen pressure remain deferred. Current public release remains unchanged.
 
-## Planned: iOS companion
+## In development: iOS companion — 2026-10-11
 
 The website and README announce iOS as **coming soon**, with no release date.
-No iOS build or App Store listing exists yet. This is a feasible companion for
-the Windows host, not a port of the Windows native helper to the iPhone.
+The first native shell and GitHub macOS build workflow are in `ios/`. This is a
+companion for the Windows host. No signed iPhone download or App Store listing
+exists yet; see [iOS build instructions and boundaries](ios/README.md).
 
-- Reuse the shared HTML/CSS/JavaScript dock in a landscape `WKWebView`.
-- Start with manual PC address entry and PIN pairing, restrict navigation to
-  the chosen PC origin, and verify cookies/WebSocket reconnection on an iPhone.
-- Configure local HTTP transport deliberately. Native discovery needs the
-  appropriate local-network usage description; porting UDP broadcast also
-  requires assessing Apple's multicast entitlement. Manual entry avoids
-  making discovery entitlement approval a first-build dependency.
-- Build/sign with Xcode, test gestures, safe areas, foreground/background
-  reconnection and landscape behavior on physical iPhones, then prepare distribution.
+- Implemented: dark native connection screen, remembered manual address, bounded
+  health validation, shared landscape `WKWebView`, persistent PIN cookie and PC menu.
+- Implemented: private-address validation, selected-origin navigation/content rules,
+  local-network usage description and scoped HTTP transport configuration.
+- GitHub workflow: simulator protocol/integration tests, screenshots and unsigned
+  device archive. No Apple credentials are required at this stage.
+- Next: signing/provisioning, physical iPhone testing for local-network permission,
+  gestures, safe areas, keyboard and foreground/background reconnection.
+- Later: automatic discovery (assess multicast entitlement), native automatic
+  keyboard support, then a distributable preview/TestFlight release.
 
 Feasibility references: Apple's [WKWebView documentation](https://developer.apple.com/documentation/webkit/wkwebview),
 [local-network privacy requirements](https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy),

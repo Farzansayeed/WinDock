@@ -1,5 +1,13 @@
 # Version history
 
+## Unreleased
+
+- Add the first native iPhone companion source: remembered PC address, PIN pairing
+  through the shared landscape dock, and reconnect/change-PC controls.
+- Add a GitHub macOS workflow for simulator tests, screenshots and unsigned iOS
+  archives. This is not an installable iPhone release; signing and physical testing
+  are still pending. Windows and Android downloads remain at 0.2.0-preview.1.
+
 ## [0.2.0-preview.1](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.0-preview.1) — October 11, 2026
 
 - Use the phone as a full-screen touchpad, with a small grid and blue touch glow.
