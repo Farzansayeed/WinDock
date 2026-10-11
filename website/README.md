@@ -11,6 +11,11 @@ SVG mark inside a clear glass tile. Pointer movement shifts the tile by at most
 five pixels in each direction, without rotation; reduced-motion and touch devices keep it still. The
 interactive phone preview retains the actual application's dark interface.
 
+The navigation's sun/moon switch changes the website between ivory and charcoal.
+It follows the device's color scheme until a visitor chooses a theme, then remembers
+that choice in `windock-website-theme` local storage. `theme.js` applies it before
+the stylesheet loads to avoid a bright flash. The phone demo keeps its own appearance.
+
 ## Local review
 
 From the repository root:
