@@ -46,12 +46,15 @@ export async function buildWebsiteDemo() {
 window.addEventListener('message', (event) => {
   if (event.source !== parent || event.origin !== location.origin) return;
   if (event.data?.type === 'windock-preview-input' && paired && ['touchpad', 'signature'].includes(event.data.mode)) {
-    for (const dialog of document.querySelectorAll('dialog[open]')) dialog.close();
+    // Keep this dialog open while switching modes: its queued close event
+    // would otherwise disconnect the newly opened demo touchpad.
+    for (const dialog of document.querySelectorAll('dialog[open]')) if (dialog.id !== 'input-pad') dialog.close();
     inputPad.open(event.data.mode);
     parent.postMessage({ type: 'windock-preview-opened' }, location.origin);
   }
   if (event.data?.type === 'windock-preview-density' && [4, 6, 8].includes(event.data.perPage)) saveLayout({ perPage: event.data.perPage });
   if (event.data?.type === 'windock-preview-drawer' && paired) {
+    for (const dialog of document.querySelectorAll('dialog[open]')) if (dialog.id !== 'drawer') dialog.close();
     openDrawer();
     parent.postMessage({ type: 'windock-preview-opened' }, location.origin);
   }
