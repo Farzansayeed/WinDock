@@ -26,6 +26,7 @@ const EXPECTED = {
   "verify-api.mjs": "api verification passed",
   "verify-sync.mjs": "sync verification passed",
   "verify-pwa.mjs": "pwa verification passed",
+  "verify-now-playing.mjs": "now-playing verification passed",
   "verify-editing.mjs": "editing verification passed",
   "verify-offline.mjs": "offline verification passed",
   "verify-android.mjs": "android verification passed",

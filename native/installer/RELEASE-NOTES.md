@@ -1,33 +1,40 @@
-## WinDock 0.2.0-preview.1
+## WinDock 0.2.1-preview.1
 
-Your phone is now a touchpad, keyboard and signature pad for your Windows PC.
+Playing information now keeps up automatically, and the Windows tray can check
+for future updates.
 
-- **Touchpad:** a full-screen dark grid with blue touch feedback, adjustable speed, click/drag controls, two-finger scrolling and pinch zoom in compatible PC apps.
-- **Keyboard:** use the normal Android keyboard, including emoji. Supported PC text fields open it automatically; a keyboard button is available as a fallback.
-- **Signatures:** draw in black or blue, save transparent PNGs to Pictures / WinDock / Signatures, or paste into a PC app that accepts images.
-- **Icons:** real app icons now recover after temporary loading failures.
-- **Website:** try the updated interactive demo and browse the new version history.
+- **Now playing:** track, artist and playback changes update every two seconds
+  while connected and visible. Polling pauses in the background and resumes when
+  you return. Thanks @Peter-KIbe for reporting [#1](https://github.com/aliihsaad/WinDock/issues/1).
+- **Updates:** choose **Check for updates** in the Windows tray. WinDock also
+  checks at startup and notifies you when a newer release is available. Click the
+  notification or download menu item to view the release. Installation is manual.
+- **Reliability:** transient failures recover automatically, slow media requests
+  do not pile up, and unchanged playback controls keep keyboard focus.
 
-### Install or update
+### Update instructions
 
-Download **WinDockSetup.exe** for Windows 10/11 x64 and
-**WinDock-android-debug.apk** for Android 7.0+. Update both devices.
-Quit WinDock from the PC tray before running the installer. Your dock settings
-are preserved. Keep both devices on the same trusted network and pair using
-the PIN in the Windows tray.
+1. Quit WinDock using its Windows tray menu.
+2. Download and run **WinDockSetup.exe**. Your dock settings are preserved.
+3. Start WinDock, then disconnect/reconnect your Android app to load the updated
+   dock. Pair again with the tray PIN if prompted.
 
-**Updating the September 18 public Android preview:** it used a different debug
-signing key. Uninstall that APK first, install this one, then pair again.
-The recent local keyboard test APK uses the same key as this release and can
-update directly. Your pinned dock remains on the PC.
+**No Android APK update is required.** The APK included here is byte-for-byte the
+existing 0.2.0-preview.1 Android build (version code 3), included for new users.
+Existing Windows users must install this release manually once; earlier versions
+cannot check for updates. Windows notification settings may suppress a startup
+notification, so **Check for updates** is always available in the tray.
 
-### Preview limitations
+### Verification and preview status
 
-The Windows installer is unsigned and the Android APK is debug-signed. Keyboard
-focus detection depends on the PC app; composed words arrive when the Android
-keyboard commits them. Signature insertion requires image-paste support and
-also saves a PNG. Windows permissions still apply to remote input. Screen
-recordings are video only. iOS is planned; macOS is not supported.
+The media fix passed browser and Android emulator WebView regressions without
+Refresh clicks, including pause/resume, ended playback, and background return.
+The release build checks update detection, native input, app tests, and installer
+installation, launch, upgrade and uninstall.
 
-SHA256SUMS.txt contains both download checksums. The full history is in
-[CHANGELOG.md](https://github.com/aliihsaad/WinDock/blob/main/CHANGELOG.md).
+Windows is unsigned and Android is debug-signed. The September 18 Android preview
+used a different signing key and must be uninstalled before installing the newer
+APK. iOS remains in development with no installable public release.
+
+Download hashes are in **SHA256SUMS.txt**. See the full
+[version history](https://github.com/aliihsaad/WinDock/blob/main/CHANGELOG.md).

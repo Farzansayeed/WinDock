@@ -43,6 +43,14 @@ internal sealed partial class TrayApp : ApplicationContext
     private ToolStripMenuItem _stopRecording = null!;
     private bool _checkingCapture;
     private bool _recording;
+    private readonly HttpClient _updateHttp = new(new HttpClientHandler { AllowAutoRedirect = false })
+        { Timeout = TimeSpan.FromSeconds(12), MaxResponseContentBufferSize = 64 * 1024 };
+    private readonly CancellationTokenSource _shutdown = new();
+    private readonly System.Windows.Forms.Timer _updateTimer = new() { Interval = 8000 };
+    private ToolStripMenuItem _checkUpdates = null!, _downloadUpdate = null!;
+    private bool _checkingUpdates, _startupCheckScheduled;
+    private UpdateResult? _availableUpdate;
+    private Uri? _balloonRelease;
 
     [GeneratedRegex(@"open:\s*(\S+)")] private static partial Regex EndpointLine();
     [GeneratedRegex(@"PIN:\s*(\d{4})")] private static partial Regex PinLine();
@@ -70,8 +78,14 @@ internal sealed partial class TrayApp : ApplicationContext
         captures.DropDownItems.Add("Signatures", null, (_, _) => OpenCaptures(false, true));
         _icon.ContextMenuStrip.Items.Add(captures);
         _icon.ContextMenuStrip.Items.Add(new ToolStripSeparator());
+        _checkUpdates = new ToolStripMenuItem("Check for updates…", null, async (_, _) => await CheckUpdates(true));
+        _downloadUpdate = new ToolStripMenuItem("Download update…", null, (_, _) => OpenRelease(_availableUpdate?.ReleasePage)) { Visible = false };
+        _icon.ContextMenuStrip.Items.Add(_checkUpdates);
+        _icon.ContextMenuStrip.Items.Add(_downloadUpdate);
         _icon.ContextMenuStrip.Items.Add("Quit WinDock", null, async (_, _) => { if (await StopRecording()) ExitThread(); });
         _icon.DoubleClick += (_, _) => ShowInfo();
+        _icon.BalloonTipClicked += (_, _) => { if (_balloonRelease is { } page) OpenRelease(page); };
+        _updateTimer.Tick += async (_, _) => { _updateTimer.Stop(); await CheckUpdates(false); };
         _captureTimer.Tick += async (_, _) => await CheckCapture();
         if (!smoke) _captureTimer.Start();
 
@@ -157,12 +171,65 @@ internal sealed partial class TrayApp : ApplicationContext
         if (!pin.Success) return;
         _pin = pin.Groups[1].Value;
         _icon.Text = "WinDock — running";
-        if (!_smoke) _icon.ShowBalloonTip(5000, "WinDock is running", $"{_endpoint}\nPIN {_pin}", ToolTipIcon.Info);
+        if (!_smoke)
+        {
+            ShowBalloon("WinDock is running", $"{_endpoint}\nPIN {_pin}");
+            if (!_startupCheckScheduled) { _startupCheckScheduled = true; _updateTimer.Start(); }
+        }
     }
 
     private void ShowInfo() => MessageBox.Show(
-        $"Open this address on your phone:\n\n{_endpoint}\n\nPairing PIN: {_pin}\n\nBoth devices must be on the same network.",
+        $"WinDock {UpdateChecker.InstalledVersion}\n\nOpen this address on your phone:\n\n{_endpoint}\n\nPairing PIN: {_pin}\n\nBoth devices must be on the same network.",
         "WinDock", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+    private void ShowBalloon(string title, string text, Uri? release = null)
+    {
+        _balloonRelease = release;
+        _icon.ShowBalloonTip(8000, title, text, ToolTipIcon.Info);
+    }
+
+    private async Task CheckUpdates(bool interactive)
+    {
+        if (interactive) _updateTimer.Stop();
+        if (_checkingUpdates || _stopping) return;
+        _checkingUpdates = true;
+        _checkUpdates.Enabled = false;
+        _checkUpdates.Text = "Checking for updates…";
+        try
+        {
+            var result = await new UpdateChecker(_updateHttp, UpdateChecker.InstalledVersion).CheckAsync(_shutdown.Token);
+            if (_stopping) return;
+            if (result.Status != UpdateStatus.Failed)
+            {
+                _availableUpdate = result.Status == UpdateStatus.Available ? result : null;
+                _downloadUpdate.Visible = _availableUpdate is not null;
+                _downloadUpdate.Text = "Download WinDock " + result.Version + "…";
+            }
+            if (!result.ShouldNotify(interactive)) return;
+            if (result.Status == UpdateStatus.Available)
+            {
+                if (!interactive) ShowBalloon("WinDock update available", $"Version {result.Version} is ready. Click to view the release and download it.", result.ReleasePage);
+                else if (MessageBox.Show($"WinDock {result.Version} is available.\nYou have {UpdateChecker.InstalledVersion}.\n\nOpen the release page? Download the installer, quit WinDock, then run it. Your dock settings are kept.",
+                    "WinDock update", MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes) OpenRelease(result.ReleasePage);
+            }
+            else MessageBox.Show(result.Status == UpdateStatus.Current
+                ? $"You’re up to date.\nInstalled version: {UpdateChecker.InstalledVersion}"
+                : "Couldn’t check for updates. Check your internet connection and try again. You can also find releases at github.com/aliihsaad/WinDock/releases.",
+                "WinDock updates", MessageBoxButtons.OK, result.Status == UpdateStatus.Current ? MessageBoxIcon.Information : MessageBoxIcon.Warning);
+        }
+        finally
+        {
+            _checkingUpdates = false;
+            if (!_stopping) { _checkUpdates.Enabled = true; _checkUpdates.Text = "Check for updates…"; }
+        }
+    }
+
+    private static void OpenRelease(Uri? page)
+    {
+        if (page is null) return;
+        try { Process.Start(new ProcessStartInfo(page.AbsoluteUri) { UseShellExecute = true }); }
+        catch (Exception ex) { MessageBox.Show($"Couldn’t open your browser. Visit {page}\n\n{ex.Message}", "WinDock updates", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
+    }
 
     private void CopyUrl()
     {
@@ -185,7 +252,7 @@ internal sealed partial class TrayApp : ApplicationContext
             var active = phase is "starting" or "recording" or "stopping";
             _stopRecording.Enabled = active && phase != "stopping";
             _icon.Text = active ? "WinDock — screen recording" : "WinDock — running";
-            if (active && !_recording) _icon.ShowBalloonTip(4000, "Screen recording started", "Your main monitor is being recorded without audio. Right-click WinDock to stop.", ToolTipIcon.Info);
+            if (active && !_recording) ShowBalloon("Screen recording started", "Your main monitor is being recorded without audio. Right-click WinDock to stop.");
             _recording = active;
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException) { }
@@ -221,6 +288,10 @@ internal sealed partial class TrayApp : ApplicationContext
         if (disposing && !_stopping)
         {
             _stopping = true;
+            _updateTimer.Dispose();
+            _shutdown.Cancel();
+            _updateHttp.Dispose();
+            _shutdown.Dispose();
             _captureTimer.Dispose();
             _captureHttp.Dispose();
             _smokeTimer?.Dispose();

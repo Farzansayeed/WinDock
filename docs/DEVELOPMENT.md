@@ -155,3 +155,19 @@ Control verbs: `volume-up`, `volume-down`, `volume-set`, `mute-toggle`,
 `media-play-pause`, `media-next`, `media-previous`, `media-stop`, `brightness-set`,
 `lock`, `sleep`, `shutdown`, and `restart`. `volume-set` and `brightness-set`
 take integers from 0 to 100; their tiles are keyed by both verb and value.
+
+## Windows update checks
+
+The tray checks `https://windock.vercel.app/downloads.json` once after startup
+and on **Check for updates**. `native/tray/UpdateChecker.cs` compares semantic
+versions (including preview numbers) against the tray's informational version.
+Only this repository's tagged installer URL is accepted. The check has a
+12-second timeout and a 64 KiB response limit; startup failures are silent.
+An available update shows a notification and a download menu item that opens
+the GitHub release page. The app never downloads or executes an installer itself.
+
+Run `dotnet run --project native/update-tests/WinDockUpdateTests.csproj -c Release`
+for version, HTTP, invalid-feed and notification-policy checks. Add `-- --live`
+after publishing 0.2.1-preview.1 to check the actual public feed for current and
+older installations. Update `package.json`, `package-lock.json`, and the tray
+project's numeric/informational versions together for future Windows releases.

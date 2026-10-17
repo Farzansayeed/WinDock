@@ -10,7 +10,7 @@ on:
       release_tag:
         description: New release tag (used only when creating a draft)
         type: string
-        default: v0.2.0-preview.1
+        default: v0.2.1-preview.1
   push:
     branches: [main]
     paths:
@@ -43,6 +43,8 @@ jobs:
       - run: npm test
       - name: Verify native touchpad protocol and transparent signature rendering
         run: dotnet run --project native/input-tests/WinDockInputTests.csproj -c Release
+      - name: Verify update checks and startup notification policy
+        run: dotnet run --project native/update-tests/WinDockUpdateTests.csproj -c Release
       - name: Build bundled Windows app
         shell: pwsh
         run: ./scripts/build-windows.ps1

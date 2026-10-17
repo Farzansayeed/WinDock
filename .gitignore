@@ -1,4 +1,6 @@
 node_modules/
+.playwright-cli/
+output/playwright/
 *.log
 
 # unlazy pipeline + hook state

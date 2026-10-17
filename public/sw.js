@@ -9,12 +9,13 @@
  *    worse, replay a control action from cache. Neither is acceptable.
  */
 
-const VERSION = "windock-v11-0.2.0";
+const VERSION = "windock-v12-0.2.0";
 const SHELL = [
   "/",
   "/index.html",
   "/style.css",
   "/app.js",
+  "/now-playing.js",
   "/dock.js",
   "/tiles.js",
   "/icons.js",

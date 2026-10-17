@@ -24,7 +24,7 @@ try {
     $installed = $true
     $registered = Get-ItemProperty -LiteralPath $uninstallKey
     if ($registered.InstallLocation.TrimEnd('\') -ne $installRoot) { throw 'Installer registered an unexpected location.' }
-    foreach ($file in @('WinDockTray.exe','WinDockHelper.exe','node.exe','server.js','public\index.html','src\platform\windows.js','node_modules\ws\index.js','unins000.exe')) {
+    foreach ($file in @('WinDockTray.exe','WinDockHelper.exe','node.exe','server.js','public\index.html','public\now-playing.js','src\platform\windows.js','node_modules\ws\index.js','unins000.exe')) {
         if (-not (Test-Path -LiteralPath (Join-Path $installRoot $file))) { throw "Missing installed file: $file" }
     }
     if (-not (Test-Path -LiteralPath $shortcutPath)) { throw 'Start menu shortcut missing.' }

@@ -6,7 +6,25 @@
   through the shared landscape dock, and reconnect/change-PC controls.
 - Add a GitHub macOS workflow for simulator tests, screenshots and unsigned iOS
   archives. This is not an installable iPhone release; signing and physical testing
-  are still pending. Windows and Android downloads remain at 0.2.0-preview.1.
+  are still pending. This is separate from the Windows maintenance releases below.
+
+## [0.2.1-preview.1](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.1-preview.1) — October 17, 2026
+
+- Update the playing track, artist and playback state automatically while the dock
+  is connected and visible. No Refresh tap is needed. Thanks to
+  [Peter-KIbe](https://github.com/Peter-KIbe) for [reporting #1](https://github.com/aliihsaad/WinDock/issues/1).
+- Pause media polling in the background, refresh on return, and recover from
+  temporary failures without overlapping requests or replacing unchanged controls.
+- Add **Check for updates** to the Windows tray and a startup notification when
+  a newer published Windows release is available. Notifications and the download
+  menu open the release page; installation remains manual.
+
+Quit WinDock from the PC tray and run the new Windows installer. Dock settings
+are preserved. Reconnect the phone app to load the updated interface. **No Android
+update is needed for this fix**: the APK is the unchanged 0.2.0-preview.1 build
+(version code 3). Older Windows installations need this one manual update before
+they can notify you about future releases. Windows notification settings may
+hide startup notifications; the tray check remains available.
 
 ## [0.2.0-preview.1](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.0-preview.1) — October 11, 2026
 

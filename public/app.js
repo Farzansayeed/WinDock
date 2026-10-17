@@ -3,6 +3,7 @@ import { icon, controlIcon } from "./icons.js";
 import { addAppTile, addControlTile, removeTile, moveTile, toWireTiles, availableControls, tileKey } from "./tiles.js";
 import { normalizeLayout, renderPages, pageCount, moveToTile } from "./launcher.js";
 import { createInputPad } from "./input-pad.js";
+import { createNowPlayingPoller } from "./now-playing.js";
 
 const $ = (id) => document.getElementById(id);
 let state = { tiles: [], running: [], verbs: [] };
@@ -11,6 +12,16 @@ let socket = null, reconnectTimer = null, installedApps = [], appsLoaded = false
 let currentPage = 0, toastTimer, selectedKey = "", suppressClickUntil = 0;
 let pageHintTimer;
 let captureState = { available: false, phase: "idle" }, captureBusy = false, capturePoll = false, captureReceivedAt = Date.now();
+let nowPlayingHtml = "";
+const nowPlaying = createNowPlayingPoller({
+  load: async (signal) => (await api("/api/nowplaying", { signal })).nowPlaying,
+  isActive: () => paired && online && !document.hidden,
+  onChange: (media) => {
+    const html = renderNowPlaying(media);
+    // Keep the playback button (and its focus) when nothing has changed.
+    if (nowPlayingHtml !== html) { $("nowplaying").innerHTML = html; nowPlayingHtml = html; }
+  },
+});
 let layout;
 try { layout = normalizeLayout(JSON.parse(localStorage.getItem("windock-layout"))); } catch { layout = normalizeLayout(); }
 document.querySelectorAll("[data-icon]").forEach((el) => { el.innerHTML = icon(el.dataset.icon); });
@@ -208,8 +219,7 @@ async function refresh() {
   const fresh = await api("/api/state");
   state = { ...fresh, tiles: editing || saving || gesture?.dragging ? state.tiles : fresh.tiles };
   if (!gesture?.dragging) paint();
-  const { nowPlaying } = await api("/api/nowplaying").catch(() => ({ nowPlaying: null }));
-  $("nowplaying").innerHTML = renderNowPlaying(nowPlaying);
+  await nowPlaying.refresh().catch(() => {});
   await refreshCapture().catch(() => {});
 }
 const powerActions = {
@@ -241,6 +251,7 @@ async function activate(button) {
     if (action === "control") {
       const raw = button.dataset.value;
       await api("/api/control", { method: "POST", body: JSON.stringify(raw === undefined ? { verb: key } : { verb: key, value: Number(raw) }) });
+      if (key.startsWith("media-")) nowPlaying.refresh().catch(() => {});
       notify(powerActions[key] ? "Command sent to your PC" : "Control sent");
     } else if (action === "launch") {
       const running = state.running.find((item) => item.id === key);

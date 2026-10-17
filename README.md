@@ -20,7 +20,7 @@ screen — all over your local network, with no account or cloud service.
 
 | Platform | Availability |
 | --- | --- |
-| Windows 10 / 11, x64 | [Download the installer](https://github.com/aliihsaad/WinDock/releases/download/v0.2.0-preview.1/WinDockSetup.exe) |
+| Windows 10 / 11, x64 | [Download the installer](https://github.com/aliihsaad/WinDock/releases/download/v0.2.1-preview.1/WinDockSetup.exe) |
 | Android 7.0+ | [Download the APK](https://github.com/aliihsaad/WinDock/releases/download/v0.2.0-preview.1/WinDock-android-debug.apk) |
 | iOS | Coming soon — [native companion development & GitHub builds](ios/README.md); no installable public release yet. |
 
@@ -37,7 +37,14 @@ screen — all over your local network, with no account or cloud service.
 The Windows installer is currently unsigned and the Android APK is debug-signed.
 Windows may show a publisher warning. An APK signed with a different key can
 require uninstalling an earlier Android build before installing the new one.
-See the [release notes and checksums](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.0-preview.1).
+See the [release notes and checksums](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.1-preview.1).
+
+**Updating:** quit WinDock from the Windows tray and run the latest installer;
+your dock settings are kept. Reconnect the phone app to load the updated dock.
+This release fixes automatic now-playing updates and needs **no new Android APK**.
+Starting with 0.2.1-preview.1, the Windows tray offers **Check for updates** and
+checks at startup. A newer release shows a notification and download menu item;
+installation remains manual. Older installations need one manual upgrade first.
 
 ## What you can do
 
@@ -109,8 +116,9 @@ touchpad, typing, signature and capture actions; it never connects to your PC.
 
 ## Current release
 
-[0.2.0-preview.1](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.0-preview.1)
-adds touchpad, keyboard, signatures and icon recovery. See the
+[0.2.1-preview.1](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.1-preview.1)
+fixes automatic now-playing updates and adds Windows update notifications. The
+Android APK remains at 0.2.0-preview.1 (version code 3). See the
 [version history](CHANGELOG.md) for changes and upgrade notes.
 
 The Windows installer and Android APK are built from this source.

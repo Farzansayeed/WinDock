@@ -45,7 +45,7 @@ cd android
 .\gradlew.bat assembleDebug assembleDebugAndroidTest
 adb install -r app\build\outputs\apk\debug\app-debug.apk
 adb install -r app\build\outputs\apk\androidTest\debug\app-debug-androidTest.apk
-adb shell am instrument -w com.windock.app.test/androidx.test.runner.AndroidJUnitRunner
+adb shell am instrument -w -e class com.windock.app.DockSmokeTest com.windock.app.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
 Expected: `OK (1 test)`. The test targets the emulator's host alias
@@ -59,6 +59,30 @@ fullscreen explanation is dismissed using UI Automator on the English emulator.
 The emulator flow passed on Android 16/API 36.1. It does not establish physical
 LAN broadcast reachability or real Windows app activation. G14 remains pending
 until those actions succeed on the user's phone and PC.
+
+### Automatic now-playing regression
+
+Start `node scripts/now-playing-smoke-host.mjs` from the repository root. It runs
+an isolated host on loopback port 18623 and a test-only media control endpoint
+on 18624. Keep other clients disconnected from this fixture during the Android
+test so its background polling count is isolated. After building/installing the
+debug and instrumentation APKs as above, run:
+
+```powershell
+adb shell am instrument -w -e class com.windock.app.NowPlayingSmokeTest com.windock.app.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+Expected: `OK (1 test)`. The test changes the host's simulated track, artist,
+playback state and active media session, checks the actual Android WebView updates
+without tapping Refresh, and checks polling pauses in the background and resumes
+on return. It uses the emulator host alias `10.0.2.2`; do not run on a physical phone.
+
+The same fixture supports a browser regression. Open `http://127.0.0.1:18623` in
+Playwright CLI, then run `run-code --filename=scripts/browser/now-playing.js`
+from the repository root. It also checks HTTP error recovery, slow requests,
+playback controls, focus preservation and zero Refresh clicks/page reloads.
+Create `output/playwright/` first for the screenshot. `npm test` includes the
+poller's automatic-update, inactive-state, timeout and concurrency regression.
 
 ## Transport and build decisions
 
