@@ -21,8 +21,8 @@ svg{display:block;width:22px;height:22px;flex-shrink:0}
 .header[data-nav-ready] .nav-shell{width:64px;border-radius:23px;transition:width .68s cubic-bezier(.22,1,.36,1),border-radius .68s cubic-bezier(.22,1,.36,1),box-shadow .3s}
 .nav-toggle{display:grid;place-items:center;width:48px;height:48px;padding:0;background:transparent;border-radius:16px}
 .nav-toggle:focus-visible{outline-offset:-2px}
-.nav-toggle .brand-icon{width:36px;height:36px;border-radius:10px;transition:transform .65s cubic-bezier(.22,1,.36,1),box-shadow .3s;box-shadow:0 3px 10px #254c6530,inset 0 1px #ffffff40}
-.nav-toggle:hover .brand-icon{box-shadow:0 0 22px #7bbfe440,inset 0 1px #ffffff40}
+.nav-toggle .brand-icon{width:36px;height:36px;background:transparent;border-radius:0;box-shadow:none;transition:transform .65s cubic-bezier(.22,1,.36,1)}
+.nav-toggle .brand-icon img{width:36px;height:36px}
 .nav-content{position:absolute;inset:7px 8px 7px 74px;display:flex;align-items:center;justify-content:space-between;gap:22px;white-space:nowrap}
 .header:not([data-nav-ready]) .nav-content{left:20px}
 .header[data-nav-ready] .nav-content{opacity:0;visibility:hidden;filter:blur(6px);transform:translateX(-12px);transition:opacity .18s,filter .3s,transform .35s,visibility 0s .35s;pointer-events:none}
