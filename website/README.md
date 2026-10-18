@@ -1,6 +1,6 @@
 # WinDock website
 
-A standalone static landing page. No framework, build dependency, tracking,
+A static landing page with a small public download-count endpoint. No framework, build dependency, tracking,
 external fonts, or connection to the user's live dock. Bundled app icons are
 extracted from Windows; those product marks belong to their owners. The desk
 scene is an AI-generated product illustration, shared with the root README.
@@ -55,11 +55,21 @@ The Windows button downloads one setup EXE. Users do not extract an archive.
 
 ## Vercel deployment
 
-The root `vercel.json` builds the preview and publishes only `website/` as a
-static site. `.vercelignore` excludes local toolchains, packaged applications,
+The root `vercel.json` builds the preview and publishes `website/` as a
+static site plus `api/download-stats.js` as a Node.js function. `.vercelignore` excludes local toolchains, packaged applications,
 native/Android sources, and personal configuration from CLI uploads. Use the
 linked WinDock project and its default Vercel domain; no custom domain is needed.
 The app host itself continues to run locally on Windows.
+
+The download section shows total, Windows, and Android downloads across public
+GitHub releases, including prereleases and repeat downloads. These are asset
+download counts, not unique users, installations, or active devices. The function
+reads the public GitHub API without credentials and counts only `WinDockSetup.exe`
+and `WinDock-android-debug.apk`, following release pagination. Vercel caches a
+successful response for one hour, with up to one day of stale data while it
+revalidates. Failures show unavailable counts without affecting download links.
+The local preview server exposes the same endpoint. Other static hosts need an
+equivalent endpoint for the counters; downloads still work without it.
 
 Production: [windock.vercel.app](https://windock.vercel.app). The Vercel project
 is connected to this repository, so pushes to `main` deploy the website.

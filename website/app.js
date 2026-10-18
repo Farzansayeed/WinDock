@@ -192,3 +192,25 @@ async function loadDownloads() {
   }
 }
 loadDownloads();
+
+async function loadDownloadCounts() {
+  const section = document.querySelector('#download-stats');
+  const status = document.querySelector('#download-count-status');
+  section.hidden = false;
+  try {
+    const response = await fetch('/api/download-stats', { signal: AbortSignal.timeout(10000) });
+    if (!response.ok) throw new Error('Counts unavailable');
+    const counts = await response.json();
+    if (!['total', 'windows', 'android'].every(key => Number.isSafeInteger(counts[key]) && counts[key] >= 0)
+        || counts.total !== counts.windows + counts.android || !Number.isFinite(Date.parse(counts.updatedAt))) {
+      throw new Error('Invalid counts');
+    }
+    const format = new Intl.NumberFormat('en-US');
+    for (const key of ['total', 'windows', 'android']) document.querySelector(`#count-${key}`).textContent = format.format(counts[key]);
+    status.textContent = 'Refreshed hourly';
+    status.title = `Last checked: ${new Date(counts.updatedAt).toLocaleString()}`;
+  } catch {
+    status.textContent = 'Download counts are temporarily unavailable.';
+  }
+}
+loadDownloadCounts();

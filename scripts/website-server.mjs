@@ -4,6 +4,7 @@ import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import { resolve, extname, sep } from 'node:path';
 import { buildWebsiteDemo } from './build-website-demo.mjs';
+import { GET as downloadStats } from '../api/download-stats.js';
 await buildWebsiteDemo();
 const websiteRoot = resolve(import.meta.dirname, '../website');
 const downloadRoot = resolve(import.meta.dirname, '../artifacts/website-downloads');
@@ -13,6 +14,11 @@ const server = createServer(async (req, res) => {
   if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405, { Allow: 'GET, HEAD' }); return res.end(); }
   try {
     const path = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+    if (path === '/api/download-stats') {
+      const response = await downloadStats();
+      res.writeHead(response.status, Object.fromEntries(response.headers));
+      return res.end(req.method === 'HEAD' ? undefined : await response.text());
+    }
     if (path.includes('\\') || path.includes('\0')) throw new Error('Invalid path');
     let file;
     if (path.startsWith('/downloads/')) {
