@@ -266,10 +266,15 @@ details[open]>summary>span{transform:rotate(45deg)}
 .creator-credit{display:flex;align-items:center;gap:9px;font-size:10px;color:var(--muted);white-space:nowrap}
 .creator-name{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--fg)}
 .creator-name:hover{color:var(--mint)}
-.desk-scene{margin-block:0 72px}
-.desk-scene img{width:100%;height:auto;border-radius:18px;border:1px solid var(--line)}
+.desk-scene{margin-block:0 96px}
+.desk-scene-media{overflow:hidden;border-radius:18px;border:1px solid var(--line);transform:translate3d(0,var(--scene-frame-y,0px),0)}
+.desk-scene img{width:100%;height:auto;transform-origin:80% 50%}
+.desk-scene[data-parallax] img{transform:translate3d(0,var(--scene-image-y,0px),0) scale(1.18)}
+.desk-scene[data-parallax-visible] :is(.desk-scene-media,img,figcaption){will-change:transform}
 .desk-scene figcaption{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:16px;font-size:12px;color:var(--muted)}
+.desk-scene figcaption{transform:translate3d(0,var(--scene-frame-y,0px),0)}
 .desk-scene .scene-disclosure{font-size:10px;opacity:.8}
+@media(prefers-reduced-motion:reduce){.desk-scene :is(.desk-scene-media,img,figcaption){transform:none!important;will-change:auto!important}}
 .noscript{padding:20px;text-align:center}
 .noscript a{text-decoration:underline}
 /* Dark appearance belongs to the website; the embedded phone keeps its own theme. */

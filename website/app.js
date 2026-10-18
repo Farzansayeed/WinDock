@@ -104,6 +104,50 @@ function configureFeatureStory() {
 featureDesktop.addEventListener('change', configureFeatureStory);
 configureFeatureStory();
 
+// Read the stationary figure so its moving children never feed back into the scroll position.
+const deskScene = document.querySelector('.desk-scene');
+const deskMedia = deskScene.querySelector('.desk-scene-media');
+const stillScene = matchMedia('(prefers-reduced-motion: reduce)');
+let sceneFrame = 0;
+let sceneVisible = false;
+function updateDeskScene() {
+  sceneFrame = 0;
+  if (stillScene.matches || !sceneVisible || document.hidden) return;
+  const box = deskScene.getBoundingClientRect();
+  const height = deskMedia.clientHeight;
+  const progress = Math.max(-1, Math.min(1, (innerHeight - height - 2 * box.top) / (innerHeight + height)));
+  deskScene.style.setProperty('--scene-frame-y', `${(progress * Math.min(72, box.width * .065)).toFixed(2)}px`);
+  // The 18% zoom leaves 9% overscan on each edge; travel stays inside that margin.
+  deskScene.style.setProperty('--scene-image-y', `${(progress * height * .08).toFixed(2)}px`);
+}
+function scheduleDeskScene() {
+  if (!sceneFrame && sceneVisible && !stillScene.matches && !document.hidden) sceneFrame = requestAnimationFrame(updateDeskScene);
+}
+function configureDeskScene() {
+  cancelAnimationFrame(sceneFrame);
+  sceneFrame = 0;
+  deskScene.toggleAttribute('data-parallax', !stillScene.matches);
+  deskScene.toggleAttribute('data-parallax-visible', sceneVisible && !stillScene.matches);
+  window.removeEventListener('scroll', scheduleDeskScene);
+  window.removeEventListener('resize', scheduleDeskScene);
+  deskScene.style.removeProperty('--scene-frame-y');
+  deskScene.style.removeProperty('--scene-image-y');
+  if (!stillScene.matches) {
+    window.addEventListener('scroll', scheduleDeskScene, { passive: true });
+    window.addEventListener('resize', scheduleDeskScene);
+    scheduleDeskScene();
+  }
+}
+new IntersectionObserver(([entry]) => {
+  sceneVisible = entry.isIntersecting;
+  deskScene.toggleAttribute('data-parallax-visible', sceneVisible && !stillScene.matches);
+  scheduleDeskScene();
+}, { rootMargin: '200px 0px' }).observe(deskScene);
+new ResizeObserver(scheduleDeskScene).observe(deskMedia);
+document.addEventListener('visibilitychange', scheduleDeskScene);
+stillScene.addEventListener('change', configureDeskScene);
+configureDeskScene();
+
 const frame = document.querySelector('#demo-frame');
 const previewScreen = document.querySelector('#demo-screen');
 function fitPreview() {

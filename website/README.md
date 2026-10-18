@@ -16,6 +16,12 @@ It follows the device's color scheme until a visitor chooses a theme, then remem
 that choice in `windock-website-theme` local storage. `theme.js` applies it before
 the stylesheet loads to avoid a bright flash. The phone demo keeps its own appearance.
 
+The desk illustration has two layers of scroll parallax: the rounded frame and
+caption travel together by up to 72 pixels in each direction, while the photo
+drifts inside the frame with enough zoom to cover its edges. Travel scales down
+on smaller screens. Passive scroll events schedule one animation frame at a time
+only near the viewport; reduced-motion preferences restore the full, still image.
+
 ## Local review
 
 From the repository root:
