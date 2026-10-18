@@ -5,7 +5,7 @@
   const system = matchMedia('(prefers-color-scheme: dark)');
   const valid = value => value === 'light' || value === 'dark';
   let preference = null;
-  let toggle;
+  let toggles = [];
   try {
     const saved = localStorage.getItem(key);
     if (valid(saved)) preference = saved;
@@ -15,7 +15,7 @@
     const theme = preference || (system.matches ? 'dark' : 'light');
     root.dataset.theme = theme;
     document.querySelector('meta[name="theme-color"]').content = theme === 'dark' ? '#101613' : '#f6f5f0';
-    if (toggle) {
+    for (const toggle of toggles) {
       toggle.setAttribute('aria-pressed', String(theme === 'dark'));
       toggle.title = `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`;
     }
@@ -28,13 +28,13 @@
     applyTheme();
   });
   document.addEventListener('DOMContentLoaded', () => {
-    toggle = document.querySelector('#theme-toggle');
-    toggle.hidden = false;
+    toggles = [...document.querySelectorAll('[data-theme-toggle]')];
+    toggles.forEach(toggle => { toggle.hidden = false; });
     applyTheme();
-    toggle.addEventListener('click', () => {
+    toggles.forEach(toggle => toggle.addEventListener('click', () => {
       preference = root.dataset.theme === 'dark' ? 'light' : 'dark';
       try { localStorage.setItem(key, preference); } catch { /* Keep this visit's choice. */ }
       applyTheme();
-    });
+    }));
   });
 })();
