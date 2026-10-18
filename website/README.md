@@ -71,6 +71,13 @@ revalidates. Failures show unavailable counts without affecting download links.
 The local preview server exposes the same endpoint. Other static hosts need an
 equivalent endpoint for the counters; downloads still work without it.
 
+The counter panel emphasizes the total alongside Windows and Android rows. Its
+1.4-second count-up starts once when the panel enters view; the animated total
+always equals the two platform counts. Screen readers receive the final values
+immediately. Reduced motion shows the final values without animation, and hiding
+the page completes any running animation. Loading and unavailable counts remain
+dashes rather than displaying a misleading zero.
+
 Production: [windock.vercel.app](https://windock.vercel.app). The Vercel project
 is connected to this repository, so pushes to `main` deploy the website.
 

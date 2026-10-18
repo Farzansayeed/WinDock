@@ -193,10 +193,61 @@ async function loadDownloads() {
 }
 loadDownloads();
 
+function animateDownloadCounts(section, counts) {
+  const format = new Intl.NumberFormat('en-US');
+  const values = Object.fromEntries(['total', 'windows', 'android'].map(key => {
+    section.querySelector(`[data-count-readable="${key}"]`).textContent = format.format(counts[key]);
+    return [key, section.querySelector(`#count-${key}`)];
+  }));
+  const motion = matchMedia('(prefers-reduced-motion: reduce)');
+  let frame = 0, observer, started = false;
+  function render(progress) {
+    const windows = Math.round(counts.windows * progress);
+    const android = Math.round(counts.android * progress);
+    for (const [key, value] of Object.entries({ windows, android, total: windows + android })) values[key].textContent = format.format(value);
+  }
+  function finish() {
+    cancelAnimationFrame(frame);
+    observer?.disconnect();
+    render(1);
+    section.dataset.countState = 'complete';
+    motion.removeEventListener('change', onMotionChange);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+  }
+  function onMotionChange() { if (motion.matches) finish(); }
+  function onVisibilityChange() { if (document.hidden && started) finish(); }
+  function start() {
+    if (started) return;
+    started = true;
+    observer?.disconnect();
+    if (motion.matches || document.hidden) return finish();
+    section.dataset.countState = 'counting';
+    const startTime = performance.now();
+    render(0);
+    function tick(now) {
+      const progress = Math.min(1, (now - startTime) / 1400);
+      render(1 - (1 - progress) ** 3);
+      if (progress < 1) frame = requestAnimationFrame(tick);
+      else finish();
+    }
+    frame = requestAnimationFrame(tick);
+  }
+  if (motion.matches) return finish();
+  section.dataset.countState = 'ready';
+  motion.addEventListener('change', onMotionChange);
+  document.addEventListener('visibilitychange', onVisibilityChange);
+  if (!('IntersectionObserver' in window)) return finish();
+  observer = new IntersectionObserver(entries => {
+    if (entries.some(entry => entry.isIntersecting && entry.intersectionRatio >= 0.25)) start();
+  }, { threshold: 0.25 });
+  observer.observe(section);
+}
+
 async function loadDownloadCounts() {
   const section = document.querySelector('#download-stats');
   const status = document.querySelector('#download-count-status');
   section.hidden = false;
+  section.dataset.countState = 'loading';
   try {
     const response = await fetch('/api/download-stats', { signal: AbortSignal.timeout(10000) });
     if (!response.ok) throw new Error('Counts unavailable');
@@ -205,11 +256,12 @@ async function loadDownloadCounts() {
         || counts.total !== counts.windows + counts.android || !Number.isFinite(Date.parse(counts.updatedAt))) {
       throw new Error('Invalid counts');
     }
-    const format = new Intl.NumberFormat('en-US');
-    for (const key of ['total', 'windows', 'android']) document.querySelector(`#count-${key}`).textContent = format.format(counts[key]);
     status.textContent = 'Refreshed hourly';
     status.title = `Last checked: ${new Date(counts.updatedAt).toLocaleString()}`;
+    animateDownloadCounts(section, counts);
   } catch {
+    section.dataset.countState = 'unavailable';
+    section.querySelectorAll('[data-count-readable]').forEach(label => { label.textContent = 'Unavailable'; });
     status.textContent = 'Download counts are temporarily unavailable.';
   }
 }
