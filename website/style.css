@@ -99,7 +99,7 @@ h1>span{color:#426652}
 .demo-typing button{border:0;background:transparent;color:var(--mint);font:inherit;padding:8px}
 .history{display:grid;grid-template-columns:1.05fr 1fr;gap:95px;scroll-margin-top:100px;border-top:1px solid var(--line)}
 .release-entry{padding:0 0 36px;margin-bottom:36px;border-bottom:1px solid var(--line)}
-.release-entry:last-child{margin-bottom:0}
+.release-entry:last-of-type{margin-bottom:0}
 .release-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}
 .release-heading time{font:10px var(--mono);color:var(--muted)}
 .release-entry h3{font-size:28px;letter-spacing:-1px;margin:0 0 10px}
@@ -107,6 +107,9 @@ h1>span{color:#426652}
 .release-entry ul{padding-left:18px;color:var(--muted);font-size:13px;line-height:1.8;margin:0 0 22px}
 .release-entry li+li{margin-top:7px}
 .release-entry>a{font-size:12px;color:var(--mint)}
+.history-feedback{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 6px;margin-top:14px;color:var(--muted);font-size:12px;line-height:1.8}
+.history-feedback a{display:inline-flex;align-items:center;gap:5px;min-height:44px;text-decoration:underline;text-underline-offset:3px}
+.history-feedback a:hover{color:var(--mint)}
 .demo-note{font-size:10px;line-height:1.7;color:var(--muted);max-width:790px;margin:12px auto 0;text-align:left}
 .segmented{background:#e5e8df;border-color:#323b2210}
 .segmented button{color:#65725e}
