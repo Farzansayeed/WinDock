@@ -20,7 +20,7 @@ svg{display:block;width:22px;height:22px;flex-shrink:0}
 .nav-shell{position:relative;width:min(780px,100%);height:52px;margin-inline:0;padding:3px;border:1px solid #ffffffb3;border-radius:26px;background:#ffffffd9;backdrop-filter:blur(24px);box-shadow:0 8px 30px #162a3214,inset 0 1px #fff;pointer-events:auto;overflow:hidden}
 .header[data-nav-ready] .nav-shell{width:52px;border-radius:18px;transition:width .68s cubic-bezier(.22,1,.36,1),border-radius .68s cubic-bezier(.22,1,.36,1),box-shadow .3s}
 .nav-toggle{display:grid;place-items:center;width:44px;height:44px;padding:0;background:transparent;border-radius:14px}
-.nav-toggle:focus-visible{outline-offset:-2px}
+.header :is(button,.nav-download):focus-visible{outline-offset:-2px}
 .nav-toggle .brand-icon{width:32px;height:32px;background:transparent;border-radius:0;box-shadow:none;transition:transform .65s cubic-bezier(.22,1,.36,1)}
 .nav-toggle .brand-icon img{width:32px;height:32px}
 .nav-content{position:absolute;inset:3px 6px 3px 62px;display:flex;align-items:center;justify-content:space-between;gap:22px;white-space:nowrap}
