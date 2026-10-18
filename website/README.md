@@ -12,7 +12,8 @@ five pixels in each direction, without rotation; reduced-motion and touch device
 interactive phone preview retains the actual application's dark interface.
 
 The navigation briefly introduces its links on desktop, then folds into a bright
-WinDock logo button in either theme. Hover or keyboard focus expands it again;
+52-pixel WinDock logo button at the left edge of the page content in either theme.
+Hover or keyboard focus expands it to the right;
 Escape closes it. Touch devices open a sliding curtain with section links,
 downloads, GitHub, and issue reporting. The menu contains keyboard focus, locks
 the background, and restores the previous scroll position when dismissed.
