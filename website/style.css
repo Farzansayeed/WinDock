@@ -107,6 +107,8 @@ h1>span{color:#426652}
 .release-entry ul{padding-left:18px;color:var(--muted);font-size:13px;line-height:1.8;margin:0 0 22px}
 .release-entry li+li{margin-top:7px}
 .release-entry>a{font-size:12px;color:var(--mint)}
+.contributor-link{color:var(--mint);font-weight:700;text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.contributor-link:hover{text-decoration-thickness:2px}
 .history-feedback{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 6px;margin-top:14px;color:var(--muted);font-size:12px;line-height:1.8}
 .history-feedback a{display:inline-flex;align-items:center;gap:5px;min-height:44px;text-decoration:underline;text-underline-offset:3px}
 .history-feedback a:hover{color:var(--mint)}
