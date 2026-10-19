@@ -14,6 +14,7 @@
   <link rel="stylesheet" href="./style.css">
   <script type="module" src="./app.js"></script>
   <script type="module" src="./navigation.js"></script>
+  <script type="module" src="./analytics.js"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -156,11 +157,24 @@
       <p>A little screen. A space of your own.</p>
       <div class="footer-links">
         <a href="#history">Version history</a>
+        <button class="privacy-link" id="analytics-preferences" type="button" aria-controls="analytics-notice" aria-expanded="false" hidden>Analytics preferences</button>
         <a class="footer-project" href="https://github.com/aliihsaad/WinDock" target="_blank" rel="noopener noreferrer"><span data-symbol="github"></span>Project on GitHub <span aria-hidden="true">↗</span></a>
         <span class="creator-credit">Made by <a class="creator-name" href="https://github.com/aliihsaad" target="_blank" rel="noopener noreferrer" aria-label="Ali on GitHub"><span data-symbol="github"></span>Ali</a></span>
       </div>
     </div>
   </footer>
+  <section class="analytics-notice" id="analytics-notice" aria-labelledby="analytics-title" hidden>
+    <div class="analytics-heading"><span class="analytics-mark" aria-hidden="true">✳</span><h2 id="analytics-title">A little insight. Your choice.</h2></div>
+    <p>Optional visitor stats help us improve this website. Analytics stays off until you allow it.</p>
+    <details class="analytics-details">
+      <summary>What we collect</summary>
+      <p>Vercel Analytics records page views, referrers, approximate location and browser/device information, without analytics cookies. We remove query strings and fragments from page URLs. Your dock and its data stay private.</p>
+      <p>We remember your choice in this browser. Change it anytime using <strong>Analytics preferences</strong> in the footer. <a href="https://vercel.com/docs/analytics/privacy-policy" target="_blank" rel="noopener noreferrer">Vercel’s privacy details ↗</a></p>
+    </details>
+    <p class="analytics-choice" id="analytics-choice" hidden></p>
+    <div class="analytics-actions"><button type="button" id="analytics-decline">No thanks</button><button type="button" id="analytics-allow">Allow analytics</button></div>
+  </section>
+  <p class="count-readable" id="analytics-feedback" role="status"></p>
   <noscript><p class="noscript">JavaScript enables the interactive preview and download availability. See the <a href="./downloads.json">download manifest</a> for available files.</p></noscript>
 </body>
 </html>

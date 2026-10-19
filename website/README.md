@@ -1,6 +1,6 @@
 # WinDock website
 
-A static landing page with a small public download-count endpoint. No framework, build dependency, tracking,
+A static landing page with a small public download-count endpoint. No framework, build dependency,
 external fonts, or connection to the user's live dock. Bundled app icons are
 extracted from Windows; those product marks belong to their owners. The desk
 scene is an AI-generated product illustration, shared with the root README.
@@ -31,6 +31,28 @@ on smaller screens. Passive scroll events schedule one animation frame at a time
 only near the viewport; reduced-motion preferences restore the full, still image.
 
 ## Local review
+
+### Optional website analytics
+
+`analytics.js` asks before loading Vercel Web Analytics. **Allow analytics** and
+**No thanks** have equal prominence; neither is preselected. The versioned choice
+is saved in `windock-website-analytics-v1` local storage. **Analytics preferences**
+in the footer reopens the notice, including a way to turn analytics off. Storage
+failures leave the choice in memory for the current page only.
+
+Only `windock.vercel.app` loads the Vercel script; local and preview deployments
+show the consent UI without collecting visits. The official `beforeSend` hook
+checks consent for every event, stops future events immediately on withdrawal
+(including changes in another tab), and strips query strings and fragments from
+page URLs. The script is injected at most once after a successful load. Vercel
+Web Analytics must be enabled on the project before deployment. No package or
+framework integration is required for this static site.
+
+The notice links to Vercel's privacy information and explains the collected
+website statistics. This is separate from GitHub's public download counts and
+does not instrument the Windows app, Android app, or embedded dock demo.
+
+### Run the preview
 
 From the repository root:
 
