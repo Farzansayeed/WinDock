@@ -260,7 +260,7 @@ async function activate(button) {
     } else if (action === "launch") {
       const running = state.running.find((item) => item.id === key);
       const title = state.tiles.find((item) => item.id === key)?.label || "App";
-      await api(running ? "/api/apps/focus" : "/api/apps/launch", { method: "POST", body: JSON.stringify(running ? { pid: running.pid } : { id: key }) });
+      await api(running ? "/api/apps/focus" : "/api/apps/launch", { method: "POST", body: JSON.stringify(running ? { pid: running.pid, id: running.id } : { id: key }) });
       notify((running ? "Brought forward: " : "Opened: ") + title);
     }
   } catch (error) { report(error); }

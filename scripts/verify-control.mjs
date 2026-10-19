@@ -101,9 +101,21 @@ releases[1].resolve({ stdout: "" });
 t.equal((await nextBrightness).ok, true, "the next brightness request can succeed");
 
 const linCalls = [];
+let busPlayers = {
+  "org.mpris.MediaPlayer2.spotify": "Paused",
+  "org.mpris.MediaPlayer2.chromium.instance42": "Playing",
+};
 const lin = createLinuxProvider({
+  backlightDir: "/nonexistent/windock-backlight",
   exec: async (file, args) => {
     linCalls.push({ file, args });
+    if (file === "busctl" && args.includes("ListNames")) {
+      return { stdout: JSON.stringify({ type: "as", data: [[":1.5", "org.freedesktop.Notifications", ...Object.keys(busPlayers)]] }) };
+    }
+    if (file === "busctl" && args.includes("get-property")) {
+      const status = busPlayers[args[3]];
+      return { stdout: `${JSON.stringify({ type: "s", data: status })}\n${JSON.stringify({ type: "a{sv}", data: {} })}\n` };
+    }
     return { stdout: "" };
   },
 });
@@ -111,7 +123,29 @@ await lin.control("volume-set", 40);
 t.equal(linCalls[0].file, "pactl", "linux volume-set uses pactl");
 t.deepEqual(linCalls[0].args, ["set-sink-volume", "@DEFAULT_SINK@", "40%"], "linux volume argv is exact");
 await lin.control("media-play-pause", null);
-t.equal(linCalls[1].file, "playerctl", "linux media control uses playerctl");
+t.deepEqual(linCalls.at(-1), {
+  file: "busctl",
+  args: ["--user", "call", "org.mpris.MediaPlayer2.chromium.instance42", "/org/mpris/MediaPlayer2", "org.mpris.MediaPlayer2.Player", "PlayPause"],
+}, "linux media control reaches the playing MPRIS player over D-Bus");
+busPlayers = {};
+const silent = await lin.control("media-next", null).catch((error) => error);
+t.equal(silent.status, 409, "media control without a player explains instead of failing as internal");
+await lin.control("brightness-set", 35);
+t.deepEqual(linCalls.at(-1), { file: "ddcutil", args: ["setvcp", "10", "35"] },
+  "without a backlight device brightness goes to the monitor over DDC/CI");
+const backlit = createLinuxProvider({
+  backlightDir: new URL(".", import.meta.url).pathname,
+  exec: async (file, args) => { linCalls.push({ file, args }); return { stdout: "" }; },
+});
+await backlit.control("brightness-set", 60);
+t.deepEqual(linCalls.at(-1), { file: "brightnessctl", args: ["set", "60%"] }, "a laptop panel uses brightnessctl");
+const brokenDdc = createLinuxProvider({
+  backlightDir: "/nonexistent/windock-backlight",
+  exec: async () => { throw new Error("private i2c diagnostics"); },
+});
+const ddcError = await brokenDdc.control("brightness-set", 20).catch((error) => error);
+t.equal(ddcError.status, 503, "a monitor without DDC/CI gets a useful status");
+t.ok(!ddcError.message.includes("private"), "DDC diagnostics stay out of the response");
 await t.rejects(() => lin.control("nope", null), "linux control rejects an unknown verb");
 
 t.done("control verification passed");

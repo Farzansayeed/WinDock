@@ -10,7 +10,8 @@ or session cookie. Ordinary browsers do not perform UDP discovery.
 The Node host owns pinned tiles and publishes updates over WebSocket. Platform
 providers implement a common contract. The Windows provider invokes a C# helper
 for app identity, launch, focus, icons, media, brightness, and screen capture.
-A Linux provider supports development without the Windows native layer.
+The Linux provider targets Hyprland and uses standard desktop tools instead of
+a native helper (see [Linux host](#linux-host)).
 
 | Path | Responsibility |
 | --- | --- |
@@ -58,6 +59,39 @@ Loopback is trusted by default for the tray; `trustLoopback: false` in
 `createApp` also requires pairing on the host. Discovery never includes the PIN.
 The four-digit PIN and LAN HTTP design are intended for a trusted local network;
 do not expose the host port directly to the internet.
+
+## Linux host
+
+`npm start` on Linux serves the same dock. The provider is built for Hyprland;
+on other desktops the running-app list is empty and focus/close are refused.
+
+| Feature | Uses |
+| --- | --- |
+| App inventory | `.desktop` entries in `$XDG_DATA_HOME` and `$XDG_DATA_DIRS` (user entries win) |
+| Launch | `gtk-launch <desktop id>`, detached; parsed `Exec=` argv if gtk-launch is missing |
+| Running apps, focus, close | `hyprctl clients -j`; guarded `hyprctl eval` (Lua configs) or `hyprctl dispatch` |
+| Media and now playing | MPRIS over the session D-Bus with `busctl` |
+| Volume | `pactl` (PulseAudio or PipeWire) |
+| Brightness | `brightnessctl` with a backlight device, otherwise `ddcutil` (DDC/CI) |
+| Power | `loginctl lock-session`, `systemctl suspend/poweroff/reboot` |
+| App icons | Icon theme from `gsettings`, its `Inherits` chain, `hicolor`, then `pixmaps` |
+| Screenshots | `grim` on the focused monitor → `Pictures/WinDock` |
+| Recordings | `wf-recorder`, else `gpu-screen-recorder` → `Videos/WinDock` |
+
+- Apps launch detached with no inherited pipes, so they outlive the request
+  and the host.
+- Hyprland applies focus and close to the active window when a selector
+  matches nothing. With a Lua config the existence check and the dispatch run
+  in one `hyprctl eval`; with a hyprlang config the window list is re-read
+  immediately before dispatching.
+- Windows map to dock apps by `StartupWMClass`, desktop id, Chromium web-app
+  host (`chrome-<host>__…` classes) or binary name. Web apps share the browser
+  pid, so focus/close requests carry the app id as well as the pid.
+- Theme SVG icons are served with a sandboxing Content-Security-Policy.
+- Capture refuses to start while the display sleeps (screencopy produces no
+  frames). `gpu-screen-recorder` startup errors count as a failed start because
+  its KMS capture can run without producing frames.
+- Not yet on Linux: touchpad, phone keyboard, signatures, tray, packaging.
 
 ## Windows configuration and checks
 
