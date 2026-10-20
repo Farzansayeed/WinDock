@@ -1,4 +1,5 @@
 /** G5: every declared control verb maps to a native action on every provider. */
+import { fileURLToPath } from "node:url";
 import { createChecker } from "./lib/assert.mjs";
 import {
   CONTROL_VERBS,
@@ -134,7 +135,7 @@ await lin.control("brightness-set", 35);
 t.deepEqual(linCalls.at(-1), { file: "ddcutil", args: ["setvcp", "10", "35"] },
   "without a backlight device brightness goes to the monitor over DDC/CI");
 const backlit = createLinuxProvider({
-  backlightDir: new URL(".", import.meta.url).pathname,
+  backlightDir: fileURLToPath(new URL(".", import.meta.url)),
   exec: async (file, args) => { linCalls.push({ file, args }); return { stdout: "" }; },
 });
 await backlit.control("brightness-set", 60);

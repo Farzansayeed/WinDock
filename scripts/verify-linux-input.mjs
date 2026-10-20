@@ -146,5 +146,8 @@ if (existsSync(INPUT_HELPER)) {
   process.stdout.write(`native helper not built (${INPUT_HELPER}); run npm run build:linux to test it here\n`);
 }
 
+t.ok(/WinDock's output on the PC/.test(input.startupError) && !/update/i.test(input.startupError),
+  "a Linux startup failure points at the logged cause (udev rule, uinput, build), not at updating");
+
 await rm(tmp, { recursive: true, force: true });
 t.done("linux-input verification passed");

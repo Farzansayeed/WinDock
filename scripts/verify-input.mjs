@@ -185,4 +185,22 @@ try {
 } finally {
   await bare.inputHub.close(); await bare.hub.close(); bare.server.closeAllConnections(); await new Promise((resolve) => bare.server.close(resolve));
 }
+
+// A helper that exits before `ready` is reported with the platform's own advice.
+t.ok(/Update WinDock/.test(createWindowsInput({ helperPath: "H.exe" }).startupError), "Windows startup failures still suggest updating the host");
+const stalled = await createApp({ provider: { id: "test", displayName: "Test", listRunningApps: async () => [], input: {
+  startupError: "platform specific startup advice",
+  open() { const ready = Promise.reject(new Error("helper exited")); ready.catch(() => {}); return { ready, send() {}, close: async () => {} }; },
+  saveSignature: async () => ({}), dispose() {},
+} }, pin: "4321", trustLoopback: false, configStore: { load: async () => ({ tiles: [] }) } });
+await new Promise((resolve) => stalled.server.listen(0, "127.0.0.1", resolve));
+const stalledBase = `http://127.0.0.1:${stalled.server.address().port}`;
+try {
+  const auth = await fetch(stalledBase + "/api/auth", { method: "POST", headers: { origin: stalledBase, "content-type": "application/json" }, body: JSON.stringify({ pin: "4321" }) });
+  const ws = new WebSocket(stalledBase.replace("http:", "ws:") + "/input", { headers: { cookie: auth.headers.get("set-cookie").split(";")[0], origin: stalledBase } });
+  const reply = JSON.parse((await once(ws, "message"))[0].toString()); ws.close();
+  t.deepEqual(reply, { type: "error", error: "platform specific startup advice" }, "the phone gets the platform's startup advice");
+} finally {
+  await stalled.inputHub.close(); await stalled.hub.close(); stalled.server.closeAllConnections(); await new Promise((resolve) => stalled.server.close(resolve));
+}
 t.done("input verification passed");

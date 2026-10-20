@@ -32,6 +32,19 @@ const chromium = parseDesktop("[Desktop Entry]\nName=Chromium\nExec=/usr/bin/chr
 const whatsapp = parseDesktop("[Desktop Entry]\nName=WhatsApp\nExec=omarchy-launch-webapp https://web.whatsapp.com/\n", "whatsapp");
 const apps = [claude, chromium, whatsapp];
 
+// A user entry overrides the system one with the same id, including to hide it.
+const userApps = join(tmp, "user-apps"), systemApps = join(tmp, "system-apps");
+await mkdir(userApps, { recursive: true });
+await mkdir(systemApps, { recursive: true });
+const entry = (name, extra = "") => `[Desktop Entry]\nType=Application\nName=${name}\nExec=/usr/bin/${name.toLowerCase()}\n${extra}`;
+await writeFile(join(userApps, "hidden.desktop"), entry("Hidden", "Hidden=true\n"));
+await writeFile(join(userApps, "nodisplay.desktop"), entry("NoDisplay", "NoDisplay=true\n"));
+await writeFile(join(userApps, "renamed.desktop"), entry("Renamed by user"));
+for (const name of ["Hidden", "NoDisplay", "Renamed", "Visible"]) await writeFile(join(systemApps, `${name.toLowerCase()}.desktop`), entry(name));
+const overridden = await createLinuxProvider({ exec: async () => ({ stdout: "" }), appDirs: [userApps, systemApps], icons: async () => null, capture: {}, input: null }).listInstalledApps();
+t.deepEqual(overridden.map((app) => app.name), ["Renamed by user", "Visible"],
+  "user Hidden=true and NoDisplay=true entries hide the system app; other user entries replace it");
+
 // ---- Hyprland window list ----
 t.equal(webAppHost("chrome-web.whatsapp.com__-Default"), "web.whatsapp.com", "Chromium app window classes yield their host");
 t.equal(webAppHost("chromium"), "", "an ordinary class has no web host");

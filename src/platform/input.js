@@ -16,6 +16,7 @@ export function createHelperInput({
   unavailableMessage,
   diagnostic = null,
   missingHint = "",
+  startupError = "Your PC could not start the touchpad. Update WinDock there and try again.",
 }) {
   const unavailable = () => Object.assign(new Error(unavailableMessage), { status: 503 });
   const workers = new Set();
@@ -36,6 +37,8 @@ export function createHelperInput({
     return child;
   }
   return {
+    /** What the phone shows when the helper exits before `ready`; the cause differs per platform. */
+    startupError,
     open(onFailure = () => {}, onEvent = () => {}) {
       const child = start(["touchpad"]);
       let closed = false, ended = false, buffer = "", closing;

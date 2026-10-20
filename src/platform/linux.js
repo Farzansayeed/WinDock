@@ -107,6 +107,9 @@ export function parseDesktop(body, id, desktopId = id) {
 
 async function readInventory(appDirs) {
   const byId = new Map();
+  // The first readable file claims its id even when it is not launchable: a
+  // user entry with Hidden=true or NoDisplay=true hides the system app.
+  const claimed = new Set();
   for (const dir of appDirs) {
     let entries;
     try {
@@ -118,13 +121,16 @@ async function readInventory(appDirs) {
       if (!entry.endsWith(".desktop")) continue;
       const desktopId = entry.replace(/\.desktop$/, "");
       const id = desktopId.toLowerCase();
-      if (byId.has(id)) continue;
+      if (claimed.has(id)) continue;
+      let body;
       try {
-        const app = parseDesktop(await readFile(join(dir, entry), "utf8"), id, desktopId);
-        if (app) byId.set(id, app);
+        body = await readFile(join(dir, entry), "utf8");
       } catch {
-        /* unreadable entry is simply not an app */
+        continue; // unreadable entry is simply not an app
       }
+      claimed.add(id);
+      const app = parseDesktop(body, id, desktopId);
+      if (app) byId.set(id, app);
     }
   }
   return [...byId.values()].sort((a, b) =>

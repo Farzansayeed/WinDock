@@ -64,7 +64,10 @@ function paintCapture() {
   $("capture-record-icon").innerHTML = icon(active ? "stop" : "record");
   $("capture-record-label").textContent = active ? (waiting ? (captureState.phase === "starting" ? "Starting…" : "Saving recording…") : "Stop recording") : "Start recording";
   $("capture-record-detail").textContent = active ? captureTime() + " · Video only" : "MP4 · Video only";
-  $("capture-status").textContent = !online ? "PC disconnected. Any recording continues on the PC. Reconnect or stop from its tray menu." : captureState.error || (!captureState.available ? "Screen capture needs an updated WinDock on your PC." : active ? "Recording your main monitor. Stop to save the video." : "Screenshots → Pictures / WinDock. Recordings → Videos / WinDock.");
+  // Only the Windows host has a tray to stop a recording from.
+  const tray = state.platform === "windows";
+  $("capture-tray-tip").hidden = !tray;
+  $("capture-status").textContent = !online ? "PC disconnected. Any recording continues on the PC. " + (tray ? "Reconnect or stop from its tray menu." : "Reconnect to stop it, or it stops after 60 minutes.") : captureState.error || (!captureState.available ? "Screen capture needs an updated WinDock on your PC." : active ? "Recording your main monitor. Stop to save the video." : "Screenshots → Pictures / WinDock. Recordings → Videos / WinDock.");
   const last = captureState.lastCapture;
   $("capture-file").hidden = !last;
   $("capture-file").textContent = last ? "Last saved: " + last.path : "";

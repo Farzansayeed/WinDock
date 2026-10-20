@@ -31,5 +31,7 @@ export function createLinuxInput({
     unavailableMessage: "The PC could not save the signature. Check Pictures / WinDock / Signatures and try again.",
     diagnostic: log,
     missingHint: "Build it with: npm run build:linux",
+    // The helper logs the exact cause (udev rule, uinput module, unbuilt helper) on the PC.
+    startupError: "Your PC could not start the touchpad. WinDock's output on the PC shows why.",
   });
 }
