@@ -25,6 +25,30 @@ test -x /usr/lib/windock/windock-input
 test -f /usr/share/applications/windock.desktop
 grep -q 'TAG+="uaccess"' /usr/lib/udev/rules.d/70-windock-uinput.rules
 grep -qx uinput /usr/lib/modules-load.d/windock.conf
+# Text ships with LF line endings, and only the two binaries and the launcher are executable.
+if grep -rlI $'\r' /usr/bin/windock /usr/lib/windock/server.js /usr/lib/windock/src \
+    /usr/lib/udev/rules.d/70-windock-uinput.rules /usr/share/applications/windock.desktop; then
+    echo "Installed text files contain CR line endings" >&2
+    exit 1
+fi
+test "$(stat -c %a /usr/lib/windock/server.js)" = 644
+if [[ -n "$(find /usr/lib/windock/src /usr/lib/windock/public -type f -perm /111)" ]]; then
+    echo "Installed data files are executable" >&2
+    exit 1
+fi
+if [[ "$kind" = arch ]]; then
+    # .MTREE lets pacman verify every installed file; any terminal can host the window.
+    # pacman -Qkk exits 0 even for altered files, so read its summary instead.
+    pacman -Qkk windock | tee /tmp/windock-mtree.log
+    if ! grep -q ' 0 altered files' /tmp/windock-mtree.log; then
+        echo "pacman could not verify every installed file against .MTREE" >&2
+        exit 1
+    fi
+    if pacman -Qi windock | grep -q '^Depends On.*xterm'; then
+        echo "xterm must stay optional" >&2
+        exit 1
+    fi
+fi
 runuser -u tester -- /usr/lib/windock/node /tests/test-linux-installed.mjs
 settings_hash=$(sha256sum /home/tester/.config/windock/config.json | cut -d ' ' -f1)
 # Give a copy a higher package revision to exercise an actual upgrade.

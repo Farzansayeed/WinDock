@@ -5,7 +5,7 @@ COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=node /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/npm
 COPY --from=node /usr/local/LICENSE /opt/node-LICENSE
 RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
-    && apt-get update && apt-get install -y --no-install-recommends zstd desktop-file-utils shellcheck \
+    && apt-get update && apt-get install -y --no-install-recommends zstd libarchive-tools desktop-file-utils shellcheck \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
 COPY package.json package-lock.json ./
