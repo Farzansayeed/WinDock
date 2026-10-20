@@ -20,8 +20,8 @@ screen — all over your local network, with no account or cloud service.
 
 | Platform | Availability |
 | --- | --- |
-| Windows 10 / 11, x64 | [Download the installer](https://github.com/aliihsaad/WinDock/releases/download/v0.2.2-preview.1/WinDockSetup.exe) |
-| Android 7.0+ | [Download the APK](https://github.com/aliihsaad/WinDock/releases/download/v0.2.2-preview.1/WinDock-android-debug.apk) |
+| Windows 10 / 11, x64 | [Download the installer](https://github.com/aliihsaad/WinDock/releases/download/v0.2.3-preview.1/WinDockSetup.exe) |
+| Android 7.0+ | [Download the APK](https://github.com/aliihsaad/WinDock/releases/download/v0.2.3-preview.1/WinDock-android-debug.apk) |
 | Linux (Hyprland), x86-64 | [Arch/Omarchy and Debian/Ubuntu installer preview](#linux-preview) |
 | iOS | Coming soon — [native companion development & GitHub builds](ios/README.md); no installable public release yet. |
 
@@ -38,13 +38,14 @@ screen — all over your local network, with no account or cloud service.
 The Windows installer is currently unsigned and the Android APK is debug-signed.
 Windows may show a publisher warning. An APK signed with a different key can
 require uninstalling an earlier Android build before installing the new one.
-See the [release notes and checksums](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.2-preview.1).
+See the [release notes and checksums](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.3-preview.1).
 
 **Updating:** quit WinDock from the Windows tray and run the latest installer;
 your dock settings are kept. Reconnect the phone app to load the updated dock.
-Update the Android app too. Previous public APKs use a different signing key:
-uninstall the old Android app, install the new APK, and pair again. Phone-only
-preferences reset on uninstall; your PC dock is preserved.
+This release needs **no new Android APK** if you already have 0.2.2-preview.1.
+Public APKs older than 0.2.2 use a different signing key: uninstall the old
+Android app, install the new APK, and pair again. Phone-only preferences reset
+on uninstall; your PC dock is preserved.
 Starting with 0.2.1-preview.1, the Windows tray offers **Check for updates** and
 checks at startup. A newer release shows a notification and download menu item;
 installation remains manual. Older installations need one manual upgrade first.
@@ -66,7 +67,7 @@ to it, with the touchpad, phone keyboard and signatures.
 ### Install a package (no build tools needed)
 
 Download the package for your **x86-64** machine from the
-[Linux installer preview](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.2-linux.1).
+[current release](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.3-preview.1).
 The Node.js runtime and compiled input helper are included. Your package
 manager installs the desktop dependencies and configures touchpad permissions.
 
@@ -218,15 +219,17 @@ touchpad, typing, signature and capture actions; it never connects to your PC.
 
 ## Current release
 
-[0.2.2-preview.1](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.2-preview.1)
-adds USB tethering, clear Wi-Fi/USB connection choices, and phone-only idle dimming
-and screen rest. The Android APK is version code 4. See the
+[0.2.3-preview.1](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.3-preview.1)
+adds the Hyprland Linux host with prebuilt Arch/Omarchy and Debian/Ubuntu packages,
+and platform-neutral dock messages. The Android APK is unchanged from
+0.2.2-preview.1 (version code 4). See the
 [version history](CHANGELOG.md) for changes and upgrade notes.
 
-The Windows installer and Android APK are built from this source.
+The Windows installer, Android APK and Linux packages are built from this source.
 [GitHub Actions](https://github.com/aliihsaad/WinDock/actions/workflows/build-release.yml)
-checks Windows installation and Android builds. Published Android APKs use the
-local preview signing key; disposable CI debug APKs may use a different key.
+checks Windows installation, Android builds and Linux package installs.
+Published Android APKs use the local preview signing key; disposable CI debug
+APKs may use a different key.
 
 The initial [iPhone companion](ios/README.md) connects by PC address and reuses the
 same dock and PIN pairing. A separate [macOS build workflow](https://github.com/aliihsaad/WinDock/actions/workflows/build-ios.yml)
