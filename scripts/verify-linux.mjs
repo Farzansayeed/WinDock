@@ -235,7 +235,10 @@ const capture = createLinuxCapture({
     execCalls.push([file, ...args]);
     if (file === "hyprctl") return { stdout: JSON.stringify([{ name: "HDMI-A-1", focused: false }, { name: "DP-2", focused: true }]) };
     if (file === "grim") {
-      if (!grimWorks) throw Object.assign(new Error("private compositor diagnostics"), { stderr: "secret" });
+      if (!grimWorks) {
+        await writeFile(args.at(-1), PNG(0).subarray(0, 3)); // a partial PNG, as a failing grim can leave
+        throw Object.assign(new Error("private compositor diagnostics"), { stderr: "secret" });
+      }
       await writeFile(args.at(-1), PNG(2));
     }
     return { stdout: "" };
@@ -255,6 +258,7 @@ grimWorks = false;
 const shotError = await capture.screenshot().catch((error) => error);
 t.equal(shotError.status, 503, "a failed screenshot is a service error");
 t.ok(!shotError.message.includes("private") && !capture.status().error.includes("secret"), "compositor diagnostics stay private");
+t.equal((await readdir(join(tmp, "PICTURES", "WinDock"))).length, 1, "a failed screenshot leaves no partial file behind");
 
 const first = capture.start(), duplicate = capture.start();
 t.equal(capture.status().phase, "starting", "starting is visible");

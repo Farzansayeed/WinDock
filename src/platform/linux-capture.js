@@ -108,6 +108,7 @@ export function createLinuxCapture({
         error = null;
         return status();
       }
+      await unlink(file.path).catch(() => {}); // grim may leave an empty or partial PNG
     }
     error = CAPTURE_ERROR;
     throw failure(CAPTURE_ERROR);
