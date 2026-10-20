@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- Add Linux x86-64 installer previews for Arch/Omarchy and Debian/Ubuntu
+  running Hyprland. Packages include Node.js and the native input helper,
+  an application-menu launcher, and automatic touchpad permission setup.
+  Users no longer need to compile the app. Launch, install, upgrade and removal
+  are checked in disposable Linux containers; desktop hardware testing is separate.
+  The launcher shows the pairing PIN in a terminal window that must stay open.
+
 - Add the first native iPhone companion source: remembered PC address, PIN pairing
   through the shared landscape dock, and reconnect/change-PC controls.
 - Add a GitHub macOS workflow for simulator tests, screenshots and unsigned iOS

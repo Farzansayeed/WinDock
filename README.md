@@ -22,7 +22,7 @@ screen — all over your local network, with no account or cloud service.
 | --- | --- |
 | Windows 10 / 11, x64 | [Download the installer](https://github.com/aliihsaad/WinDock/releases/download/v0.2.2-preview.1/WinDockSetup.exe) |
 | Android 7.0+ | [Download the APK](https://github.com/aliihsaad/WinDock/releases/download/v0.2.2-preview.1/WinDock-android-debug.apk) |
-| Linux (Hyprland) | Preview — [run from source](#linux-preview); no packaged release yet. |
+| Linux (Hyprland), x86-64 | [Arch/Omarchy and Debian/Ubuntu installer preview](#linux-preview) |
 | iOS | Coming soon — [native companion development & GitHub builds](ios/README.md); no installable public release yet. |
 
 1. **Install on your PC.** Open `WinDockSetup.exe`. It includes the required
@@ -61,9 +61,45 @@ timeout may add a delay before the display turns off.
 ## Linux preview
 
 WinDock also runs on Linux, built for Hyprland. The same Android app connects
-to it, with the touchpad, phone keyboard and signatures. There is no package,
-tray icon or autostart yet: run the host from this source and keep its terminal
-open while you use it.
+to it, with the touchpad, phone keyboard and signatures.
+
+### Install a package (no build tools needed)
+
+Download the package for your **x86-64** machine from the
+[Linux installer preview](https://github.com/aliihsaad/WinDock/releases/tag/v0.2.2-linux.1).
+The Node.js runtime and compiled input helper are included. Your package
+manager installs the desktop dependencies and configures touchpad permissions.
+
+**Omarchy / Arch Linux:** open a terminal in your Downloads folder and run:
+
+```bash
+sudo pacman -U ./WinDock-linux-x64.pkg.tar.zst
+```
+
+**Debian 12+ / Ubuntu 24.04+ with Hyprland:**
+
+```bash
+sudo apt install ./WinDock-linux-amd64.deb
+```
+
+Open **WinDock** from your application menu, or run `windock` without sudo.
+Keep its connection window open: it shows the address and pairing PIN.
+On Android, choose **Connect by Wi-Fi → Find my PC**, then enter that PIN.
+No terminal commands to compile the app, Node.js installation or Rust SDK are needed.
+
+This is a **Hyprland preview**, not GNOME/KDE support. It requires glibc 2.36+
+and a terminal emulator. There is no tray icon, autostart or automatic updater yet.
+For recording and brightness, install the optional `wf-recorder`, `brightnessctl`
+and/or `ddcutil` packages. If touchpad access is unavailable immediately after
+installation, log out and back in (or reboot) so your session picks up the udev rule.
+
+To update, close WinDock, install the newer package with the same command, then
+reopen it. Your dock configuration and captures are kept. To remove it, use
+`sudo pacman -R windock` on Arch or `sudo apt remove windock` on Debian/Ubuntu.
+Only the package files are removed; personal settings and captures remain.
+Checksums are published as `SHA256SUMS-linux.txt` alongside the packages.
+
+### Build from source (for development)
 
 You need **Node.js 20.11+**, **Rust** to build the input helper, and these
 tools: `gtk-launch`, `grim`, `wl-copy`, `wtype`, `pactl`, `brightnessctl`
@@ -227,8 +263,8 @@ npm start
 On Windows, `build:windows` prepares the helper used by `npm start` and creates
 `artifacts\WinDock-win-x64\WinDockTray.exe`, which can run on its own. The host
 prints its address and pairing PIN. On Linux, follow the
-[Linux preview](#linux-preview) steps instead. Windows and Android are the
-downloadable app platforms.
+[Linux preview](#linux-preview) steps instead. Windows, Android and the Linux
+installer preview are available to download.
 
 | Command | Purpose |
 | --- | --- |
@@ -236,6 +272,7 @@ downloadable app platforms.
 | `npm run build:windows` | Package the Windows helper, tray, Node host, and web UI |
 | `npm run test:windows` | Run native Windows smoke checks |
 | `npm run build:linux` | Build the Linux input helper (`windock-input`, needs Rust) |
+| `npm run package:linux` | Build `.deb` and Arch installers with bundled runtime (needs Docker) |
 | `npm run test:linux` | Run the Linux input helper's unit tests |
 | `npm run build:installer` | Create `artifacts/installer/WinDockSetup.exe` |
 | `npm run test:installer` | Check installation, launch, upgrade, and uninstall in isolation |
