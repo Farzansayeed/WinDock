@@ -22,6 +22,7 @@ screen — all over your local network, with no account or cloud service.
 | --- | --- |
 | Windows 10 / 11, x64 | [Download the installer](https://github.com/aliihsaad/WinDock/releases/download/v0.2.2-preview.1/WinDockSetup.exe) |
 | Android 7.0+ | [Download the APK](https://github.com/aliihsaad/WinDock/releases/download/v0.2.2-preview.1/WinDock-android-debug.apk) |
+| Linux (Hyprland) | Preview — [run from source](#linux-preview); no packaged release yet. |
 | iOS | Coming soon — [native companion development & GitHub builds](ios/README.md); no installable public release yet. |
 
 1. **Install on your PC.** Open `WinDockSetup.exe`. It includes the required
@@ -56,6 +57,58 @@ reopening the app without a USB link returns to Wi-Fi. No USB debugging is neede
 Set idle dimming and screen rest under **This phone** on the connection screen
 or **Appearance → This phone · screen & sleep** in the dock. Android’s screen
 timeout may add a delay before the display turns off.
+
+## Linux preview
+
+WinDock also runs on Linux, built for Hyprland. The same Android app connects
+to it, with the touchpad, phone keyboard and signatures. There is no package,
+tray icon or autostart yet: run the host from this source and keep its terminal
+open while you use it.
+
+You need **Node.js 20.11+**, **Rust** to build the input helper, and these
+tools: `gtk-launch`, `grim`, `wl-copy`, `wtype`, `pactl`, `brightnessctl`
+(laptop panels) or `ddcutil` (external monitors), and `wf-recorder` or
+`gpu-screen-recorder` for recordings. On Arch-based systems:
+
+```bash
+sudo pacman -S --needed nodejs npm rust gtk3 grim wl-clipboard wtype libpulse brightnessctl ddcutil wf-recorder
+```
+
+Then, in this repository:
+
+```bash
+npm ci
+npm run build:linux
+sudo install -m 644 native/linux/70-windock-uinput.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+sudo modprobe uinput && sudo udevadm trigger --name-match=/dev/uinput
+npm start
+```
+
+The udev rule lets your desktop session create the touchpad's virtual pointer
+without joining the `input` group, which would let every program read your
+keyboards. `npm start` prints the address and pairing PIN; connect the phone as
+in step 3 above. If a firewall is active, allow TCP 8620 (the dock) and UDP
+41234 (discovery) from your local network, for example with ufw:
+
+```bash
+sudo ufw allow from 192.168.1.0/24 to any port 8620 proto tcp
+sudo ufw allow from 192.168.1.0/24 to any port 41234 proto udp
+```
+
+On Linux:
+
+- Running-app badges, bringing an app forward and closing it need Hyprland.
+  Screenshots, recordings and typed text use wlroots protocols, so they also
+  work on compositors such as Sway, but not yet on GNOME or KDE.
+- Screenshots and recordings need the screen awake.
+- **Lock** uses Omarchy's lock screen when present, otherwise logind, which
+  GNOME, KDE and hypridle respond to.
+- The phone keyboard opens automatically in apps that report text focus
+  (GTK apps); elsewhere, use the keyboard button.
+
+See the [developer reference](docs/DEVELOPMENT.md#linux-host) for how each
+feature works.
 
 ## What you can do
 
@@ -119,6 +172,8 @@ The Windows companion serves the dock interface on your local network. The
 Android app discovers the PC and displays that interface in a landscape
 WebView. A Node.js host handles PIN pairing and live updates; a C# helper
 performs the Windows actions. You can also open the tray address in a browser.
+On Linux, the same host uses standard desktop tools and a small Rust helper
+for the touchpad, keyboard and signatures.
 
 Your app actions and captures stay on your PC. WinDock is designed for a trusted
 home or office network, not internet remote access. Sessions reset when the PC
@@ -171,14 +226,17 @@ npm start
 
 On Windows, `build:windows` prepares the helper used by `npm start` and creates
 `artifacts\WinDock-win-x64\WinDockTray.exe`, which can run on its own. The host
-prints its address and pairing PIN. A Linux provider is included for development;
-Windows and Android are the downloadable app platforms.
+prints its address and pairing PIN. On Linux, follow the
+[Linux preview](#linux-preview) steps instead. Windows and Android are the
+downloadable app platforms.
 
 | Command | Purpose |
 | --- | --- |
-| `npm test` | Run the 16 platform-independent verification scripts |
+| `npm test` | Run the 21 platform-independent verification scripts |
 | `npm run build:windows` | Package the Windows helper, tray, Node host, and web UI |
 | `npm run test:windows` | Run native Windows smoke checks |
+| `npm run build:linux` | Build the Linux input helper (`windock-input`, needs Rust) |
+| `npm run test:linux` | Run the Linux input helper's unit tests |
 | `npm run build:installer` | Create `artifacts/installer/WinDockSetup.exe` |
 | `npm run test:installer` | Check installation, launch, upgrade, and uninstall in isolation |
 | `npm run build:android` | Build, test, lint, and verify the Android APK |
@@ -196,7 +254,7 @@ More detail: [developer reference](docs/DEVELOPMENT.md) ·
 ## Contributing
 
 [Open an issue](https://github.com/aliihsaad/WinDock/issues) with your Windows
-version, phone model, reproduction steps, and expected behavior. For changes,
+version or Linux desktop, phone model, reproduction steps, and expected behavior. For changes,
 keep the platform-provider boundary intact and run `npm test`; native or Android
 changes also need the relevant platform checks. Never include pairing PINs,
 session cookies, or your personal dock configuration in a report or commit.

@@ -11,10 +11,12 @@
     "build:website-demo": "node scripts/build-website-demo.mjs",
     "package:downloads": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/package-downloads.ps1",
     "build:windows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-windows.ps1",
+    "build:linux": "cargo build --release --locked --manifest-path native/linux/Cargo.toml && install -m 755 native/linux/target/release/windock-input windock-input",
     "build:installer": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-installer.ps1",
     "test:installer": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/test-installer.ps1",
     "build:android": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/build-android.ps1",
     "test:windows": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/test-windows.ps1",
+    "test:linux": "cargo test --locked --manifest-path native/linux/Cargo.toml",
     "test": "node test/run.mjs",
     "gates": "node scripts/gates.mjs --status"
   },
