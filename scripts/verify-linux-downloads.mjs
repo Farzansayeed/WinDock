@@ -48,6 +48,11 @@ t.ok(await addLinuxDownloads({ manifestPath, linuxDir, base: "./downloads" }), "
 t.equal(JSON.parse(await readFile(manifestPath, "utf8")).linux.arch.url, `./downloads/${LINUX_PACKAGES.arch}`, "local URLs point at the preview server");
 t.deepEqual((await readdir(siteDir)).sort(), ["downloads.json", ...Object.values(LINUX_PACKAGES), LINUX_SUMS].sort(),
   "local previews copy the packages beside the manifest");
+const blockedSite = join(tmp, "blocked-site"), blockedManifest = join(blockedSite, "downloads.json");
+await mkdir(join(blockedSite, LINUX_PACKAGES.debian), { recursive: true }); // a directory where a package must go
+await writeFile(blockedManifest, JSON.stringify(original));
+await t.rejects(() => addLinuxDownloads({ manifestPath: blockedManifest, linuxDir, base: "./downloads" }), "a failed preview copy is reported");
+t.equal(JSON.parse(await readFile(blockedManifest, "utf8")).linux, undefined, "a failed copy leaves no links to missing files");
 
 const empty = join(tmp, "no-linux");
 await mkdir(empty);

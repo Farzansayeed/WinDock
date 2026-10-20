@@ -68,13 +68,14 @@ export async function addLinuxDownloads({ manifestPath, linuxDir, base, require 
   }
   const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
   manifest.linux = await linuxDownloads({ linuxDir, base });
-  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   if (base === "./downloads") {
-    // The local preview server serves files from beside the manifest.
+    // The local preview server serves files from beside the manifest. Copy them
+    // first, so a failed copy never leaves links to files that are not there.
     for (const name of [...Object.values(LINUX_PACKAGES), LINUX_SUMS]) {
       await copyFile(join(linuxDir, name), join(manifestPath, "..", name));
     }
   }
+  await writeFile(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
   return true;
 }
 
