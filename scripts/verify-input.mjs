@@ -163,4 +163,26 @@ try {
 } finally {
   await app.inputHub.close(); await app.hub.close(); app.server.closeAllConnections(); await new Promise((resolve) => app.server.close(resolve));
 }
+
+// A host without input or capture explains itself without naming an OS it may not be.
+const bare = await createApp({ provider: { id: "test", displayName: "Test", listRunningApps: async () => [] }, pin: "4321", trustLoopback: false, configStore: { load: async () => ({ tiles: [] }) } });
+await new Promise((resolve) => bare.server.listen(0, "127.0.0.1", resolve));
+const bareBase = `http://127.0.0.1:${bare.server.address().port}`;
+try {
+  const auth = await fetch(bareBase + "/api/auth", { method: "POST", headers: { origin: bareBase, "content-type": "application/json" }, body: JSON.stringify({ pin: "4321" }) });
+  const headers = { cookie: auth.headers.get("set-cookie").split(";")[0], origin: bareBase, "content-type": "application/json" };
+  const post = async (path, body) => { const res = await fetch(bareBase + path, { method: "POST", headers, body: JSON.stringify(body) }); return { code: res.status, error: (await res.json()).error }; };
+  t.equal((await (await fetch(bareBase + "/api/input", { headers })).json()).available, false, "a host without input reports it unavailable");
+  const ws = new WebSocket(bareBase.replace("http:", "ws:") + "/input", { headers });
+  const touchpad = JSON.parse((await once(ws, "message"))[0].toString()); ws.close();
+  t.equal(touchpad.type, "error", "a host without input refuses the touchpad");
+  const signatureReply = await post("/api/signature", signature), captureReply = await post("/api/capture/screenshot", {});
+  t.equal(signatureReply.code, 501, "a host without input refuses signatures as unsupported");
+  t.equal(captureReply.code, 501, "a host without capture refuses captures as unsupported");
+  for (const [name, error] of [["touchpad", touchpad.error], ["signature", signatureReply.error], ["capture", captureReply.error]]) {
+    t.ok(/WinDock on your PC/.test(error) && !/windows/i.test(error), `missing ${name} support names no operating system`);
+  }
+} finally {
+  await bare.inputHub.close(); await bare.hub.close(); bare.server.closeAllConnections(); await new Promise((resolve) => bare.server.close(resolve));
+}
 t.done("input verification passed");

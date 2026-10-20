@@ -301,7 +301,7 @@ export async function createApp({
       if (Object.hasOwn(captureActions, path) && req.method === "POST") {
         const body = await readJsonBody(req);
         if (Object.keys(body).length) return sendJson(res, 400, { error: "capture actions take no options" });
-        if (!provider.capture) return sendJson(res, 501, { error: "Screen capture is available on Windows." });
+        if (!provider.capture) return sendJson(res, 501, { error: "Screen capture needs an updated WinDock on your PC." });
         return sendJson(res, 200, await provider.capture[captureActions[path]]());
       }
 
@@ -314,7 +314,7 @@ export async function createApp({
       }
       if (["/api/signature", "/api/signature/insert"].includes(path) && req.method === "POST") {
         const signature = validateSignature(await readJsonBody(req));
-        if (!provider.input) return sendJson(res, 501, { error: "Saving signatures needs the updated Windows host." });
+        if (!provider.input) return sendJson(res, 501, { error: "Saving signatures needs an updated WinDock on your PC." });
         return sendJson(res, 200, await provider.input.saveSignature(signature, path.endsWith("/insert")));
       }
 

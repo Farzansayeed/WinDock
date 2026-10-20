@@ -106,7 +106,7 @@ export function createInputPad({ api, notify, WebSocketClass = WebSocket, storag
       keyboard.configure(status.keyboard);
       demo = Boolean(status.demo);
       if (demo) setStatus("Demo only · No cursor control or files saved.");
-      if (!available) { connecting = false; setStatus("Touchpad and signature saving need the updated Windows host."); paint(); return; }
+      if (!available) { connecting = false; setStatus("Touchpad and signature saving need an updated WinDock on your PC."); paint(); return; }
       if (mode !== "touchpad") connecting = false;
       paint();
       if (mode !== "touchpad") return;
