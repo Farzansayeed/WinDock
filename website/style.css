@@ -538,3 +538,15 @@ h2{font-size:43px;letter-spacing:-2.3px}
 :is(.text-link,.steps a,.stats-source,.checksum-link,.release-entry>a,.footer .brand,.footer-links>a,.footer-project,.privacy-link,.header nav>a,.nav-home,.creator-name)::after{content:"";position:absolute;left:50%;top:50%;width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%)}
 :is(.demo-shortcuts button,.segmented button){display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px}
 :is(.install-details,.faq-list) summary{min-height:44px}}
+/* Release history: the latest release stays open; earlier ones collapse to one row
+   each, so the section grows by a line per release instead of a screen. */
+.release-entry>p:not(.release-title){font-size:13px;line-height:1.8;color:var(--muted);margin:0 0 18px}
+.release-earlier-label{display:block;margin:36px 0 2px}
+.release-entry.release-earlier{padding:0;margin:0}
+.release-earlier summary{padding:20px 0}
+.release-earlier h3{margin:0;font-size:20px;letter-spacing:0;line-height:1.3}
+.release-version{letter-spacing:-.6px}
+.release-date{margin-left:10px;font:11px var(--mono);color:var(--muted);white-space:nowrap}
+.release-summary{display:block;margin-top:6px;font-size:14px;font-weight:400;color:var(--muted)}
+.release-earlier[open]{padding-bottom:26px}
+@media(min-width:801px) and (min-height:700px){.history{align-items:start}.history>.section-intro{position:sticky;top:128px}}
