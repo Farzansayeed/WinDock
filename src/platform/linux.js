@@ -14,6 +14,7 @@ import { basename, join } from "node:path";
 import { validateControl } from "./contract.js";
 import { createIconLookup } from "./linux-icons.js";
 import { createLinuxCapture } from "./linux-capture.js";
+import { createLinuxInput } from "./linux-input.js";
 import { dataDirs } from "./xdg.js";
 
 const APP_DIRS = dataDirs().map((dir) => join(dir, "applications"));
@@ -373,6 +374,7 @@ export function createLinuxProvider({
   backlightDir = "/sys/class/backlight",
   icons,
   capture,
+  input,
   now = Date.now,
 } = {}) {
   if (typeof exec !== "function") throw new Error("linux provider requires exec");
@@ -479,6 +481,7 @@ export function createLinuxProvider({
     id: "linux",
     displayName: "Linux",
     capture: capture ?? createLinuxCapture({ exec, spawn }),
+    input: input === undefined ? createLinuxInput({ spawn }) : input,
 
     async appIcon(app) {
       return iconLookup(app?.icon);
