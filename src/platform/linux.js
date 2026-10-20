@@ -350,7 +350,7 @@ export const LINUX_CONTROL = Object.freeze({
   "media-previous": mpris("Previous"),
   "media-stop": mpris("Stop"),
   "brightness-set": (v) => ["brightnessctl", ["set", `${v}%`]],
-  lock: () => ["loginctl", ["lock-session"]],
+  lock: (_v, session) => ["loginctl", session ? ["lock-session", session] : ["lock-session"]],
   sleep: () => ["systemctl", ["suspend"]],
   shutdown: () => ["systemctl", ["poweroff"]],
   restart: () => ["systemctl", ["reboot"]],
@@ -363,6 +363,13 @@ export function ddcBrightnessArgv(value) {
   return ["ddcutil", ["setvcp", "10", String(value)]];
 }
 
+/**
+ * Desktops whose shell ignores logind's Lock signal ship their own command.
+ * Omarchy's shell draws its own lock screen and only answers this one.
+ */
+export const LOCK_COMMANDS = Object.freeze([["omarchy-system-lock", []]]);
+const SESSION_ID = /^[A-Za-z0-9]{1,32}$/;
+
 const failure = (message, status) => Object.assign(new Error(message), { status });
 
 export function createLinuxProvider({
@@ -374,6 +381,7 @@ export function createLinuxProvider({
   icons,
   capture,
   now = Date.now,
+  uid = process.getuid?.() ?? 0,
 } = {}) {
   if (typeof exec !== "function") throw new Error("linux provider requires exec");
 
@@ -473,6 +481,32 @@ export function createLinuxProvider({
     }
   }
 
+  /**
+   * Lock the session on screen. logind's Lock reaches GNOME, KDE and hypridle,
+   * but a bare `loginctl lock-session` locks the caller's own session, and a
+   * host started from a terminal app or a service sits in the user manager's
+   * session, which has no screen. Name the user's graphical session instead.
+   */
+  async function lockScreen() {
+    for (const [file, args] of LOCK_COMMANDS) {
+      try {
+        await exec(file, args);
+        return;
+      } catch (error) {
+        if (error?.code !== "ENOENT") throw error;
+      }
+    }
+    let session = "";
+    try {
+      const { stdout } = await exec("loginctl", ["show-user", String(uid), "--property=Display", "--value"]);
+      session = String(stdout).trim();
+    } catch {
+      /* no graphical session recorded: fall back to the caller's own */
+    }
+    const [file, args] = LINUX_CONTROL.lock(null, SESSION_ID.test(session) ? session : "");
+    await exec(file, args);
+  }
+
   const iconLookup = icons ?? createIconLookup({ exec });
 
   return {
@@ -533,6 +567,10 @@ export function createLinuxProvider({
       if (!build) throw new Error(`unmapped control verb: ${checked.verb}`);
       if (checked.verb === "brightness-set") {
         await setBrightness(checked.value);
+        return { ok: true, verb: checked.verb };
+      }
+      if (checked.verb === "lock") {
+        await lockScreen();
         return { ok: true, verb: checked.verb };
       }
       let player = null;

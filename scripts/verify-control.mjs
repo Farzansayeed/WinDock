@@ -146,6 +146,28 @@ const brokenDdc = createLinuxProvider({
 const ddcError = await brokenDdc.control("brightness-set", 20).catch((error) => error);
 t.equal(ddcError.status, 503, "a monitor without DDC/CI gets a useful status");
 t.ok(!ddcError.message.includes("private"), "DDC diagnostics stay out of the response");
+await lin.control("lock", null);
+t.deepEqual(linCalls.at(-1), { file: "omarchy-system-lock", args: [] }, "a desktop's own lock command is used when it exists");
+const lockCalls = [];
+const lockWith = (display) => createLinuxProvider({
+  uid: 1000,
+  exec: async (file, args) => {
+    lockCalls.push([file, ...args]);
+    if (file === "omarchy-system-lock") throw Object.assign(new Error("spawn omarchy-system-lock ENOENT"), { code: "ENOENT" });
+    if (args[0] === "show-user") return { stdout: display };
+    return { stdout: "" };
+  },
+});
+await lockWith("1\n").control("lock", null);
+t.deepEqual(lockCalls.slice(1), [
+  ["loginctl", "show-user", "1000", "--property=Display", "--value"],
+  ["loginctl", "lock-session", "1"],
+], "otherwise logind locks the user's graphical session, not the host's own");
+lockCalls.length = 0;
+await lockWith("1; reboot\n").control("lock", null);
+t.deepEqual(lockCalls.at(-1), ["loginctl", "lock-session"], "an unexpected session id is never passed on");
+const brokenLock = createLinuxProvider({ exec: async () => { throw Object.assign(new Error("lock client crashed"), { code: 1 }); } });
+await t.rejects(() => brokenLock.control("lock", null), "a failing desktop lock command is reported, not skipped");
 await t.rejects(() => lin.control("nope", null), "linux control rejects an unknown verb");
 
 t.done("control verification passed");
