@@ -88,7 +88,8 @@ optdepend = xterm: fallback terminal for the connection window
 EOF
 install -m 644 native/linux/packaging/arch.install "$root/.INSTALL"
 # pacman checks installed files against .MTREE (pacman -Qkk); makepkg writes it
-# the same way. Ownership is recorded as root to match the archive.
+# the same way. Ownership is recorded as root to match the archive. It is written
+# outside the payload, then moved in, so it never lists itself.
 (
     cd "$root"
     export LC_COLLATE=C
@@ -96,9 +97,10 @@ install -m 644 native/linux/packaging/arch.install "$root/.INSTALL"
     printf '%s\0' ** \
         | LANG=C bsdtar -cnf - --format=mtree --uid 0 --gid 0 \
             --options='!all,use-set,type,uid,gid,mode,time,size,md5,sha256,link' \
-            --null --files-from - --exclude .MTREE \
-        | gzip -c -f -n > .MTREE
+            --null --files-from - \
+        | gzip -c -f -n > "$stage/mtree.gz"
 )
+mv "$stage/mtree.gz" "$root/.MTREE"
 tar --sort=name --owner=0 --group=0 --numeric-owner --zstd -cf artifacts/linux/WinDock-linux-x64.pkg.tar.zst -C "$root" .PKGINFO .MTREE .INSTALL usr
 node -p "JSON.stringify({version: '$version-$release', node: process.version, arch: process.arch, platform: process.platform}, null, 2)" > artifacts/linux/build-info.json
 (cd artifacts/linux && sha256sum WinDock-linux-amd64.deb WinDock-linux-x64.pkg.tar.zst > SHA256SUMS-linux.txt)
