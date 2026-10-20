@@ -2,7 +2,7 @@
 
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 
 /** XDG data dirs, user first: a user entry overrides a system one with the same id. */
 export function dataDirs(env = process.env, home = homedir()) {
@@ -25,7 +25,7 @@ export async function userDir(kind, { env = process.env, home = homedir() } = {}
     const body = await readFile(join(config, "user-dirs.dirs"), "utf8");
     const value = body.match(new RegExp(`^XDG_${kind}_DIR="(.*)"\\s*$`, "m"))?.[1];
     const path = value?.replace(/^\$HOME(?=\/|$)/, home).replace(/\/+$/, "");
-    if (path && path.startsWith("/") && path !== home) return path;
+    if (path && isAbsolute(path) && path !== home) return path;
   } catch {
     /* no user-dirs.dirs: use the default */
   }

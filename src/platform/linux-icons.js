@@ -10,7 +10,7 @@
 
 import { readdir, readFile, stat } from "node:fs/promises";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 import { dataDirs as defaultDataDirs } from "./xdg.js";
 
 export const ICON_MAX_BYTES = 512 * 1024;
@@ -170,7 +170,7 @@ export function createIconLookup({
   return async function lookup(icon) {
     const value = typeof icon === "string" ? icon.trim() : "";
     if (!value) return null;
-    if (value.startsWith("/")) return /\.(png|svg)$/i.test(value) ? readIcon(value) : null;
+    if (isAbsolute(value)) return /\.(png|svg)$/i.test(value) ? readIcon(value) : null;
     // Icon= should be a bare name, but "app.png" is common in the wild.
     const name = value.replace(/\.(png|svg|xpm)$/i, "");
     if (!NAME.test(name)) return null;
