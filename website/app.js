@@ -201,6 +201,25 @@ function checkedUrl(value) {
   return url.href;
 }
 function fileSize(bytes) { return `${(bytes / 1024 / 1024).toFixed(1)} MB`; }
+/** Swap the Linux source preview for the prebuilt installers listed in the manifest. */
+function showLinuxInstallers(linux) {
+  const files = { arch: linux?.arch, deb: linux?.debian };
+  for (const file of Object.values(files)) {
+    if (!file || !Number.isSafeInteger(file.bytes) || file.bytes <= 0 || !/^[a-f0-9]{64}$/i.test(file.sha256)) throw new Error('Incomplete Linux downloads');
+  }
+  const hrefs = { arch: checkedUrl(files.arch.url), deb: checkedUrl(files.deb.url) };
+  const checksums = checkedUrl(linux.checksums);
+  for (const [kind, href] of Object.entries(hrefs)) {
+    const link = document.querySelector(`#download-linux-${kind}`);
+    link.href = href; link.removeAttribute('aria-disabled');
+    if (new URL(href).origin === location.origin) link.setAttribute('download', '');
+  }
+  document.querySelector('#linux-meta').textContent = `Hyprland · x86-64 · Arch ${fileSize(files.arch.bytes)} · Debian ${fileSize(files.deb.bytes)}`;
+  const checksumLink = document.querySelector('#linux-checksum-link');
+  checksumLink.href = checksums; checksumLink.hidden = false;
+  for (const id of ['linux-source-actions', 'linux-source-steps']) document.getElementById(id).hidden = true;
+  for (const id of ['linux-installer-actions', 'linux-installer-steps']) document.getElementById(id).hidden = false;
+}
 async function loadDownloads() {
   try {
     const response = await fetch('./downloads.json', { cache: 'no-store' });
@@ -230,7 +249,14 @@ async function loadDownloads() {
     }
     const checksumLink = document.querySelector('#checksum-link');
     checksumLink.href = checksums; checksumLink.hidden = false;
-    downloadStatus.textContent = 'Windows and Android downloads are ready. Linux is available as a source preview.';
+    let linuxReady = false;
+    if (manifest.linux) {
+      // A bad Linux entry must not cost Windows and Android their downloads.
+      try { showLinuxInstallers(manifest.linux); linuxReady = true; } catch { /* keep the source preview */ }
+    }
+    downloadStatus.textContent = linuxReady
+      ? 'Windows, Android and Linux downloads are ready.'
+      : 'Windows and Android downloads are ready. Linux is available as a source preview.';
   } catch {
     downloadStatus.textContent = 'Windows and Android downloads are temporarily unavailable. Linux source and its setup guide are still available.';
     document.querySelectorAll('#download-windows > span:first-child, #download-android > span:first-child').forEach(el => { el.textContent = 'Download unavailable'; });
@@ -240,7 +266,7 @@ loadDownloads();
 
 function animateDownloadCounts(section, counts) {
   const format = new Intl.NumberFormat('en-US');
-  const values = Object.fromEntries(['total', 'windows', 'android'].map(key => {
+  const values = Object.fromEntries(['total', 'windows', 'android', 'linux'].map(key => {
     section.querySelector(`[data-count-readable="${key}"]`).textContent = format.format(counts[key]);
     return [key, section.querySelector(`#count-${key}`)];
   }));
@@ -249,7 +275,8 @@ function animateDownloadCounts(section, counts) {
   function render(progress) {
     const windows = Math.round(counts.windows * progress);
     const android = Math.round(counts.android * progress);
-    for (const [key, value] of Object.entries({ windows, android, total: windows + android })) values[key].textContent = format.format(value);
+    const linux = Math.round(counts.linux * progress);
+    for (const [key, value] of Object.entries({ windows, android, linux, total: windows + android + linux })) values[key].textContent = format.format(value);
   }
   function finish() {
     cancelAnimationFrame(frame);
@@ -297,8 +324,8 @@ async function loadDownloadCounts() {
     const response = await fetch('/api/download-stats', { signal: AbortSignal.timeout(10000) });
     if (!response.ok) throw new Error('Counts unavailable');
     const counts = await response.json();
-    if (!['total', 'windows', 'android'].every(key => Number.isSafeInteger(counts[key]) && counts[key] >= 0)
-        || counts.total !== counts.windows + counts.android || !Number.isFinite(Date.parse(counts.updatedAt))) {
+    if (!['total', 'windows', 'android', 'linux'].every(key => Number.isSafeInteger(counts[key]) && counts[key] >= 0)
+        || counts.total !== counts.windows + counts.android + counts.linux || !Number.isFinite(Date.parse(counts.updatedAt))) {
       throw new Error('Invalid counts');
     }
     status.textContent = 'Refreshed hourly';
