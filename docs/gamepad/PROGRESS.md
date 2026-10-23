@@ -14,6 +14,8 @@
 
 **Latest confirmed preview release:** [0.2.3-gamepad.2](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.2-gd8663f6) from commit `d8663f6`; GitHub [build #39988429549](https://github.com/Farzansayeed/WinDock/actions/runs/39988429549) and [CI #39988429632](https://github.com/Farzansayeed/WinDock/actions/runs/39988429632) both succeeded. Newer JS state-protocol commit `7caf907d` passed [general CI #39989554258](https://github.com/Farzansayeed/WinDock/actions/runs/39989554258). **The .NET parser commit `d66074ce` passed [multi-platform CI #39989884526](https://github.com/Farzansayeed/WinDock/actions/runs/39989884526); its separately numbered installer/APK prerelease is not confirmed published yet.**
 
+**New fork-only consented updater:** [UPDATES.md](UPDATES.md) describes Windows Preview tray and Android Preview Phone options check → consent → release SHA-256 verified download → OS installer consent; source committed, CI/real-device upgrades pending. Optional stable Android signing from 4 GitHub Actions secrets is implemented but NOT configured by owner. Do not claim fully automatic/silent updates.
+
 **Preview installation and release automation:** [INSTALL-PREVIEW.md](INSTALL-PREVIEW.md). **First successful Gamepad Preview 0.2.3-gamepad.1 published** as a prerelease: [Windows + Android downloads](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.1-gc631611). [Build workflow run 39988106341](https://github.com/Farzansayeed/WinDock/actions/runs/39988106341) and [CI run 39988106319](https://github.com/Farzansayeed/WinDock/actions/runs/39988106319) completed **success** for commit `c631611`; includes Windows installer smoke and Android unit/lint/APK. **No real-phone/manual install performed**; newer versions must be verified separately.
 
 **New research:** [OPEN-SOURCE-RESEARCH.md](OPEN-SOURCE-RESEARCH.md) compares six phone-controller projects, licensing, security flags and architecture integration. **Deferred P8:** [TOUCHPAD-LATENCY-P8.md](TOUCHPAD-LATENCY-P8.md) is queued strictly **after Gamepad v1/P7** and is NOT part of the current work.
@@ -147,13 +149,18 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 
 **Exit gate:** evidence of usable gamepad with measured performance; targets are goals, **not achieved claims**.
 
-## P7 — Packaging / handoff — VERSIONED PREVIEW PRERELEASE PUBLISHED, STABLE GATE OPEN
+## P7 — Packaging / handoff — PREVIEW RELEASES AND UPDATER SOURCE, STABLE GATE OPEN
 
 - [x] Set up automated versioned **preview** Windows installer/Android APK workflow on the fork feature branch (release pending successful CI).
 - [x] Isolate Windows preview installer name, AppId, install path and dock config; disable upstream update notifications in preview builds.
 - [x] Isolate Android preview via applicationId suffix, versionCode and versionName; debug signing limitations documented.
 - [x] Document beginner download/install/update instructions in [INSTALL-PREVIEW.md](INSTALL-PREVIEW.md), including hashes and Git commit identity.
 - [x] Verify successful GitHub Actions Windows installer + Android APK and published prerelease **for commit `c631611`**, with both platform jobs + publish passing (build 0.2.3-gamepad.1; release assets + checksums verified by GitHub API). [Run](https://github.com/Farzansayeed/WinDock/actions/runs/39988106341) / [release](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.1-gc631611).
+- [x] Implement fork-only Windows manual Check for updates, strict release allowlists, verified installer and user-approved setup launch; CI/physical upgrade pending.
+- [x] Implement Android Preview Phone options update check, verified APK download, package identity check and Android system installer handoff; CI/physical upgrade pending.
+- [x] Add optional stable Android keystore via private GitHub Actions secrets; owner has NOT supplied secrets and stable signing not confirmed.
+- [ ] Confirm latest updater Windows/Android CI, lint, test and successful published preview; repair any regressions.
+- [ ] Real PC/Android vN-to-vN+1 upgrade tests, cancel/failure paths, signature compatibility and configuration preservation.
 - [ ] Test installer and APK manually on owner's real PC/phone, validate Wi-Fi/USB pairing, direct mode navigation and update behavior. CI smoke is not physical field testing.
 - [ ] Confirm future successful build provenance, versioned assets, rollback and Android signing stability before stable release.
 - [ ] Package updated Windows host and Android APK with any lawful driver dependency/install UX and recovery.

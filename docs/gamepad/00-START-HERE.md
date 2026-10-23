@@ -45,6 +45,8 @@ Add an optional **Gamepad** input mode to the **existing** WinDock Android compa
 
 **Latest tested installable preview:** [0.2.3-gamepad.5](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.5-g0a81c22) (Android + Windows builds, native JVM tests, automated Windows installer verification and CI passed). Hardware/user acceptance still pending; gamepad is *local-only*, no virtual PC controller.
 
+**New update-system handoff:** [UPDATES.md](UPDATES.md) details Windows/Android Preview update check, consent, SHA-256 verification, Android stable signing requirements, source map, CI gates and next tasks. Read it before touching installs, signing or release automation. Updater is not a silent install or yet physically validated.
+
 ## Read next (in order)
 
 0. **[PROGRESS.md — live checklist, done/next/blocked](PROGRESS.md)**, [P2 — Windows driver feasibility test plan](P2-DRIVER-FEASIBILITY.md), **[AUDIT.md — prioritized risks and go/no-go gates](AUDIT.md)** and **[WORKLOG.md — chronological updates](WORKLOG.md)**

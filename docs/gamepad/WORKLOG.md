@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-23 — Fork preview updater, private Android signing option, full agent handoff
+
+**Code:** Windows Preview tray now has a fork-only Check for updates action; approved installer is size/SHA-256 checked and launched after a second prompt. Android Preview Phone options has a GitHub update check, verified APK download and Android system install consent. Added Windows update parser test fixtures, Android parser tests, debug FileProvider. CI can accept a private stable preview APK signing key via four GitHub secrets; absent secrets fall back to ephemeral debug signing. No silent install.
+
+**Documentation:** Created UPDATES.md with complete workflow, signing instructions, threat boundaries, tests, file map and next developer actions. Updated AGENTS.md, PROGRESS.md, INSTALL-PREVIEW.md and START-HERE.md.
+
+**Tests:** New updater source + signing pipeline need latest GitHub CI/build checks and real PC/Android upgrade validation; no physical upgrade or new stable signing key claimed. Prior preview v5 was verified before this update.
+
+**Next:** Fix any updater CI failures; verify new preview release; owner configures signing secrets on GitHub (never in chat); perform real user-consented upgrades, then continue P2 Windows virtual XInput feasibility and VS1.
+
+---
+
 ## 2026-10-23 — Version 0.2.3-gamepad.5 successfully released (native local input)
 
 **Published:** [WinDock Gamepad Preview 0.2.3-gamepad.5](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.5-g0a81c22), commit `0a81c22`, [GitHub preview run #39991422753](https://github.com/Farzansayeed/WinDock/actions/runs/39991422753) **success** for both Android and Windows jobs, installer smoke and prerelease publication. [General CI #39991422757](https://github.com/Farzansayeed/WinDock/actions/runs/39991422757) passed, as did docs update CI #39992009777. Release contains separate Android APK, Windows preview installer, BUILD-INFO.txt and SHA256SUMS.txt.

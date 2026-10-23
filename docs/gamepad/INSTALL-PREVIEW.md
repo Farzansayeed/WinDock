@@ -10,6 +10,12 @@ The latest version **confirmed published and fully built** at this review was [W
 
 [WinDock Gamepad Preview 0.2.3-gamepad.1](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.1-gc631611) was confirmed published with both installers, build information and checksums following a successful Actions run. **Check the fork Releases page for any newer successful versions before downloading.** This version contains the Gamepad UI preview, not working gamepad support. Later releases cannot be assumed successful until checked.
 
+## Update without manually visiting Downloads
+
+**Windows Preview:** Right-click Preview tray → Check for Gamepad Preview updates; when a newer fork release exists, approve download, SHA-256 verification and installer launch. Windows may prompt about unsigned installer; original WinDock remains separate.
+
+**Android Preview:** Open Phone options → Check for Gamepad Preview updates; approve download; Android's system package installer still requires confirmation. Smooth in-place upgrades need one stable signing key across preview APKs. See [UPDATES.md](UPDATES.md) for key setup and the mandatory test checklist. Source is committed, real-device updater behavior not yet verified.
+
 ## Download from your own GitHub fork
 
 - **Releases:** https://github.com/Farzansayeed/WinDock/releases
