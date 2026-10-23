@@ -2,7 +2,7 @@
 
 **Repo:** https://github.com/Farzansayeed/WinDock
 **Branch:** feature/universal-gamepad
-**Status:** Windows and Android consent-based updater SOURCE is committed. CI compilation and physical upgrades must be verified for the latest commit. No unattended installation.
+**Status:** Windows/Android updater source committed; [multi-platform CI #39994885297](https://github.com/Farzansayeed/WinDock/actions/runs/39994885297) **passed**. Android APK unit/lint job passed from signing-enabled build; final prerelease and physical upgrade results still pending. No unattended installation.
 **Scope:** update checks/downloads require internet to GitHub. Gamepad networking and pairing remain local Wi-Fi/USB tether.
 
 ## End-user steps
@@ -70,7 +70,7 @@ Continuation:
 - [x] Windows fork-only release parser and hash-verifying download/install consent source added; fixture tests added.
 - [x] Android fork-only release check, hash-verifying APK download, FileProvider and Android system installer handoff source added.
 - [x] Optional stable Android private signing integration added in CI; owner secrets not yet configured.
-- [ ] Check GitHub Actions Windows C# update tests, Android Kotlin build/JVM tests/lint and Windows installer smoke on latest updater commit; fix any failures and log result.
+- [x] Multi-platform GitHub CI passed updater code and Windows tests; Android packaging/JVM/lint job of previous signing-enabled commit passed. **Latest complete installable prerelease and physical update gates still open.**
 - [ ] Check actual successful GitHub preview prerelease generated from this updater commit; don't invent a download.
 - [ ] Owner configures the four signing secrets securely on GitHub.
 - [ ] Test real PC update vN→vN+1: prompts, hash, installer starts, old process exits, settings persist.

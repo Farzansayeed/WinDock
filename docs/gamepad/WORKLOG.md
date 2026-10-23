@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-10-23 — Updater CI evidence checked; release/physical verification pending
+
+**Verified:** [CI run #39994885297](https://github.com/Farzansayeed/WinDock/actions/runs/39994885297) succeeded on Windows, Linux and macOS and overall CI for `0deb4b84`, which includes the fork updater docs and Android parser tests; [CI run #39994402883](https://github.com/Farzansayeed/WinDock/actions/runs/39994402883) succeeded for optional signing integration. The Android unit/build/lint job of preview run [39994403042](https://github.com/Farzansayeed/WinDock/actions/runs/39994403042) passed. Windows installer and final prerelease publication for the newest update-enabled workflow were still in progress/pending at time of check.
+
+**Not verified:** No private stable signing key configured, no physical Android update, no end-user Windows installer update, no claim of seamless installation. A previous preview release v7 exists but predates the latest Android update flow.
+
+**Next:** Check preview job and resulting release API/assets, then perform actual signed upgrade verification and restore/update documentation evidence.
+
+---
+
 ## 2026-10-23 — Fork preview updater, private Android signing option, full agent handoff
 
 **Code:** Windows Preview tray now has a fork-only Check for updates action; approved installer is size/SHA-256 checked and launched after a second prompt. Android Preview Phone options has a GitHub update check, verified APK download and Android system install consent. Added Windows update parser test fixtures, Android parser tests, debug FileProvider. CI can accept a private stable preview APK signing key via four GitHub secrets; absent secrets fall back to ephemeral debug signing. No silent install.
