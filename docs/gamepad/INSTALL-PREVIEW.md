@@ -4,7 +4,7 @@
 
 ## Latest confirmed development release (at last documentation review)
 
-The latest version **confirmed published and fully built** at this review was [WinDock Gamepad Preview 0.2.3-gamepad.5](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.5-g0a81c22), which includes the native Android **local-only one-stick+A input preview**. It has Windows installer + Android APK and checksums. Newer code may be compiling; open the [Releases page](https://github.com/Farzansayeed/WinDock/releases) to see if a later numbered version passed and was actually published.
+The latest **permanently signed Android Preview release verified in Actions** was [WinDock Gamepad Preview 0.2.3-gamepad.11](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.11-g175942e), built from commit `175942e`. GitHub Actions confirmed its APK signer matches the owner's permanent Preview keystore, and the release contains SIGNING-INFO.txt. It still only includes a native Android **local-only stick+A preview**, not playable PC gamepad support. It has Windows installer + Android APK and checksums. Newer code may be compiling; open the [Releases page](https://github.com/Farzansayeed/WinDock/releases) to see if a later numbered version passed and was actually published.
 
 ## First published development release
 
@@ -14,7 +14,7 @@ The latest version **confirmed published and fully built** at this review was [W
 
 **Windows Preview:** Right-click Preview tray → Check for Gamepad Preview updates; when a newer fork release exists, approve download, SHA-256 verification and installer launch. Windows may prompt about unsigned installer; original WinDock remains separate.
 
-**Android Preview:** Open Phone options → Check for Gamepad Preview updates; approve download; Android's system package installer still requires confirmation. Smooth in-place upgrades require one stable signing key across preview APKs; owner reports all four private signing secrets added. New workflow checks signer identity and publishes SIGNING-INFO.txt; build and phone testing still needed. See [UPDATES.md](UPDATES.md) for key setup and the mandatory test checklist. Source is committed, real-device updater behavior not yet verified.
+**Android Preview:** Open Phone options → Check for Gamepad Preview updates; approve download; Android's system package installer still requires confirmation. Smooth in-place upgrades require one stable signing key across Preview APKs. The owner's private signing secret configuration **passed** the v11 workflow's certificate identity check and SIGNING-INFO.txt was published; real-phone upgrade testing remains. See [UPDATES.md](UPDATES.md) for key setup and the mandatory test checklist. Source is committed, real-device updater behavior not yet verified.
 
 ## Download from your own GitHub fork
 

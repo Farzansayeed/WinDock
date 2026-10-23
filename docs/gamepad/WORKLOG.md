@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-10-23 — FIRST PERMANENTLY SIGNED PREVIEW v11 PUBLISHED AND VERIFIED IN ACTIONS
+
+**User setup:** User created a personal WinDock JKS using JDK 21 and said they configured all FOUR private GitHub Actions signing secrets. No key file, password or encoded key material was accessed or committed by the assistant.
+
+**Verified build:** [Preview GitHub Actions #39998130556](https://github.com/Farzansayeed/WinDock/actions/runs/39998130556) PASSED. Android job successfully loaded dedicated signing values, assembled/tested/linted APK, and confirmed APK signer certificate SHA-256 matched the configured keystore public certificate. Windows job built and smoke-tested installer; publish job PASSED. [Multi-platform CI #39998130774](https://github.com/Farzansayeed/WinDock/actions/runs/39998130774) PASSED.
+
+**Release:** [WinDock Gamepad Preview 0.2.3-gamepad.11](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.11-g175942e), commit `175942e`, published with **Android APK + Windows installer + SHA256SUMS.txt + BUILD-INFO.txt + SIGNING-INFO.txt**. SIGNING-INFO carries the PUBLIC signing certificate SHA256 for future cross-version comparisons. Private key not published.
+
+**Meaning:** The APK is signed with the owner's configured permanent keystore, *not* an ephemeral per-run key. This establishes build provenance, **NOT a physically verified Android in-place upgrade**. Old ephemeral-debug APKs require one-time Preview-only uninstall if signatures differ. Still need second version with matching fingerprint and actual Android system installer test; full gamepad is only UI/local input preview.
+
+**Next:** User downloads and installs v11 Preview (may uninstall only old Preview once), retains offline private JKS backup. On subsequent release compare public certificate SHA256 fingerprints and test smooth in-place Android upgrade preserving preview-local settings. Check WinDock Preview PC and Android manual updater; resume P2 driver feasibility and VS1.
+
+---
+
 ## 2026-10-23 — Persistent Android Preview signing: owner reports secrets configured; hard provenance gate committed
 
 **Owner action:** User confirmed all four GitHub Actions repository signing secrets have been added. Secret **values were NOT fetched, viewed, copied or committed**. GitHub metadata listing was unavailable to this tool, so source configuration is the only verified information until a fresh run.

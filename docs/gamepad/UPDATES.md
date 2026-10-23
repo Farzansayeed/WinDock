@@ -2,7 +2,7 @@
 
 **Repo:** https://github.com/Farzansayeed/WinDock
 **Branch:** feature/universal-gamepad
-**Status:** Windows/Android updater source committed; [multi-platform CI #39994885297](https://github.com/Farzansayeed/WinDock/actions/runs/39994885297) **passed**. Android APK unit/lint job passed from signing-enabled build; final prerelease and physical upgrade results still pending. No unattended installation.
+**Status:** [Gamepad Preview build #39998130556](https://github.com/Farzansayeed/WinDock/actions/runs/39998130556) and [CI #39998130774](https://github.com/Farzansayeed/WinDock/actions/runs/39998130774) **PASSED**. The Android signer was confirmed to match the private keystore and [v11](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.11-g175942e) was published with public SIGNING-INFO.txt. **No physical Android in-place update has been tested yet.** No unattended installation.
 **Scope:** update checks/downloads require internet to GitHub. Gamepad networking and pairing remain local Wi-Fi/USB tether.
 
 ## End-user steps
@@ -84,3 +84,9 @@ IMPORTANT: Source implementation is not proof of successful installation. Record
 ## Latest signing-proof rule (2026-10-23)
 
 The user's four GitHub Actions secrets have reportedly been configured (do NOT request their private values). The new workflow must produce **SIGNING-INFO.txt**, containing the **public** Android signer-certificate SHA-256, after checking it matches the keystore's public certificate. Never put the secret keystore/password into release assets, logs or chat. The preview publish job must include SIGNING-INFO.txt; a failed signing check means no new installer/APK prerelease. To verify future in-place upgrades, compare public SHA-256 certificate digests in two consecutive signed Preview releases and test on a physical Android device. Merely saving GitHub secrets or seeing a green CI workflow does NOT prove an APK upgrade works.
+
+## Signing setup result verified — 2026-10-23
+
+**Permanent signing verified on 2026-10-23:** The owner reported configuring all four private signing secrets, and the [Gamepad Preview build #39998130556](https://github.com/Farzansayeed/WinDock/actions/runs/39998130556) **passed**: Android's "Require and load dedicated stable Android preview signing key", "Build numbered APK, unit tests and lint", and "Confirm APK was signed by the permanent preview key" all succeeded; Windows build/installer smoke and prerelease publishing also succeeded. **[Gamepad Preview 0.2.3-gamepad.11](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.11-g175942e)** from commit `175942e` is published with both installers, SHA256SUMS.txt, BUILD-INFO.txt, and **SIGNING-INFO.txt**, which contains only the PUBLIC signer-certificate fingerprint. [Multi-platform CI #39998130774](https://github.com/Farzansayeed/WinDock/actions/runs/39998130774) also passed. **First in-place upgrade on physical Android phone not yet tested**; existing ephemeral-debug APK may require one-time uninstall of ONLY the Preview app.
+
+**Next physical test:** First install v11 on the owner's phone and PC. If an older Gamepad Preview APK was signed with a different ephemeral key, uninstall ONLY the older Preview APK first (the regular WinDock app remains separate). Test Android's new Phone options → Check for Gamepad Preview updates and Windows tray → Check for updates. A second release from the same stable key must have the identical PUBLIC signer SHA-256 in SIGNING-INFO.txt and install over v11 after Android's normal user confirmation; record whether app data survives. Keep the JKS securely backed up offline, never in GitHub or chats.
