@@ -53,7 +53,7 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 | P0 | Fork + preserved requirements + actual current-UI screenshots + continuity instructions | **DONE** | Source and docs committed; see [UI reference](UI-REFERENCE.md) |
 | P1 | Gamepad inside Touch & sign, quick Touchpad return | **SOURCE/CI TESTS PASSED; REAL PHONE UX PENDING** | Regression and physical input navigation still need hands-on test |
 | P2 | Windows virtual Xbox controller backend feasibility and license decision | **READ-ONLY PROBE ADDED; DRIVER PROOF PENDING** | Driver comparison, native proof-of-concept, install/uninstall verification |
-| P3 | Native Kotlin phone gamepad controls/editor | **FIXED LEFT-STICK+A LOCAL VIEW IMPLEMENTED + ANDROID CI PASSED; EDITOR PENDING** | Real-device gestures and full control groups still open |
+| P3 | Native Kotlin phone gamepad controls/editor | **LOCAL STICK+A + SHARED V1 FULL-STATE KOTLIN ENCODER CODED; NETWORK + EDITOR PENDING** | Real-device gestures and full control groups still open |
 | P4 | Native Windows persistent receiver, virtual state mapping, neutral watchdog | **NATIVE .NET 8 INDEPENDENT TIMER FAIL-NEUTRAL OUTPUT OWNER ADDED; ACTUAL DEVICE/IPC NOT WIRED** | Windows tests and `joy.cpl` hardware verification |
 | P5 | Secure paired control plane + reliable gamepad transport; Wi-Fi and USB tether | **AUTHENTICATED SINGLE-OWNER DRIVER-NEUTRAL /gamepad WS LAB CHANNEL CODED; NO PRODUCTION SINK OR ANDROID WIRING** | Auth/replay/loss/reconnect tests + measured transport comparison |
 | P6 | End-to-end game compatibility, input correctness, latency benchmarking | **NOT STARTED** | Real Android + PC; p50/p95/p99; regressions |
@@ -132,6 +132,8 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [ ] Android instrumentation and real-device multi-finger usability/orientation tests.
 
 **Exit gate:** native Android screen and gesture/layout state are correct independently of PC games.
+
+**Android P3 serializer foundation (2026-10-24):** Implemented GamepadFrameEncoder.kt with strict ten-field V1 full-state JSON, monotonic session sequence, stick axes, A XInput 0x1000, optional neutral frame; new JVM tests for exact shape, multi-touch source state, cancellation neutral and numeric bounds. **NOT yet connected to a WebSocket or XInput driver.** Kotlin Android CI pending for this commit.
 
 ## P4 — Windows native receiver and controller state — TIMER-DRIVEN SAFE OUTPUT OWNER CODED, HARDWARE NOT CONNECTED
 

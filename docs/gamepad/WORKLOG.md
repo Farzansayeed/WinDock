@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-10-24 — Kotlin Android full-state frame contract for stick+A
+
+**Scope:** Added Android GamepadFrameEncoder.kt, pure Kotlin with exact protocol v1 ten-field full snapshot (seq, LX/LY signed stick, RX/RY zero, LT/RT zero, buttons A=0x1000), bounded axes, monotonic positive sequence and explicit neutral snapshot. This is a serializer only; no socket creation, app permissions, backend or virtual device. It does NOT misrepresent current local input preview as a PC controller. Sessions must start with a fresh codec, never silently wrap the sequence.
+
+**Tests:** GamepadFrameEncoderTest.kt uses org.json in local JVM tests to verify complete frame shape, first and subsequent sequence numbers, analog bounds, neutral report, and simultaneous independent stick+A touch state. Build / Android CI pending at commit creation.
+
+**Next:** P2 device backend approval and physically validated XInput creation; then bridge the native Android view to the authenticated /gamepad WebSocket with sound background/cancel neutral and native Windows IPC. Preserve existing WebView pairing and touchpad behavior.
+
+---
+
 ## 2026-10-24 — P2 current signed XInput backend audit; no unsafe installation
 
 **Primary sources verified:** [HIDMaestro official prerequisite and signing documentation](https://hidmaestro.org/docs/reference/driver-install-and-signing/) describes .NET 10, elevated driver creation and local self-signed certificate added to machine Root/TrustedPublisher; requires user review/rollback and cannot be silently enabled. [libvirtualhid Windows driver docs](https://github.com/LizardByte/libvirtualhid/blob/master/docs/windows-driver.md) claim production-signed AMD64 Windows 11 support and genuine XUSB Xbox 360 companion, but driver-backed device creation requires a paid machine licence and periodic online validation/offline restrictions; conflicts with the owner's wholly local gameplay expectations if not explicitly accepted. Retired ViGEmBus remains unmaintained and not a default shipping choice.
