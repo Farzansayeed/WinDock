@@ -2,6 +2,10 @@
 
 **Current state:** The fork has a Touch & sign Gamepad UI preview, but NO playable virtual Xbox controller yet. These files are experimental test builds.
 
+## First published development release
+
+[WinDock Gamepad Preview 0.2.3-gamepad.1](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.1-gc631611) was confirmed published with both installers, build information and checksums following a successful Actions run. **Check the fork Releases page for any newer successful versions before downloading.** This version contains the Gamepad UI preview, not working gamepad support. Later releases cannot be assumed successful until checked.
+
 ## Download from your own GitHub fork
 
 - **Releases:** https://github.com/Farzansayeed/WinDock/releases

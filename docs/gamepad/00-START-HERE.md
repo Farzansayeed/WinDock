@@ -35,7 +35,7 @@ Add an optional **Gamepad** input mode to the **existing** WinDock Android compa
 | Windows C# helper | `native/win/Program.cs`, `native/win/Touchpad.cs` |
 | Existing tests and CI | `scripts/verify-input.mjs`, `test/run.mjs`, `.github/workflows/ci.yml` |
 
-**Install/download preview builds:** [INSTALL-PREVIEW.md](INSTALL-PREVIEW.md) and [fork's prereleases](https://github.com/Farzansayeed/WinDock/releases) after successful Actions. Every code push runs a versioned preview build; docs-only commits do not rebuild. These are development packages, not functional gaming controllers. Never point to upstream release downloads for fork features.
+**Install/download preview builds:** the first GitHub prerelease [0.2.3-gamepad.1](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.1-gc631611) passed automated builds/tests (manual Android/Windows installation still pending). [INSTALL-PREVIEW.md](INSTALL-PREVIEW.md) and [fork's prereleases](https://github.com/Farzansayeed/WinDock/releases) after successful Actions. Every code push runs a versioned preview build; docs-only commits do not rebuild. These are development packages, not functional gaming controllers. Never point to upstream release downloads for fork features.
 
 ## Read next (in order)
 

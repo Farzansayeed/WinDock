@@ -2,15 +2,15 @@
 
 **Canonical source of truth for status:** this document, on the `feature/universal-gamepad` branch of [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock/tree/feature/universal-gamepad).  
 **Last reviewed:** 2026-10-23.  
-**Current phase:** **P1 UI-only preview implemented, full CI/Android verification pending; P2 driver-independent diagnostic CODE READY, real Windows virtual-device test NOT STARTED**.  
-**Next concrete task:** Run updated npm/Windows CI tests, then use the [read-only XInput slot probe](../../native/gamepad-probe/README.md) on a safe Windows 10/11 machine to capture a baseline; only then assess an approved signed driver with reversible install. P1 physical Android navigation check remains pending. No virtual-device proof exists yet; do not start editor before VS1.  
+**Current phase:** **Gamepad P1 UI preview build and automated CI PASS for first prerelease; real Android UI/manual tests pending. P2 driver-independent probe code ready, actual Windows virtual device proof not started.**  
+**Next concrete task:** Manually install and test the first prerelease (or newest successful) on a real Android phone and Windows PC, then use the [read-only XInput slot probe](../../native/gamepad-probe/README.md) on a safe Windows 10/11 machine to capture a baseline; only then assess an approved signed driver with reversible install. P1 physical Android navigation check remains pending. No virtual-device proof exists yet; do not start editor before VS1.  
 **Important status disclaimer:** gamepad input, virtual drivers, and latency measurements **are not implemented or verified**. The progress baseline counts documentation work only.
 
 **Driver-feasibility test plan:** [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md), research only; no Windows driver selected or installed. **Feature-branch GitHub Actions runs:** zero observed again after diagnostic commit; don't interpret this as a pass. The fork may require enabling Actions. Actions may need enabling/review in the fork.
 
 **Audit / risk gate:** [AUDIT.md](AUDIT.md) — 12 audited risks; A1/A2 (Windows virtual device) and A8 (neutral safety) are critical. Driver integration and app-to-game feasibility unproven. Follow audit execution gates; it supersedes phase ordering where inconsistent.
 
-**Preview installation and release automation:** [INSTALL-PREVIEW.md](INSTALL-PREVIEW.md). Windows/Android CI prerelease workflow committed, **not yet confirmed green**; fork installers are isolated from upstream. No valid package/release is claimed until GitHub Actions succeeds.
+**Preview installation and release automation:** [INSTALL-PREVIEW.md](INSTALL-PREVIEW.md). **First successful Gamepad Preview 0.2.3-gamepad.1 published** as a prerelease: [Windows + Android downloads](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.1-gc631611). [Build workflow run 39988106341](https://github.com/Farzansayeed/WinDock/actions/runs/39988106341) and [CI run 39988106319](https://github.com/Farzansayeed/WinDock/actions/runs/39988106319) completed **success** for commit `c631611`; includes Windows installer smoke and Android unit/lint/APK. **No real-phone/manual install performed**; newer versions must be verified separately.
 
 **New research:** [OPEN-SOURCE-RESEARCH.md](OPEN-SOURCE-RESEARCH.md) compares six phone-controller projects, licensing, security flags and architecture integration. **Deferred P8:** [TOUCHPAD-LATENCY-P8.md](TOUCHPAD-LATENCY-P8.md) is queued strictly **after Gamepad v1/P7** and is NOT part of the current work.
 
@@ -34,7 +34,7 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 | P4 | Native Windows persistent receiver, virtual state mapping, neutral watchdog | **NOT STARTED** | Windows tests and `joy.cpl` hardware verification |
 | P5 | Secure paired control plane + reliable gamepad transport; Wi-Fi and USB tether | **NOT STARTED** | Auth/replay/loss/reconnect tests + measured transport comparison |
 | P6 | End-to-end game compatibility, input correctness, latency benchmarking | **NOT STARTED** | Real Android + PC; p50/p95/p99; regressions |
-| P7 | Installers, upgrade/fallback handling, release documentation | **NOT STARTED** | Windows/Android install and upgrade tests |
+| P7 | Installers, upgrade/fallback handling, release documentation | **PREVIEW BUILDS AVAILABLE; STABLE RELEASE GATE NOT MET** | Windows/Android install and upgrade tests |
 | P8 | Improve existing Touchpad latency **after finished Gamepad v1** | **DEFERRED — AFTER P7** | Baseline/measured improvements, existing gesture regression tests |
 
 **Progress accounting:** **P0 complete; P1 code committed pending testing; P2–P7 not complete; P8 Touchpad latency is deferred until Gamepad v1/P7.** No percentage estimate from phase count. Plan audit documented in [AUDIT.md](AUDIT.md) on 2026-10-23 (documentation-only). This is not a percent-of-development estimate. No Windows/Android end-to-end gamepad testing has been run.
@@ -140,13 +140,15 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 
 **Exit gate:** evidence of usable gamepad with measured performance; targets are goals, **not achieved claims**.
 
-## P7 — Packaging / handoff — EARLY AUTOMATION COMMITTED, RELEASE GATE NOT MET
+## P7 — Packaging / handoff — VERSIONED PREVIEW PRERELEASE PUBLISHED, STABLE GATE OPEN
 
 - [x] Set up automated versioned **preview** Windows installer/Android APK workflow on the fork feature branch (release pending successful CI).
 - [x] Isolate Windows preview installer name, AppId, install path and dock config; disable upstream update notifications in preview builds.
 - [x] Isolate Android preview via applicationId suffix, versionCode and versionName; debug signing limitations documented.
 - [x] Document beginner download/install/update instructions in [INSTALL-PREVIEW.md](INSTALL-PREVIEW.md), including hashes and Git commit identity.
-- [ ] Verify successful GitHub Actions Windows installer + Android APK, test artifacts, and published prerelease; **not yet verified**.
+- [x] Verify successful GitHub Actions Windows installer + Android APK and published prerelease **for commit `c631611`**, with both platform jobs + publish passing (build 0.2.3-gamepad.1; release assets + checksums verified by GitHub API). [Run](https://github.com/Farzansayeed/WinDock/actions/runs/39988106341) / [release](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.1-gc631611).
+- [ ] Test installer and APK manually on owner's real PC/phone, validate Wi-Fi/USB pairing, direct mode navigation and update behavior. CI smoke is not physical field testing.
+- [ ] Confirm future successful build provenance, versioned assets, rollback and Android signing stability before stable release.
 - [ ] Package updated Windows host and Android APK with any lawful driver dependency/install UX and recovery.
 - [ ] Verify first install, uninstall, updates, Android/WebView host-version mismatch behavior.
 - [ ] Document usage, compatibility limitations and any admin privileges needed; include setup/screenshots and known issues.
