@@ -54,8 +54,8 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 - [ ] Update `public/input-pad.js` mode selection/state teardown safely, preserving existing touchpad release and signature drawing. **Source implementation present; manual regression validation still pending.**
 - [x] Add responsive gamepad preview styles to `public/style.css` matching navy/charcoal grid, subtle glass and blue accents. **Source code committed; full P1 gate still pending.**
 - [x] Show accurate capability/preview labels: **UI preview, not yet controlling PC games**; no misleading `Connected controller` state. **Source code committed; full P1 gate still pending.**
-- [ ] Add regression tests for mode switching and existing `Touchpad`/`Signature` behavior, update existing verification tests as appropriate. **Static navigation assertions added to `verify-pwa.mjs`; full behavioral regressions not yet executed.**
-- [ ] Run `npm test`/feature-branch CI and record results (not yet executed or confirmed).
+- [x] Add regression tests for mode switching and existing `Touchpad`/`Signature` behavior, update existing verification tests as appropriate. **Persistent mode-switch tests added as `scripts/verify-gamepad-ui.mjs` and registered in `test/run.mjs`, plus static `verify-pwa.mjs` assertions.**
+- [ ] Run the full `npm test`/feature-branch CI and record results (not yet executed or confirmed); the **standalone input-mode mock exercise passed 16 behavioral checks** in the authoring environment.
 - [ ] Manually verify Touchpad → Gamepad → Touchpad, Signature switching, Touchpad release, responsive layout and WebView behavior on a real Android phone.
 - [x] Update the PWA service-worker cache key to prevent old input UI from persisting after an update.
 - [x] Enable existing CI on pushes to `feature/universal-gamepad` (runs when GitHub Actions is enabled for this fork).

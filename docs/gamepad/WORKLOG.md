@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-10-23 — Persisted functional Gamepad mode-switch regression oracle
+
+**Phase/status:** P1 code integrated, **not yet verified by full npm/CI or on an Android phone**.
+**Changed:** Added `scripts/verify-gamepad-ui.mjs` with a mocked DOM and WebSocket to execute WinDock's actual `public/input-pad.js` selection code and assert safe exit/reentry, release of held mouse buttons and continued Signature navigation. Wired it into `test/run.mjs` so normal `npm test` will execute it.
+**Evidence:** Equivalent standalone mock executed against the committed source through GitHub integration and **passed 16 behavioral assertions**, including Touchpad → Gamepad → Touchpad, release on switch, reopening live input and Signature.
+**Tests:** The full `npm test` suite and physical Android/PC tests are **not run** in this environment. An equivalent in-process smoke test passed; the newly persisted Node oracle is not yet CI-confirmed.
+**Next:** Run feature branch suite in a native checkout or Actions; continue P2 virtual controller proof-of-concept research; test UX in Android WebView.
+
+---
+
 ## 2026-10-23 — P1 Gamepad preview integrated into Touch & sign (code change)
 
 **Branch:** `feature/universal-gamepad`
