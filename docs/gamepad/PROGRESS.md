@@ -6,7 +6,7 @@
 **Next concrete task:** Run updated npm/Windows CI tests, then use the [read-only XInput slot probe](../../native/gamepad-probe/README.md) on a safe Windows 10/11 machine to capture a baseline; only then assess an approved signed driver with reversible install. P1 physical Android navigation check remains pending. No virtual-device proof exists yet; do not start editor before VS1.  
 **Important status disclaimer:** gamepad input, virtual drivers, and latency measurements **are not implemented or verified**. The progress baseline counts documentation work only.
 
-**Driver-feasibility test plan:** [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md), research only; no Windows driver selected or installed. **Feature-branch GitHub Actions runs:** zero observed through GitHub at the most recent check; don't interpret this as a pass. Actions may need enabling/review in the fork.
+**Driver-feasibility test plan:** [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md), research only; no Windows driver selected or installed. **Feature-branch GitHub Actions runs:** zero observed again after diagnostic commit; don't interpret this as a pass. The fork may require enabling Actions. Actions may need enabling/review in the fork.
 
 **Audit / risk gate:** [AUDIT.md](AUDIT.md) — 12 audited risks; A1/A2 (Windows virtual device) and A8 (neutral safety) are critical. Driver integration and app-to-game feasibility unproven. Follow audit execution gates; it supersedes phase ordering where inconsistent.
 
@@ -85,7 +85,7 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [ ] Build isolated native C# proof of concept for creating/removing a virtual controller; no gamepad network plumbing required yet. Compare HIDMaestro (.NET 10/admin + local cert) with existing WinDock .NET 8, licensed libvirtualhid, and retired ViGEmBus. **Never bypass driver signature enforcement.**
 - [ ] Validate clean install, elevation/UAC lifecycle, machine certificate trust, signature legitimacy, Windows 10/11 support, and reversible uninstall; choose safe way to isolate administrative work.
 - [x] Add a no-install, read-only XInput slot inspector in `native/gamepad-probe/` to support real Windows testing. **Source added, compilation/Windows execution pending.**
-- [x] Wire .NET 8 diagnostic build/help into Windows CI and its static read-only invariants into `npm test`. **Not yet CI-confirmed.**
+- [x] Wire .NET 8 diagnostic build/help into Windows CI and its static read-only invariants into `npm test`. **Source checks executed independently and passed 19 assertions; Windows build/CI still pending.**
 - [ ] Record a before/after XInput slot scan and changed A/axes against a separately approved virtual driver on real Windows.
 - [ ] Verify recognized controller axes/buttons in Windows `joy.cpl` or equivalent.
 - [ ] Record chosen driver + reasons in `docs/gamepad/`, including caveats; confirm any admin/install requirements.
