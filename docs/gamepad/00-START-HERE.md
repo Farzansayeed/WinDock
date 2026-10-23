@@ -37,6 +37,8 @@ Add an optional **Gamepad** input mode to the **existing** WinDock Android compa
 
 **Install/download preview builds:** the first GitHub prerelease [0.2.3-gamepad.1](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.1-gc631611) passed automated builds/tests (manual Android/Windows installation still pending). [INSTALL-PREVIEW.md](INSTALL-PREVIEW.md) and [fork's prereleases](https://github.com/Farzansayeed/WinDock/releases) after successful Actions. Every code push runs a versioned preview build; docs-only commits do not rebuild. These are development packages, not functional gaming controllers. Never point to upstream release downloads for fork features.
 
+**Protocol foundation (2026-10-23):** `src/gamepad/protocol.js` defines strict bounded controller snapshots and a unit-tested fail-neutral state gate, **not yet wired to a live controller, native Windows driver, Android transport, or paired WebSocket**. Source tests in `scripts/verify-gamepad-protocol.mjs`. Keep this separate from the existing Touchpad protocol.
+
 ## Read next (in order)
 
 0. **[PROGRESS.md — live checklist, done/next/blocked](PROGRESS.md)**, [P2 — Windows driver feasibility test plan](P2-DRIVER-FEASIBILITY.md), **[AUDIT.md — prioritized risks and go/no-go gates](AUDIT.md)** and **[WORKLOG.md — chronological updates](WORKLOG.md)**

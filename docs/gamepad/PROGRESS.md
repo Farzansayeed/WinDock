@@ -3,7 +3,7 @@
 **Canonical source of truth for status:** this document, on the `feature/universal-gamepad` branch of [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock/tree/feature/universal-gamepad).  
 **Last reviewed:** 2026-10-23.  
 **Current phase:** **Gamepad P1 UI preview build and automated CI PASS for first prerelease; real Android UI/manual tests pending. P2 driver-independent probe code ready, actual Windows virtual device proof not started.**  
-**Next concrete task:** Manually install and test the first prerelease (or newest successful) on a real Android phone and Windows PC, then use the [read-only XInput slot probe](../../native/gamepad-probe/README.md) on a safe Windows 10/11 machine to capture a baseline; only then assess an approved signed driver with reversible install. P1 physical Android navigation check remains pending. No virtual-device proof exists yet; do not start editor before VS1.  
+**Next concrete task:** Validate shared gamepad state contract through GitHub CI, then manually install and test the current prerelease (or newest successful) on a real Android phone and Windows PC, then use the [read-only XInput slot probe](../../native/gamepad-probe/README.md) on a safe Windows 10/11 machine to capture a baseline; only then assess an approved signed driver with reversible install. P1 physical Android navigation check remains pending. No virtual-device proof exists yet; do not start editor before VS1.  
 **Important status disclaimer:** gamepad input, virtual drivers, and latency measurements **are not implemented or verified**. The progress baseline counts documentation work only.
 
 **Driver-feasibility test plan:** [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md), research only; no Windows driver selected or installed. **Feature-branch GitHub Actions runs:** zero observed again after diagnostic commit; don't interpret this as a pass. The fork may require enabling Actions. Actions may need enabling/review in the fork.
@@ -31,7 +31,7 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 | P1 | Gamepad added to existing Touch & sign navigation with UI-only preview | **CODE IMPLEMENTED / TESTS PENDING** | Relevant JS/HTML/CSS tests and manually validated navigation |
 | P2 | Windows virtual Xbox controller backend feasibility and license decision | **READ-ONLY PROBE ADDED; DRIVER PROOF PENDING** | Driver comparison, native proof-of-concept, install/uninstall verification |
 | P3 | Native Android Kotlin gamepad screen + selectable multitouch controls + editor | **NOT STARTED** | Android unit/instrumentation tests on real phone |
-| P4 | Native Windows persistent receiver, virtual state mapping, neutral watchdog | **NOT STARTED** | Windows tests and `joy.cpl` hardware verification |
+| P4 | Native Windows persistent receiver, virtual state mapping, neutral watchdog | **DRIVER-INDEPENDENT STATE CONTRACT ADDED; RECEIVER NOT STARTED** | Windows tests and `joy.cpl` hardware verification |
 | P5 | Secure paired control plane + reliable gamepad transport; Wi-Fi and USB tether | **NOT STARTED** | Auth/replay/loss/reconnect tests + measured transport comparison |
 | P6 | End-to-end game compatibility, input correctness, latency benchmarking | **NOT STARTED** | Real Android + PC; p50/p95/p99; regressions |
 | P7 | Installers, upgrade/fallback handling, release documentation | **PREVIEW BUILDS AVAILABLE; STABLE RELEASE GATE NOT MET** | Windows/Android install and upgrade tests |
@@ -108,12 +108,14 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 
 **Exit gate:** native Android screen and gesture/layout state are correct independently of PC games.
 
-## P4 — Windows native receiver and controller state — NOT STARTED
+## P4 — Windows native receiver and controller state — PROTOCOL FOUNDATION ADDED, RECEIVER NOT STARTED
 
 - [ ] Implement persistent native C# gamepad service/receiver and a provider abstraction that does not disturb other OS providers.
+- [x] Define and independently test **strict v1 gamepad state protocol** (signed stick integers, byte triggers, XInput-compatible button mask, bounded frame size, exact field allowlist), shared as the future transport contract. Source and Node tests committed; GitHub CI pending.
+- [x] Add a driver-independent fail-neutral session gate (out-of-order drop, replay does not refresh timer, neutralize on invalid/timeout/close). Unit tests present; **no production network/device wiring yet**.
 - [ ] Map all analog/digital signals into virtual Xbox-compatible reports; support simultaneous buttons and analog trigger values.
 - [ ] Test bounded rate, validation and ordering; no process spawning per touch/update.
-- [ ] Implement ownership, neutral on stop, short staleness watchdog, driver-exit/crash cleanup.
+- [ ] Implement production owner lease, neutral on stop, timer-driven Windows native staleness watchdog and driver-exit/crash cleanup. **The JS state gate is a model only, not a device-level watchdog.**
 - [ ] Windows helper tests and manual driver/controller inspection.
 
 **Exit gate:** PC can apply validated synthetic test frames to the virtual controller safely.
