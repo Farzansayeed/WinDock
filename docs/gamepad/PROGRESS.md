@@ -3,8 +3,10 @@
 **Canonical source of truth for status:** this document, on the `feature/universal-gamepad` branch of [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock/tree/feature/universal-gamepad).  
 **Last reviewed:** 2026-10-23.  
 **Current phase:** **P1 UI-only preview IMPLEMENTED, pending automated/runtime verification; P2 Windows driver feasibility NOT STARTED**.  
-**Next concrete task:** verify P1 using feature-branch CI and Android/browser interaction testing, fix any regressions; begin P2 isolated Windows virtual Xbox/XInput backend feasibility work. Do not start the complex editor before VS1. See [AUDIT.md](AUDIT.md).  
+**Next concrete task:** P1 manual Android/browser verification and full npm/CI results; then [P2 driver proof](P2-DRIVER-FEASIBILITY.md) on a safe Windows test host. Static P2 candidate assessment and acceptance checklist are recorded, but **no driver proof has started**. Do not build the full editor before VS1.  
 **Important status disclaimer:** gamepad input, virtual drivers, and latency measurements **are not implemented or verified**. The progress baseline counts documentation work only.
+
+**Driver-feasibility test plan:** [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md), research only; no Windows driver selected or installed. **Feature-branch GitHub Actions runs:** zero observed through GitHub at the most recent check; don't interpret this as a pass. Actions may need enabling/review in the fork.
 
 **Audit / risk gate:** [AUDIT.md](AUDIT.md) — 12 audited risks; A1/A2 (Windows virtual device) and A8 (neutral safety) are critical. Driver integration and app-to-game feasibility unproven. Follow audit execution gates; it supersedes phase ordering where inconsistent.
 
@@ -55,7 +57,7 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 - [x] Add responsive gamepad preview styles to `public/style.css` matching navy/charcoal grid, subtle glass and blue accents. **Source code committed; full P1 gate still pending.**
 - [x] Show accurate capability/preview labels: **UI preview, not yet controlling PC games**; no misleading `Connected controller` state. **Source code committed; full P1 gate still pending.**
 - [x] Add regression tests for mode switching and existing `Touchpad`/`Signature` behavior, update existing verification tests as appropriate. **Persistent mode-switch tests added as `scripts/verify-gamepad-ui.mjs` and registered in `test/run.mjs`, plus static `verify-pwa.mjs` assertions.**
-- [ ] Run the full `npm test`/feature-branch CI and record results (not yet executed or confirmed); the **standalone input-mode mock exercise passed 16 behavioral checks** in the authoring environment.
+- [ ] Run the full `npm test`/feature-branch CI and record results (not yet executed or confirmed); the **persisted mode-switch test executed in a mocked runtime and passed 21 assertions**; full Node/npm/CI and Android tests remain outstanding in the authoring environment.
 - [ ] Manually verify Touchpad → Gamepad → Touchpad, Signature switching, Touchpad release, responsive layout and WebView behavior on a real Android phone.
 - [x] Update the PWA service-worker cache key to prevent old input UI from persisting after an update.
 - [x] Enable existing CI on pushes to `feature/universal-gamepad` (runs when GitHub Actions is enabled for this fork).
@@ -72,7 +74,9 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 
 **Exit gate:** one genuine phone→PC→virtual controller path works safely. Visual demo or synthetic-only frames do not pass.
 
-## P2 — Windows virtual device feasibility — NOT STARTED
+## P2 — Windows virtual device feasibility — NOT STARTED (candidate research documented; actual proof pending)
+
+See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend tradeoffs, safe install/rollback, XInput tests and go/no-go evidence requirements.
 
 - [ ] Research and record signed Windows 10/11 virtual Xbox-compatible backend candidates, maintenance, redistribution/licensing, and uninstall/rollback.
 - [ ] Build isolated native C# proof of concept for creating/removing a virtual controller; no gamepad network plumbing required yet. Compare HIDMaestro (.NET 10/admin + local cert) with existing WinDock .NET 8, licensed libvirtualhid, and retired ViGEmBus. **Never bypass driver signature enforcement.**

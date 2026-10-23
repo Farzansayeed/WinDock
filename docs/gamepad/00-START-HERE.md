@@ -4,7 +4,7 @@
 **Work branch:** `feature/universal-gamepad`
 **Upstream:** https://github.com/aliihsaad/WinDock
 **Plan recorded:** 23 October 2026
-**Status (2026-10-23 P1 implementation):** Touch & sign now contains a **Gamepad UI-only preview and direct switching**, with regression/CI/hardware verification still pending. **No real gamepad input, virtual controller or latency measurement exists yet.** P2 Windows driver feasibility is next, followed by VS1 real phone→PC proof.
+**Status (2026-10-23 P1 implementation):** Touch & sign now contains a **Gamepad UI-only preview and direct switching**; an isolated mocked mode-switch test passed 21 assertions, but full npm/CI/Android verification is pending. Windows driver candidate research and [P2 feasibility test plan](P2-DRIVER-FEASIBILITY.md) are documented, but hardware proof has not begun. **No real gamepad input, virtual controller or latency measurement exists yet.** P2 Windows driver feasibility is next, followed by VS1 real phone→PC proof.
 
 ## Why this exists
 
@@ -37,7 +37,7 @@ Add an optional **Gamepad** input mode to the **existing** WinDock Android compa
 
 ## Read next (in order)
 
-0. **[PROGRESS.md — live checklist, done/next/blocked](PROGRESS.md)**, **[AUDIT.md — prioritized risks and go/no-go gates](AUDIT.md)** and **[WORKLOG.md — chronological updates](WORKLOG.md)**
+0. **[PROGRESS.md — live checklist, done/next/blocked](PROGRESS.md)**, [P2 — Windows driver feasibility test plan](P2-DRIVER-FEASIBILITY.md), **[AUDIT.md — prioritized risks and go/no-go gates](AUDIT.md)** and **[WORKLOG.md — chronological updates](WORKLOG.md)**
 
 1. [Visual reference — actual current UI screenshots](UI-REFERENCE.md)
 2. [01 — UX and screenshot-derived navigation](01-UX-NAVIGATION.md)
