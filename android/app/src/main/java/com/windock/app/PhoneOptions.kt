@@ -15,7 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 
 object PhoneOptions {
-    fun displayDialog(activity: Activity, saved: () -> Unit): AlertDialog {
+    fun displayDialog(activity: Activity, saved: () -> Unit, checkUpdates: () -> Unit = {}): AlertDialog {
         val dp = activity.resources.displayMetrics.density
         val content = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
@@ -49,6 +49,13 @@ object PhoneOptions {
             text = activity.getString(R.string.android_display_settings); isAllCaps = false
             setOnClickListener { openSettings(activity, Settings.ACTION_DISPLAY_SETTINGS) }
         })
+        if (BuildConfig.APPLICATION_ID.endsWith(".gamepadpreview")) {
+            content.addView(Button(activity).apply {
+                text = "Check for Gamepad Preview updates"
+                isAllCaps = false
+                setOnClickListener { checkUpdates() }
+            })
+        }
         return AlertDialog.Builder(activity).setTitle(R.string.phone_options)
             .setView(ScrollView(activity).apply { addView(content) })
             .setNegativeButton(android.R.string.cancel, null)

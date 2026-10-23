@@ -184,7 +184,11 @@ class MainActivity : Activity() {
 
     private fun showPhoneOptions() {
         if (phoneDialog != null) return
-        showPhoneDialog(PhoneOptions.displayDialog(this) { idleDisplay.reloadPreferences() })
+        showPhoneDialog(PhoneOptions.displayDialog(this, { idleDisplay.reloadPreferences() },
+            checkUpdates = {
+                phoneDialog?.dismiss()
+                GamepadPreviewUpdates.check(this, io)
+            }))
     }
 
     private fun showUsbSetup() {
