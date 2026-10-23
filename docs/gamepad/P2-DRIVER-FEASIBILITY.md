@@ -1,7 +1,7 @@
 # P2 — Windows virtual Xbox controller feasibility and acceptance gate
 
-**Status:** RESEARCH + READ-ONLY XINPUT DIAGNOSTIC CODE ADDED. No driver selected, installed, redistributed, or tested on a Windows machine. Diagnostic compilation/Windows run still pending.  
-**Last reviewed:** 2026-10-23.  
+**Status:** RESEARCH + READ-ONLY XINPUT DIAGNOSTIC ADDED; driver-neutral authenticated /gamepad WebSocket and independent native watchdog implemented/tested in CI. **No driver selected, installed, licensed, redistributed, or physically tested**. A built diagnostic and simulated state tests cannot prove XInput output.  
+**Last reviewed:** 2026-10-24.  
 **Owner fork:** [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock), branch `feature/universal-gamepad`.  
 **Next step:** build and run [WinDock's read-only XInput diagnostic](../../native/gamepad-probe/README.md) to capture a Windows baseline, then run a separately approved, removable virtual-controller test and compare. No action here elevates or changes the user's Windows machine.
 
@@ -18,6 +18,16 @@ The Android touch UI is achievable using the existing WinDock Kotlin application
 | [ViGEmBus](https://github.com/nefarius/ViGEmBus) | Familiar historical virtual Xbox 360 compatibility | Repository is **archived**; retired driver, long-term maintenance and security concerns. | **LAB COMPARISON ONLY**, not an automatic distribution choice |
 
 Source statements are developer claims, not independently verified. Re-check upstream repository, releases, supported OS, licensing and signing documentation at the time of testing.
+
+## Fresh upstream documentation review — 2026-10-24 (not a driver decision)
+
+**HIDMaestro:** Official [prerequisites](https://hidmaestro.org/) state **.NET 10** and administrator privileges for virtual creation; [driver/install docs](https://hidmaestro.org/docs/reference/driver-install-and-signing/) say its installer signs UMDF2 packages with a locally created certificate and places that certificate in **LocalMachine Root, TrustedPublisher and My**. This is a real machine-trust modification: code must not perform it on a user's machine automatically, and the installation must have a reviewable rollback. [Build docs](https://hidmaestro.org/docs/reference/build-and-release/) mention a v2.0.1 uninstaller, but what it removes versus certificates/drivers must be audited. MIT source licensing is attractive for an entirely local product; **admin + certificate trust** remains the red-line. XInput compatibility claimed by upstream is not yet verified in WinDock on a real PC. Keep the prototype in a separate .NET 10 process, not a .NET 8 app-wide runtime upgrade.
+
+**LizardByte libvirtualhid / Virtual HID Driver:** Official [Windows driver documentation](https://github.com/LizardByte/libvirtualhid/blob/master/docs/windows-driver.md) describes a production-signed AMD64 Windows 11 MSI, UMDF2 with an XUSB companion for Xbox 360 and a machine licence for driver-backed devices. Its [platform support](https://github.com/LizardByte/libvirtualhid/blob/master/docs/platform-support.md) lists Windows 11 21H2+ AMD64 primary and Windows 10 best-effort. **The separate Windows licence and online validation policy are major issues for this owner's completely local/no-cloud gameplay requirement.** Per vendor: normal licence validation is daily; a yearly licence may need online validation within 25h and after reboot; while offline, a lifetime licence can keep/create ONE licensed device, and other licences have limits. No private activation keys to be stored/logged by WinDock. This is therefore **not an approved free/offline backend**; use only if user affirmatively accepts pricing, network licensing tradeoffs and redistribution conditions.
+
+**Retired ViGEmBus:** Some actively developed mapping tools still rely on the historical [archived/retired ViGEmBus](https://github.com/nefarius/ViGEmBus), but app-level maintenance does NOT make the underlying driver a maintained platform. It remains a laboratory comparison, not the default distribution choice.
+
+**Decision for now:** NONE SELECTED. No driver installation, UAC, certificate store mutation, WindowsApps permission changes, firmware settings, forced driver signing bypass or package distribution. First gather Windows version/architecture and a read-only XInput baseline with the existing probe. Then ask for an explicit, informed approval to evaluate ONE current signed-backend installer in a recoverable lab machine/snapshot; test XInput slot, full stick/A/trigger reports, timer-driven neutral on all disconnects, uninstall, and persistence of certificate or driver changes. Until P2 is proven, /gamepad production sink must remain disabled and the Kotlin local preview must not claim working PC controls.
 
 ## Read-only diagnostic now available
 

@@ -30,6 +30,10 @@
 - All inputs MUST neutralize on release, cancel, background, screen/mode exit, disconnect, stale/replayed packets, phone/PC process crash, driver loss. PC timer-based stale-state watchdog must actually run in native receiver; tested JS/C# models alone do NOT protect a real device.
 - No unapproved Windows elevated driver installation, certificate trust-store changes, signature-enforcement bypass or silently elevated Node host.
 
+## Updated driver choice (2026-10-24): no candidate approved
+
+Revisited vendor signing/deployment details: HIDMaestro v2 requires .NET 10, admin and locally installed machine-wide Root/TrustedPublisher test certificate; libvirtualhid production-signed Windows MSI requires paid device machine license, online validation with offline limitations, impacting user's no-cloud gameplay requirement; historical ViGEmBus driver retired. P2-DRIVER-FEASIBILITY.md cites vendor docs and specifies test/rollback gate. **Do not ask for trust-root changes or licence purchase casually; NO machine installation or backend selection has occurred.** Native fake-sink watchdog and Node /gamepad session are secure scaffolding only.
+
 ## Native PC fail-neutral timer foundation (2026-10-24)
 
 Added .NET 8 native/gamepad-tests/GamepadReceiver.cs with a real independent watchdog Timer, monotonic elapsed clock and IControllerReportSink interface; all report writes/timeout/Dispose synchronized. It starts neutral, rejects replay, times out no further frames and never lets stale state survive, with native fake sink tests including real timer expiry and disposals. It is DRIVER-INDEPENDENT, not a persistent Windows service or XInput controller. At initial commit new CI not yet verified; future chat check test run and advance P2 driver feasibility + native IPC. P5 /gamepad remains disabled without backend sink; Android native view still not network attached.

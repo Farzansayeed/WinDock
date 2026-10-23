@@ -106,7 +106,8 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 
 See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend tradeoffs, safe install/rollback, XInput tests and go/no-go evidence requirements.
 
-- [ ] Research and record signed Windows 10/11 virtual Xbox-compatible backend candidates, maintenance, redistribution/licensing, and uninstall/rollback.
+- [x] Research current HIDMaestro/libvirtualhid/ViGEmBus candidate documentation and record .NET 10/admin/certificate trust, production signing vs machine licence/cloud validation, supported Windows versions and uninstall/recovery risks (read docs only; physical verification NOT done).
+- [ ] Choose/obtain explicit approval for an independently tested, signed, redistributable Windows virtual Xbox backend consistent with fully local runtime; no candidate approved as of 2026-10-24.
 - [ ] Build isolated native C# proof of concept for creating/removing a virtual controller; no gamepad network plumbing required yet. Compare HIDMaestro (.NET 10/admin + local cert) with existing WinDock .NET 8, licensed libvirtualhid, and retired ViGEmBus. **Never bypass driver signature enforcement.**
 - [ ] Validate clean install, elevation/UAC lifecycle, machine certificate trust, signature legitimacy, Windows 10/11 support, and reversible uninstall; choose safe way to isolate administrative work.
 - [x] Add a no-install, read-only XInput slot inspector in `native/gamepad-probe/` to support real Windows testing. **Source added, compilation/Windows execution pending.**

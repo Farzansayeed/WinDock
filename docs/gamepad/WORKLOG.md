@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-10-24 — P2 current signed XInput backend audit; no unsafe installation
+
+**Primary sources verified:** [HIDMaestro official prerequisite and signing documentation](https://hidmaestro.org/docs/reference/driver-install-and-signing/) describes .NET 10, elevated driver creation and local self-signed certificate added to machine Root/TrustedPublisher; requires user review/rollback and cannot be silently enabled. [libvirtualhid Windows driver docs](https://github.com/LizardByte/libvirtualhid/blob/master/docs/windows-driver.md) claim production-signed AMD64 Windows 11 support and genuine XUSB Xbox 360 companion, but driver-backed device creation requires a paid machine licence and periodic online validation/offline restrictions; conflicts with the owner's wholly local gameplay expectations if not explicitly accepted. Retired ViGEmBus remains unmaintained and not a default shipping choice.
+
+**Outcome:** No backend selected or installed and no purchasing, certificate trust or privileged action performed. Updated P2-DRIVER-FEASIBILITY.md with current source links, machine trust/licensing caveats, acceptance/rollback, and recommended isolated .NET 10 proof path (only after user approval). Read-only Windows probe already exists; native watchdog and authenticated server WebSocket are not a virtual device. **P2 BLOCKED until on-device approved test.**
+
+**Next:** Build device-independent Native receiving/IPC and Kotlin report mapping without implying working games; after user consent, validate candidate on disposable Windows host with XInput baseline and fully documented signing+uninstall. Do not install machine root cert without explicit approval.
+
+---
+
 ## 2026-10-24 — P4 independent PC-side timer fail-neutral receiver without driver
 
 **Why:** A server-side inactivity timer is not sufficient to neutralize a stuck real Xbox device when Node crashes. Built native .NET 8 adapter-independent safety controller before driver choice.
