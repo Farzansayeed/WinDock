@@ -15,3 +15,7 @@ The **single canonical checklist** is `docs/gamepad/PROGRESS.md`; the chronologi
 ## Required audit gates
 
 Consult [AUDIT.md](docs/gamepad/AUDIT.md). Do not select or bundle a Windows driver solely because its repository is MIT, self-reported fast, or advertises XInput; verify clean install/removal, elevation, signing/certificate trust, actual gamepad visibility, Windows target version, redistribution rights, and .NET runtime compatibility. Avoid elevating the existing WinDock Node host. Treat UDP as optional and security-sensitive until measurements prove it useful. Record decisions D1–D6, test evidence and next actions in PROGRESS/WORKLOG.
+
+## External projects and future Touchpad performance
+
+Read `docs/gamepad/OPEN-SOURCE-RESEARCH.md` for source-verified virtual gamepad comparisons, lessons and red flags. **Do not copy GPL/LGPL or uncertain-license code into this MIT fork without an explicit license compliance review**; distinguish author's benchmarks from our measured performance. The user requested faster Touchpad response **only after the full Gamepad v1 (P7) is implemented, physically tested and packaged**. Keep this as **P8 deferred** in `docs/gamepad/TOUCHPAD-LATENCY-P8.md`, not as a current feature or a dependency of Gamepad. Upon activation, baseline existing WebView→RAF→WebSocket→Node→persistent C# helper→Windows path and preserve relative cursor delta, scroll and release semantics. Update PROGRESS and WORKLOG for all changes.

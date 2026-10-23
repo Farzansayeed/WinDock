@@ -43,13 +43,15 @@ Add an optional **Gamepad** input mode to the **existing** WinDock Android compa
 2. [01 — UX and screenshot-derived navigation](01-UX-NAVIGATION.md)
 3. [02 — Implementation, security, testing and milestones](02-IMPLEMENTATION-ROADMAP.md)
 4. [Full low-latency v2 technical handoff](REQUIREMENTS-v2.md) — authoritative detailed baseline except later changes above
-5. [Archived initial requirements](archive/INITIAL-PROPOSAL-v1.md) — historical only; includes rejected ideas; **not** current requirements
+5. [Open-source research: virtual gamepad comparisons, warnings and integration](OPEN-SOURCE-RESEARCH.md)
+6. [Post-Gamepad P8: Touchpad latency improvements](TOUCHPAD-LATENCY-P8.md) — **deferred until the gamepad is complete**
+7. [Archived initial requirements](archive/INITIAL-PROPOSAL-v1.md) — historical only; includes rejected ideas; **not** current requirements
 
 ## Project progress and continuous handoff
 
 **[Open the live implementation checklist](PROGRESS.md)** (P0–P7, what's done, what is next, blockers, tests and milestone gates). For chronological decisions and commit-by-commit evidence, see **[WORKLOG.md](WORKLOG.md)**.
 
-At the last documented status, **P0 is complete; P1 UI-only navigation code is committed pending regression/Android checks; P2 driver/XInput feasibility is the next technical gate, then VS1 minimum playable proof**. No working gamepad or real latency measurement has been verified. The tracker takes precedence over this snapshot. Each code batch must update PROGRESS and WORKLOG in its commit; refer to `AGENTS.md`.
+At the last documented status, **P0 is complete; P1 UI-only navigation code is committed pending regression/Android checks; P2 driver/XInput feasibility is the next technical gate, then VS1 minimum playable proof**. No working gamepad or real latency measurement has been verified. The tracker takes precedence over this snapshot. Six external open-source gamepad projects were compared in [OPEN-SOURCE-RESEARCH.md](OPEN-SOURCE-RESEARCH.md); the user's Touchpad-latency improvement request is **queued as P8 after Gamepad P7**, not active work. Each code batch must update PROGRESS and WORKLOG in its commit; refer to `AGENTS.md`.
 
 ## What is finished and what is not
 
@@ -64,4 +66,4 @@ At the last documented status, **P0 is complete; P1 UI-only navigation code is c
 
 ## Continue in a fresh ChatGPT/Codex chat
 
-> Work on https://github.com/Farzansayeed/WinDock, branch `feature/universal-gamepad`. First read `docs/gamepad/00-START-HERE.md`, **`PROGRESS.md`**, **`AUDIT.md`** and **`WORKLOG.md`**, `UI-REFERENCE.md`, `01-UX-NAVIGATION.md`, `02-IMPLEMENTATION-ROADMAP.md` and `REQUIREMENTS-v2.md`. Update the checklist and worklog with every code batch, including testing evidence and the next action. Do not ask me to repeat this brief. Implement incrementally on **my fork only**, preserve original features, write tests, and clearly separate a visual prototype from working virtual-controller support. Do not introduce haptics or gyroscope in v1, and do not open a PR to the original project.
+> Work on https://github.com/Farzansayeed/WinDock, branch `feature/universal-gamepad`. First read `docs/gamepad/00-START-HERE.md`, **`PROGRESS.md`**, **`AUDIT.md`** and **`WORKLOG.md`**, `UI-REFERENCE.md`, `01-UX-NAVIGATION.md`, `02-IMPLEMENTATION-ROADMAP.md` and `REQUIREMENTS-v2.md`. Update the checklist and worklog with every code batch, including testing evidence and the next action. Do not ask me to repeat this brief. Implement incrementally on **my fork only**, preserve original features, write tests, and clearly separate a visual prototype from working virtual-controller support. Do not introduce haptics or gyroscope in v1; keep Touchpad latency as P8 **after** Gamepad P7; use `OPEN-SOURCE-RESEARCH.md` for architectural inspiration/licensing cautions. Do not open a PR to the original project.

@@ -4,6 +4,12 @@
 
 > **Progress note:** For current task checkboxes, status, blockers, verification evidence and next action, consult [PROGRESS.md](PROGRESS.md) and [WORKLOG.md](WORKLOG.md). The milestones below are a design roadmap, not a claim of completion. Update the tracker/worklog alongside every meaningful code commit.
 
+## Open-source comparative research and deferred work
+
+- [Open-source phone gamepads: patterns, flags, licensing and integration](OPEN-SOURCE-RESEARCH.md).
+- [P8 — Touchpad latency optimization, strictly AFTER Gamepad release](TOUCHPAD-LATENCY-P8.md).
+- **Keep P1–P7 focused on Gamepad.** Audit external code/licenses before adapting; no source imported. PhonePad is the strongest packet/security/benchmark reference, while native Kotlin Custom-Controller and PadConnect offer UI ideas; validate the actual Windows XInput backend independently.
+
 ## Architecture and isolation
 
 ```
@@ -65,6 +71,10 @@ Avoid copying the existing `src/input.js` mouse protocol for controller frames; 
 - Baseline command `npm ci && npm test`, then Windows-native input tests and `npm run build:android` with supported SDK/JDK. Linux Rust tests should remain green if touched.
 - Existing `.github/workflows/ci.yml`: on PR runs Linux npm/Rust, Windows npm/C# input/update, and macOS npm/native build where present, then `CI passed` aggregate. Pushes to **main** also trigger CI, but a feature-branch push alone does not trigger all jobs; run checks manually or through fork PR when appropriate.
 - CI does not replace physical-device input/latency tests.
+
+## P8 — Follow-up ONLY after Gamepad P7 acceptance
+
+Review the current Touchpad render-frame coalescing and persistent WebSocket/native helper pipeline after a proven Gamepad release, then baseline physical latency and optimize observed bottlenecks. Preserve relative mouse delta ordering and tap/drag release semantics. See [TOUCHPAD-LATENCY-P8.md](TOUCHPAD-LATENCY-P8.md) for its gated checklist.
 
 ## Stop/go checkpoints for next developer
 

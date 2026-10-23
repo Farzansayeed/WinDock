@@ -10,6 +10,8 @@
 
 **Audit / risk gate:** [AUDIT.md](AUDIT.md) — 12 audited risks; A1/A2 (Windows virtual device) and A8 (neutral safety) are critical. Driver integration and app-to-game feasibility unproven. Follow audit execution gates; it supersedes phase ordering where inconsistent.
 
+**New research:** [OPEN-SOURCE-RESEARCH.md](OPEN-SOURCE-RESEARCH.md) compares six phone-controller projects, licensing, security flags and architecture integration. **Deferred P8:** [TOUCHPAD-LATENCY-P8.md](TOUCHPAD-LATENCY-P8.md) is queued strictly **after Gamepad v1/P7** and is NOT part of the current work.
+
 For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](UI-REFERENCE.md), [UX flow](01-UX-NAVIGATION.md), and [full technical brief](REQUIREMENTS-v2.md). See [WORKLOG](WORKLOG.md) for chronological changes.
 
 ## Status key
@@ -31,8 +33,9 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 | P5 | Secure paired control plane + reliable gamepad transport; Wi-Fi and USB tether | **NOT STARTED** | Auth/replay/loss/reconnect tests + measured transport comparison |
 | P6 | End-to-end game compatibility, input correctness, latency benchmarking | **NOT STARTED** | Real Android + PC; p50/p95/p99; regressions |
 | P7 | Installers, upgrade/fallback handling, release documentation | **NOT STARTED** | Windows/Android install and upgrade tests |
+| P8 | Improve existing Touchpad latency **after finished Gamepad v1** | **DEFERRED — AFTER P7** | Baseline/measured improvements, existing gesture regression tests |
 
-**Progress accounting:** **P0 complete; P1 code committed pending testing; P2–P7 not complete**. Plan audit documented in [AUDIT.md](AUDIT.md) on 2026-10-23 (documentation-only). This is not a percent-of-development estimate. No Windows/Android end-to-end gamepad testing has been run.
+**Progress accounting:** **P0 complete; P1 code committed pending testing; P2–P7 not complete; P8 Touchpad latency is deferred until Gamepad v1/P7.** No percentage estimate from phase count. Plan audit documented in [AUDIT.md](AUDIT.md) on 2026-10-23 (documentation-only). This is not a percent-of-development estimate. No Windows/Android end-to-end gamepad testing has been run.
 
 ## P0 — Repo setup, requirements and UI capture — DONE
 
@@ -140,6 +143,22 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [ ] Run relevant CI checks and manually document the result. `.github/workflows/ci.yml` runs on PRs and main pushes, **not** by default on this feature branch.
 - [ ] Tag/release **only when explicitly requested** and tested.
 
+## P8 — Touchpad latency optimization — DEFERRED UNTIL AFTER GAMEPAD V1
+
+- [x] User's requested post-gamepad Touchpad performance work recorded without changing P1–P7 scope.
+- [x] Existing Touchpad pipeline identified and candidate bottlenecks documented in [TOUCHPAD-LATENCY-P8.md](TOUCHPAD-LATENCY-P8.md).
+- [ ] **After P7**, take real Touchpad latency baseline on Android+Windows (Wi-Fi and USB tether).
+- [ ] Only then evaluate WebView touch sampling, `requestAnimationFrame` coalescing, WebSocket/Node, persistent native helper and optional native transport based on measurements.
+- [ ] Implement and test improvements without breaking tap/scroll/pinch/drag, Signature or keyboard; record before/after evidence.
+
+**Do not start P8 during gamepad feature construction, and do not assume gamepad UDP semantics apply to relative mouse deltas.**
+
+## Research completed — documentation, NOT integration
+
+- [x] Verified six open-source phone gamepad repositories and adjacent receiver/security documents; documented license and implementation caveats in [OPEN-SOURCE-RESEARCH.md](OPEN-SOURCE-RESEARCH.md).
+- [x] Extracted concrete WinDock integration recommendations, benchmark methodology and red flags (not copied source code).
+- [ ] No candidate virtual driver or external mobile project has been integrated or physical-tested into WinDock as a result of this research.
+
 ## Explicitly deferred or excluded
 
 - Gyroscope: **future optional exploration after P6 and user approval**, not a v1 backlog obligation.
@@ -160,6 +179,8 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 See [AUDIT.md](AUDIT.md) for the full risk register and sources.
 
 ## Documentation/update contract — mandatory for future work sessions
+
+**Cross-repository research handling:** [OPEN-SOURCE-RESEARCH.md](OPEN-SOURCE-RESEARCH.md) is the reference baseline. When integrating third-party ideas, record source/license attribution and driver/security decisions. Do not copy GPL app code into MIT WinDock without license review. **Keep P8 queued until Gamepad P7 completes**; update its checklist and worklog only when explicitly doing that later work.
 
 **Every meaningful implementation batch/commit must update the docs in the SAME commit as the code whenever feasible:**
 
