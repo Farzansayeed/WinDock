@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-10-24 — Correct WebSocket route ownership exposed by CI
+
+**Observed test failure:** npm CI on first /gamepad channel commit 86b21f21 failed with "server.handleUpgrade() was called more than once with the same socket." Existing src/sync.js dock-status upgrade listener accepted ALL paths except /input, so the new /gamepad listener and dock listener both upgraded one socket.
+
+**Correction:** Limit read-only dock status upgrade to ONLY the root path "/". Existing /input listener owns ONLY /input and the new gamepad listener owns ONLY /gamepad. This also prevents accidental upgrades on other unknown paths, without weakening Origin/pairing checks. Keep the original connection tests plus real new gamepad test enabled in npm test.
+
+**Verification:** Corrective npm/CI pending at commit time. Do not label P5 completed until it passes.
+
+---
+
 ## 2026-10-24 — P5 isolated paired Gamepad WebSocket channel with no unsafe fake controller
 
 **User priority:** Park Spotify/brightness/dock regression investigations (still unresolved) and resume unfinished Gamepad phases. Current P2 XInput virtual driver remains unproven. Chose implementation independent of any privileged driver before device approval.

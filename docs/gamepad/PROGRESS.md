@@ -146,7 +146,7 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 
 ## P5 — Android ↔ PC pairing and low-latency transport — SECURE LAB CHANNEL IMPLEMENTED, HARDWARE NOT CONNECTED
 
-- [x] Add /gamepad WebSocket endpoint guarded by existing WinDock paired session and same-origin authorization; reject host without an actual backend sink (HTTP 503) rather than pretend controller connected.
+- [x] Add /gamepad WebSocket endpoint guarded by existing WinDock paired session and same-origin authorization; reject host without actual backend sink (HTTP 503). Fixed previously broad dock-sync WebSocket upgrader so only '/' is owned by dock, '/input' by touchpad and '/gamepad' by gamepad. Initial CI caught duplicate upgrade, awaiting rerun.
 - [x] Single owner/session lease; reject simultaneous phone owners; revalidate authorization; bounded 256-byte full-state frames, sequence replay protection, 180ms timer expiry, invalid/binary/overrate/disconnect neutralization, sink cleanup.
 - [x] Add real WebSocket integration tests for session authorization, second-owner rejection, replay filtering, stale lease, invalid frames, clean handoff, and absence of driver sink; tests operate only on an in-memory sink, NOT an XInput device.
 - [ ] Wire native Kotlin stick+A to authenticated local WinDock /gamepad socket, with correct touch/Back/background/lost pairing neutral.

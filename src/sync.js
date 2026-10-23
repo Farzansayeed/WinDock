@@ -97,7 +97,9 @@ export function createSyncHub({
   if (typeof runningTimer.unref === "function") runningTimer.unref();
 
   server.on("upgrade", (req, socket, head) => {
-    if (req.url?.split("?")[0] === "/input") return; // Separate bounded input channel.
+    // Only the dock-status root socket belongs here. /input and /gamepad
+    // have their own independent authenticated upgrade listeners.
+    if (req.url?.split("?")[0] !== "/") return;
     if (!originAllowed(req) || !isAuthorized(req)) {
       socket.write("HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n");
       socket.destroy();
