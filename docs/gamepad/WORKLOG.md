@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-10-23 — Preview publishing retry after GitHub 403 (CI troubleshooting)
+
+**Found:** Windows and Android build jobs both passed for [preview run 39989554161](https://github.com/Farzansayeed/WinDock/actions/runs/39989554161), but publish failed: GitHub REST returned HTTP 403 "Resource not accessible by integration" during `gh release create`. Job token log advertised `Contents: write`, so exact reason remains unverified. Retry of the failed publish job was requested via connected GitHub action; **not yet confirmed successful**. Newer versioned run for `d66074ce` remains in progress.
+
+**Impact:** Previously published [v0.2.3-gamepad.2](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.2-gd8663f6) remains available and unaffected. Even on a failed publish job, Windows/Android artifact ZIPs can be downloaded from the Actions run with GitHub sign-in while retained. Do not mark a release published unless release API shows assets.
+
+**Next:** Check rerun result, determine whether GitHub token policy/abuse rate limiting affects release creation, and use Actions artifacts as fallback. Do not weaken repo security permissions without understanding cause.
+
+---
+
 ## 2026-10-23 — GitHub build/test status reviewed (documentation)
 
 **Verified existing successful assets:** Preview [0.2.3-gamepad.2](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.2-gd8663f6) from `d8663f6`; [preview build run 39988429549](https://github.com/Farzansayeed/WinDock/actions/runs/39988429549) and [general CI run 39988429632](https://github.com/Farzansayeed/WinDock/actions/runs/39988429632) completed successfully, with Windows installer, Android APK, checksums and build identity. The intermediate JavaScript protocol commit `7caf907d` passed [general CI run 39989554258](https://github.com/Farzansayeed/WinDock/actions/runs/39989554258). Windows/.NET dual-language commit `d66074ce` has now **passed** [multi-platform CI run 39989884526](https://github.com/Farzansayeed/WinDock/actions/runs/39989884526), but **a newer release is not yet confirmed**.
