@@ -26,7 +26,7 @@ Android: Preview app → Phone options → Check for Gamepad Preview updates. A 
 
 ## Stable Android preview signing — required for smooth upgrading
 
-Earlier APKs use ephemeral GitHub Actions debug signing, so Android might reject an update with a different signing key EVEN WHEN the APK checksum passes. CI now supports persistent signing with a dedicated keystore saved only as GitHub Actions repository secrets.
+Earlier APKs used ephemeral GitHub Actions debug signing, so Android may reject an update from a new signing key EVEN WHEN the APK checksum passes. The owner **reported adding all four GitHub Actions repository secrets** (2026-10-23); the new preview workflow now REQUIRES them, fails if any is absent, and verifies the APK's public signer certificate SHA-256 against the keystore certificate. It publishes SIGNING-INFO.txt with the public fingerprint. **Do not claim this was verified until a fresh Actions run and GitHub release succeeds.**
 
 Owner setup:
 1. On a trusted computer with Java JDK, run:
@@ -80,3 +80,7 @@ Continuation:
 - [ ] P8 Touchpad latency optimization remains strictly AFTER working Gamepad v1.
 
 IMPORTANT: Source implementation is not proof of successful installation. Record exact branch/commit, OS/app version, test commands, GitHub Actions run results and blockers in PROGRESS.md and WORKLOG.md after every change.
+
+## Latest signing-proof rule (2026-10-23)
+
+The user's four GitHub Actions secrets have reportedly been configured (do NOT request their private values). The new workflow must produce **SIGNING-INFO.txt**, containing the **public** Android signer-certificate SHA-256, after checking it matches the keystore's public certificate. Never put the secret keystore/password into release assets, logs or chat. The preview publish job must include SIGNING-INFO.txt; a failed signing check means no new installer/APK prerelease. To verify future in-place upgrades, compare public SHA-256 certificate digests in two consecutive signed Preview releases and test on a physical Android device. Merely saving GitHub secrets or seeing a green CI workflow does NOT prove an APK upgrade works.

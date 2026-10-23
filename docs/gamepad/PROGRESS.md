@@ -1,3 +1,4 @@
+<!-- 2026-10-23: signing security update — owner reports four GitHub Actions secrets provisioned; requires a new successful release proving signer consistency. -->
 # WinDock Universal Gamepad — LIVE PROGRESS TRACKER
 
 **Canonical source of truth for status:** this document, on the `feature/universal-gamepad` branch of [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock/tree/feature/universal-gamepad).  
@@ -16,7 +17,7 @@
 
 **Latest updater test evidence (2026-10-23):** [CI run #39994885297](https://github.com/Farzansayeed/WinDock/actions/runs/39994885297) **passed Windows, Linux, macOS and overall CI** for commit `0deb4b84`, including Windows update fixture tests. Earlier signing-enabled commit `440a12fb` passed [CI #39994402883](https://github.com/Farzansayeed/WinDock/actions/runs/39994402883) and its Android APK/unit/lint build job, but **final release publication was still pending at check time**. Do not claim a new installer/APK has been released or a physical upgrade has been tested.
 
-**New fork-only consented updater:** [UPDATES.md](UPDATES.md) describes Windows Preview tray and Android Preview Phone options check → consent → release SHA-256 verified download → OS installer consent; source committed, CI/real-device upgrades pending. Optional stable Android signing from 4 GitHub Actions secrets is implemented but NOT configured by owner. Do not claim fully automatic/silent updates.
+**New fork-only consented updater:** [UPDATES.md](UPDATES.md) describes Windows Preview tray and Android Preview Phone options check → consent → release SHA-256 verified download → OS installer consent; source committed, CI/real-device upgrades pending. Owner reports all four signing secrets added on 2026-10-23. New workflow now refuses accidental fallback to ephemeral debug signing and verifies APK signer fingerprint against keystore certificate; **fresh build result and physical update are pending**. Do not claim fully automatic/silent updates.
 
 **Preview installation and release automation:** [INSTALL-PREVIEW.md](INSTALL-PREVIEW.md). **First successful Gamepad Preview 0.2.3-gamepad.1 published** as a prerelease: [Windows + Android downloads](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.1-gc631611). [Build workflow run 39988106341](https://github.com/Farzansayeed/WinDock/actions/runs/39988106341) and [CI run 39988106319](https://github.com/Farzansayeed/WinDock/actions/runs/39988106319) completed **success** for commit `c631611`; includes Windows installer smoke and Android unit/lint/APK. **No real-phone/manual install performed**; newer versions must be verified separately.
 
@@ -160,7 +161,7 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [x] Verify successful GitHub Actions Windows installer + Android APK and published prerelease **for commit `c631611`**, with both platform jobs + publish passing (build 0.2.3-gamepad.1; release assets + checksums verified by GitHub API). [Run](https://github.com/Farzansayeed/WinDock/actions/runs/39988106341) / [release](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.1-gc631611).
 - [x] Implement fork-only Windows manual Check for updates, strict release allowlists, verified installer and user-approved setup launch; CI/physical upgrade pending.
 - [x] Implement Android Preview Phone options update check, verified APK download, package identity check and Android system installer handoff; CI/physical upgrade pending.
-- [x] Add optional stable Android keystore via private GitHub Actions secrets; owner has NOT supplied secrets and stable signing not confirmed.
+- [x] Add optional stable Android keystore via private GitHub Actions secrets; owner reports secrets added (values not inspected); the new CI requires and checks signer identity, but published APK provenance and physical upgrade still require verification.
 - [ ] Confirm latest updater Windows/Android CI, lint, test and successful published preview; repair any regressions.
 - [ ] Real PC/Android vN-to-vN+1 upgrade tests, cancel/failure paths, signature compatibility and configuration preservation.
 - [ ] Test installer and APK manually on owner's real PC/phone, validate Wi-Fi/USB pairing, direct mode navigation and update behavior. CI smoke is not physical field testing.

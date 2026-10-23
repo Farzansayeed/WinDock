@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-23 — Persistent Android Preview signing: owner reports secrets configured; hard provenance gate committed
+
+**Owner action:** User confirmed all four GitHub Actions repository signing secrets have been added. Secret **values were NOT fetched, viewed, copied or committed**. GitHub metadata listing was unavailable to this tool, so source configuration is the only verified information until a fresh run.
+
+**Change:** The feature-branch GitHub Actions APK build now requires all four secrets; missing values FAIL the build rather than silently revert to a per-run debug keystore. After building, it compares the public SHA-256 certificate fingerprint of APK signer to the same fingerprint exported from the configured keystore and fails on mismatch. It records only the PUBLIC certificate fingerprint in SIGNING-INFO.txt, attaches it to build artifacts and the GitHub prerelease. Release notes explain the mandatory one-time migration from old ephemeral-key APKs.
+
+**Tests:** At commit time, a new Actions run must confirm secrets load, APK is signed by the configured private key, Windows+Android build/tests succeed, and SIGNING-INFO.txt reaches a published release. No real APK upgrade was attempted on the user's phone.
+
+**Next:** Check latest workflow run/release assets and public fingerprint. Record build evidence; then install a freshly signed Preview APK (may require uninstall old Preview once), preserve private JKS offline and verify a NEXT signed release has an identical public signer fingerprint and can update in place with OS confirmation.
+
+---
+
 ## 2026-10-23 — Updater CI evidence checked; release/physical verification pending
 
 **Verified:** [CI run #39994885297](https://github.com/Farzansayeed/WinDock/actions/runs/39994885297) succeeded on Windows, Linux and macOS and overall CI for `0deb4b84`, which includes the fork updater docs and Android parser tests; [CI run #39994402883](https://github.com/Farzansayeed/WinDock/actions/runs/39994402883) succeeded for optional signing integration. The Android unit/build/lint job of preview run [39994403042](https://github.com/Farzansayeed/WinDock/actions/runs/39994403042) passed. Windows installer and final prerelease publication for the newest update-enabled workflow were still in progress/pending at time of check.

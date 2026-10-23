@@ -14,7 +14,7 @@ The latest version **confirmed published and fully built** at this review was [W
 
 **Windows Preview:** Right-click Preview tray → Check for Gamepad Preview updates; when a newer fork release exists, approve download, SHA-256 verification and installer launch. Windows may prompt about unsigned installer; original WinDock remains separate.
 
-**Android Preview:** Open Phone options → Check for Gamepad Preview updates; approve download; Android's system package installer still requires confirmation. Smooth in-place upgrades need one stable signing key across preview APKs. See [UPDATES.md](UPDATES.md) for key setup and the mandatory test checklist. Source is committed, real-device updater behavior not yet verified.
+**Android Preview:** Open Phone options → Check for Gamepad Preview updates; approve download; Android's system package installer still requires confirmation. Smooth in-place upgrades require one stable signing key across preview APKs; owner reports all four private signing secrets added. New workflow checks signer identity and publishes SIGNING-INFO.txt; build and phone testing still needed. See [UPDATES.md](UPDATES.md) for key setup and the mandatory test checklist. Source is committed, real-device updater behavior not yet verified.
 
 ## Download from your own GitHub fork
 
@@ -68,3 +68,6 @@ The original upstream project's downloads and release notes remain unchanged. Ne
 - **P8 Touchpad latency optimization** stays deferred until the functional Gamepad is finished.
 
 Current progress: https://github.com/Farzansayeed/WinDock/blob/feature/universal-gamepad/docs/gamepad/PROGRESS.md
+
+
+**Android signing provenance:** For newer successfully published releases (after the hard-signing gate), download SIGNING-INFO.txt and compare its public certificate SHA-256 across versions before attempting an upgrade. Do not share the private JKS/passwords. Migrating from an older ephemeral-debug APK to the permanent key requires removing only the OLD Gamepad Preview APK one time. Every subsequent version should install over the prior permanent-key version after Android OS approval, but verify on a real device.
