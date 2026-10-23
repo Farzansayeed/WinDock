@@ -67,6 +67,25 @@ for (const bad of [{ pid: 0 }, { pid: -1 }, { pid: 1.5 }, { pid: "4812; rm -rf /
 }
 t.equal(rec.calls.length, 0, "no exec is issued for any rejected input");
 
+// Win32 universal launch/focus regression, not a Spotify-specific branch.
+const nativeHelper = readFileSync(new URL("../native/win/Program.cs", import.meta.url), "utf8");
+const nativeWindowLookup = readFileSync(new URL("../native/win/ExecutableWindows.cs", import.meta.url), "utf8");
+t.ok(nativeHelper.includes("ExecutableWindows.FindVisibleMainWindow(target)") &&
+  nativeHelper.includes("BringWindowForward(existing)"),
+  "native Win32 launch brings an existing app window forward before spawning");
+t.ok(nativeWindowLookup.includes("GetProcessesByName") &&
+  nativeWindowLookup.includes("MainWindowHandle") &&
+  nativeWindowLookup.includes("MainModule?.FileName") &&
+  nativeWindowLookup.includes("StringComparison.OrdinalIgnoreCase"),
+  "universal window lookup matches exact executable and real top-level window, not background child processes");
+t.ok(nativeHelper.includes("if (args.Length == 2)") &&
+  nativeHelper.includes("Arguments = args.Length == 3 ? args[2] : string.Empty"),
+  "Win32 launch preserves distinct shortcut argument and profile semantics");
+t.ok(nativeHelper.includes("if (attached) AttachThreadInput(thisThread, foregroundThread, false)"),
+  "Win32 temporary focus input attachment detaches in finally");
+t.ok(!nativeWindowLookup.toLowerCase().includes("spotify"),
+  "universal Win32 helper contains no app-name hardcoding");
+
 // ---- Linux provider argv ----
 const packagedTarget = "shell:AppsFolder\\OpenAI.Codex_2p2nqsd0c76g0!App";
 const packagedCalls = recorder();

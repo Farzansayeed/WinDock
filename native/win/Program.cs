@@ -72,6 +72,19 @@ internal static class Program
         var target = args[1];
         if (string.IsNullOrWhiteSpace(target)) return Usage("launch: empty target");
 
+        // Existing-window activation is universal for ordinary Win32 desktop
+        // applications. Spotify/CEF, browsers and Electron apps may use many
+        // child processes; only the process with a REAL main window and the
+        // EXACT executable path is eligible. Never conflate filename matches
+        // with identity. Preserve special shortcut/profile arguments: a
+        // different profile must be launched, not a random existing window.
+        if (args.Length == 2)
+        {
+            var existing = ExecutableWindows.FindVisibleMainWindow(target);
+            if (existing != IntPtr.Zero && BringWindowForward(existing))
+                return 0;
+        }
+
         // UseShellExecute lets Windows resolve the verb for the file type and
         // launches with the user's own token. The path is passed as FileName,
         // never as part of a command string.
@@ -127,21 +140,29 @@ internal static class Program
             return 2;
         }
 
+        return BringWindowForward(hWnd) ? 0 : 2;
+    }
+
+    private static bool BringWindowForward(IntPtr hWnd)
+    {
+        if (hWnd == IntPtr.Zero) return false;
         if (IsIconic(hWnd)) ShowWindow(hWnd, SW_RESTORE);
+        if (GetForegroundWindow() == hWnd) return true;
 
-        // Windows refuses SetForegroundWindow from a process that does not own
-        // the foreground. Attaching to the foreground thread's input queue is
-        // the documented way to make the call succeed for a legitimate
-        // user-initiated activation.
+        // Foreground promotion can be restricted by Windows. Only try to
+        // attach to a REAL foreground thread, and always detach in finally.
+        // Do not bypass user-session or integrity-level protections.
         var foreground = GetForegroundWindow();
-        var foreThread = GetWindowThreadProcessId(foreground, out _);
+        var foregroundThread = foreground == IntPtr.Zero
+            ? 0 : GetWindowThreadProcessId(foreground, out _);
         var thisThread = GetCurrentThreadId();
-
-        if (foreThread != thisThread) AttachThreadInput(thisThread, foreThread, true);
-        var ok = SetForegroundWindow(hWnd);
-        if (foreThread != thisThread) AttachThreadInput(thisThread, foreThread, false);
-
-        return ok ? 0 : 2;
+        var attached = foregroundThread != 0 && foregroundThread != thisThread &&
+            AttachThreadInput(thisThread, foregroundThread, true);
+        try { return SetForegroundWindow(hWnd); }
+        finally
+        {
+            if (attached) AttachThreadInput(thisThread, foregroundThread, false);
+        }
     }
 
     private const uint WM_CLOSE = 0x0010;

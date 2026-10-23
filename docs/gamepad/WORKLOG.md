@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-10-24 — Generic Win32 existing-window activation for multi-process desktop apps (owner-approved universal fix)
+
+**Owner evidence:** Spotify's classic Roaming Spotify.exe succeeds via Start-Process. Eight Spotify processes are visible but only one (Spotify Free) has a nonzero MainWindowHandle. This is characteristic of multi-process desktop frameworks, so an app-name special case would be wrong.
+
+**Universal native implementation:** New native/win/ExecutableWindows.cs enumerates only processes sharing the executable's base name, checks a NONZERO MainWindowHandle and verifies their full MainModule.FileName equals the selected executable path (Windows case-insensitive). Background helper child processes without a window and unrelated programs with the same filename in another directory are NOT considered the active app. Missing permissions/process exit skips a candidate; no elevation or Windows security-policy changes. WinDockHelper Program.Launch first tries to restore/focus this existing matching desktop window when shortcut arguments are empty. For explicit arguments/profiles, preserve existing Process.Start behavior so profile-specific browser launches aren't hijacked. If no window can be activated, normal launch still runs. Program.Focus reuses common BringWindowForward and always detaches any foreground thread-input attachment in finally. Packaged/MSIX apps remain on separate IApplicationActivationManager flow.
+
+**User-facing state:** This is a reusable native Windows enhancement for ALL classic Windows desktop apps with a visible window, including CEF/Electron/multi-process apps; not hardcoded to Spotify. It still cannot prove an unseen newly launched app makes a visible window, and Windows may restrict foreground focus. Old Steam/game launchers whose executable differs from their actual window's binary may still need explicit shortcut mapping. Earlier v13 Store-app COM and v14 pending async response improvements are orthogonal.
+
+**Regression gates:** Added platform-agnostic launch source safety assertions (exact executable path + nonzero window; no Spotify constants, shortcut arguments preserved, input-thread detach). Windows native C# build, CI and new preview publication REQUIRED. Physical test on owner's PC/phone REQUIRED (Spotify already running in background then tap; closed then tap; other classic programs, Store apps, tile dots, Windows foreground). No physical run claimed.
+
+**Next:** Inspect CI and actual fork preview download matching this source, then user tests running/focus/relaunch behavior. If direct Spotify works but dock still fails, use WinDock launch error and saved tile args/target plus actual Windows session/foreground diagnostics, never reinstall blindly. Full gamepad driver P2 and VS1 remain pending; P8 touchpad tuning deferred.
+
+---
+
 ## 2026-10-24 — Spotify classified as classic Win32; eliminate artificial HTTP launch delay
 
 **Owner's real PowerShell evidence:** Get-StartApps lists Spotify with an AppID pointing at a Spotify.exe under the user's Roaming AppData; Get-AppxPackage -Name '*Spotify*' returned nothing; Test-Path "$env:APPDATA\\Spotify\\Spotify.exe" was True. Thus this installation is an **unpackaged Win32 executable**, NOT Store/MSIX. The v13 IApplicationActivationManager COM change was limited to Store-packaged applications and **cannot explain or fix this Spotify instance**. Retain the v13 COM improvement for other Store apps; do not claim it repaired Spotify.
