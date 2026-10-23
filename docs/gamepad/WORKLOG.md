@@ -12,7 +12,7 @@
 
 **Scope:** This is **local input visualization only**, NOT an authenticated controller transport, virtual Windows gamepad, full customizable editor, or end-to-end multiplayer/game test. The PC receives no gamepad state; existing Touchpad/WebSocket path remains separate. No vibration/gyro added.
 
-**Tests:** Android unit tests + existing CI/preview workflow still to be checked after commit. **No real Android or Windows hardware tests.** P2 driver installation/signing remains undecided.
+**Tests:** [CI #39991422757](https://github.com/Farzansayeed/WinDock/actions/runs/39991422757) passed on Windows/Linux/macOS; the Android build/unit/lint job of [preview workflow #39991422753](https://github.com/Farzansayeed/WinDock/actions/runs/39991422753) passed for commit `0a81c22`. Installer/release publishing job was still in progress when checked. **No physical Android or Windows gamepad test.** P2 driver installation/signing remains undecided.
 
 **Next:** Fix any CI issues, inspect latest preview download, run phone gesture tests, then P2 Windows signed XInput proof/VS1 connection.
 
