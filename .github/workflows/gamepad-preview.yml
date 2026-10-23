@@ -88,6 +88,24 @@ jobs:
           java-version: '21'
       - name: Install Android SDK platform and tools
         run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
+      - name: Load stable Android preview signing key (optional)
+        env:
+          PREVIEW_KEYSTORE_BASE64: ${{ secrets.WINDOCK_PREVIEW_KEYSTORE_BASE64 }}
+          PREVIEW_STORE_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_STORE_PASSWORD }}
+          PREVIEW_KEY_ALIAS: ${{ secrets.WINDOCK_PREVIEW_KEY_ALIAS }}
+          PREVIEW_KEY_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_KEY_PASSWORD }}
+        run: |
+          if [ -n "$PREVIEW_KEYSTORE_BASE64" ] && [ -n "$PREVIEW_STORE_PASSWORD" ] && [ -n "$PREVIEW_KEY_ALIAS" ] && [ -n "$PREVIEW_KEY_PASSWORD" ]; then
+            umask 077
+            printf '%s' "$PREVIEW_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/windock-gamepad-preview.jks"
+            echo "WINDOCK_PREVIEW_KEYSTORE_PATH=$RUNNER_TEMP/windock-gamepad-preview.jks" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_STORE_PASSWORD=$PREVIEW_STORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_ALIAS=$PREVIEW_KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_PASSWORD=$PREVIEW_KEY_PASSWORD" >> "$GITHUB_ENV"
+            echo "Stable preview signing enabled (key stored only in Actions secrets)."
+          else
+            echo "Stable signing secrets unavailable; using ephemeral debug signing."
+          fi
       - name: Build numbered APK, unit tests and lint
         working-directory: android
         run: |

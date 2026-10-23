@@ -18,11 +18,27 @@ android {
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
+    // Stable preview signing comes from private Actions secrets, not the repo.
+    signingConfigs {
+        if (System.getenv('WINDOCK_PREVIEW_KEYSTORE_PATH') &&
+            System.getenv('WINDOCK_PREVIEW_STORE_PASSWORD') &&
+            System.getenv('WINDOCK_PREVIEW_KEY_ALIAS') &&
+            System.getenv('WINDOCK_PREVIEW_KEY_PASSWORD')) {
+            preview {
+                storeFile file(System.getenv('WINDOCK_PREVIEW_KEYSTORE_PATH'))
+                storePassword System.getenv('WINDOCK_PREVIEW_STORE_PASSWORD')
+                keyAlias System.getenv('WINDOCK_PREVIEW_KEY_ALIAS')
+                keyPassword System.getenv('WINDOCK_PREVIEW_KEY_PASSWORD')
+            }
+        }
+    }
     buildTypes {
         debug {
             if (project.hasProperty('windockPreviewVersionName')) {
                 // Unique Android application ID: does not overwrite original WinDock.
                 applicationIdSuffix '.gamepadpreview'
+                if (signingConfigs.findByName('preview') != null)
+                    signingConfig signingConfigs.preview
             }
         }
         release {
@@ -43,6 +59,7 @@ android {
 dependencies {
     implementation 'androidx.core:core-ktx:1.13.1'
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.json:json:20240303'
     androidTestImplementation 'androidx.test:runner:1.6.2'
     androidTestImplementation 'androidx.test:core:1.6.1'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
