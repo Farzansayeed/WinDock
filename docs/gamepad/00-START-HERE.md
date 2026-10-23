@@ -1,5 +1,8 @@
 # WinDock Universal Gamepad — START HERE
 
+**CURRENT CONTINUATION STATE (2026-10-23):** [SESSION-HANDOFF.md](SESSION-HANDOFF.md) is the concise full handoff for future chats. [PROGRESS.md](PROGRESS.md) is the canonical live checklist and [WORKLOG.md](WORKLOG.md) contains dated evidence. The signed [Gamepad Preview v11](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.11-g175942e) passed GitHub Actions, including private-keystore APK signer verification; Windows virtual Xbox controller/gamepad network transport are NOT implemented, and physical upgrades remain untested. Older sections below may describe earlier checkpoints and should not override this status.
+
+
 **Canonical fork:** https://github.com/Farzansayeed/WinDock
 **Work branch:** `feature/universal-gamepad`
 **Upstream:** https://github.com/aliihsaad/WinDock
@@ -71,13 +74,15 @@ At the last documented status, **P0 is complete; P1 UI-only navigation code is c
 
 - [x] User fork verified writable; development branch created.
 - [x] Requirements and navigation agreed; full plans committed in these docs.
-- [ ] Gamepad mode UI/UX implemented in repo.
+- [x] Gamepad UI preview and direct Touchpad switching coded/CI tested; no working PC gamepad yet.
 - [ ] Android native multitouch custom layout editor and storage implemented.
 - [ ] Secure PC session negotiation and native input transport implemented.
 - [ ] Virtual controller driver chosen, integrated and licensed for distribution.
-- [ ] Physical Windows/Android testing, game compatibility, measured latency, CI verification.
-- [ ] Builds/releases generated.
+- [ ] Real phone/Windows testing, PC gamepad compatibility and latency measurements; source/preview CI has passed.
+- [x] Versioned PREVIEW installers/APKs published; v11 uses permanent APK signing verified in CI (stable gamepad release not ready).
 
 ## Continue in a fresh ChatGPT/Codex chat
+
+**For a new chat, direct the assistant first to [SESSION-HANDOFF.md](SESSION-HANDOFF.md) and root AGENTS.md; both explicitly preserve current state, signing, next steps and what's not tested.**
 
 > Work on https://github.com/Farzansayeed/WinDock, branch `feature/universal-gamepad`. First read `docs/gamepad/00-START-HERE.md`, **`PROGRESS.md`**, **`AUDIT.md`** and **`WORKLOG.md`**, `UI-REFERENCE.md`, `01-UX-NAVIGATION.md`, `02-IMPLEMENTATION-ROADMAP.md` and `REQUIREMENTS-v2.md`. Update the checklist and worklog with every code batch, including testing evidence and the next action. Do not ask me to repeat this brief. Implement incrementally on **my fork only**, preserve original features, write tests, and clearly separate a visual prototype from working virtual-controller support. Do not introduce haptics or gyroscope in v1; keep Touchpad latency as P8 **after** Gamepad P7; use `OPEN-SOURCE-RESEARCH.md` for architectural inspiration/licensing cautions. Do not open a PR to the original project.

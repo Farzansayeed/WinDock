@@ -69,10 +69,10 @@ Continuation:
 
 - [x] Windows fork-only release parser and hash-verifying download/install consent source added; fixture tests added.
 - [x] Android fork-only release check, hash-verifying APK download, FileProvider and Android system installer handoff source added.
-- [x] Optional stable Android private signing integration added in CI; owner secrets not yet configured.
-- [x] Multi-platform GitHub CI passed updater code and Windows tests; Android packaging/JVM/lint job of previous signing-enabled commit passed. **Latest complete installable prerelease and physical update gates still open.**
-- [ ] Check actual successful GitHub preview prerelease generated from this updater commit; don't invent a download.
-- [ ] Owner configures the four signing secrets securely on GitHub.
+- [x] User configured all four permanent Preview signing GitHub Actions secrets; [v11 Actions build](https://github.com/Farzansayeed/WinDock/actions/runs/39998130556) verified the APK signer public certificate matches the private keystore certificate. No secret values accessed.
+- [x] v11 Windows installer smoke, Android build/JVM/lint, permanent APK signer match and release publishing passed [Actions](https://github.com/Farzansayeed/WinDock/actions/runs/39998130556) and [CI](https://github.com/Farzansayeed/WinDock/actions/runs/39998130774). Physical upgrades remain untested.
+- [x] Verified non-draft [Preview v11 prerelease](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.11-g175942e) with Windows installer, Android APK, SHA256SUMS, BUILD-INFO and PUBLIC SIGNING-INFO.
+- [x] Owner reported all four GitHub Actions secrets configured; signer was checked successfully during release build. Never request private JKS/passwords.
 - [ ] Test real PC update vN→vN+1: prompts, hash, installer starts, old process exits, settings persist.
 - [ ] Test real Android update: consent, download, package installer, stable signing across two builds, preview data persists.
 - [ ] Test no update, offline/API rate limit, broken checksum, malicious asset URL, download interrupted, cancelled prompt and older version.
@@ -80,6 +80,8 @@ Continuation:
 - [ ] P8 Touchpad latency optimization remains strictly AFTER working Gamepad v1.
 
 IMPORTANT: Source implementation is not proof of successful installation. Record exact branch/commit, OS/app version, test commands, GitHub Actions run results and blockers in PROGRESS.md and WORKLOG.md after every change.
+
+**Future-chat source of truth:** [SESSION-HANDOFF.md](SESSION-HANDOFF.md) covers the current verified signing milestone, remaining physical upgrade tests and the full next-chat code map.
 
 ## Latest signing-proof rule (2026-10-23)
 

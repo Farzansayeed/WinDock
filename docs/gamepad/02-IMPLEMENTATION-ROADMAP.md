@@ -4,6 +4,8 @@
 
 > **Progress note:** For current task checkboxes, status, blockers, verification evidence and next action, consult [PROGRESS.md](PROGRESS.md) and [WORKLOG.md](WORKLOG.md). The milestones below are a design roadmap, not a claim of completion. Update the tracker/worklog alongside every meaningful code commit.
 
+**Status caveat:** This is a design roadmap. Current implementation and released-package evidence are in [SESSION-HANDOFF.md](SESSION-HANDOFF.md); signed v11 packages exist, but no working phone-to-Windows virtual Xbox controller. Read the live tracker before coding.
+
 ## Open-source comparative research and deferred work
 
 - [Open-source phone gamepads: patterns, flags, licensing and integration](OPEN-SOURCE-RESEARCH.md).
@@ -69,7 +71,7 @@ Avoid copying the existing `src/input.js` mouse protocol for controller frames; 
 - Real Windows game/virtual-device detection verified, not merely DOM events shown.
 - Claim nothing about low latency until per-stage timestamps have been measured on physical phone and PC with separately stated phone hardware/game display limits.
 - Baseline command `npm ci && npm test`, then Windows-native input tests and `npm run build:android` with supported SDK/JDK. Linux Rust tests should remain green if touched.
-- Existing `.github/workflows/ci.yml`: on PR runs Linux npm/Rust, Windows npm/C# input/update, and macOS npm/native build where present, then `CI passed` aggregate. Pushes to **main** also trigger CI, but a feature-branch push alone does not trigger all jobs; run checks manually or through fork PR when appropriate.
+- `.github/workflows/ci.yml` and the Gamepad Preview release workflow have been configured for and successfully run on `feature/universal-gamepad` code pushes. Check the current Actions configuration and results; [v11 CI](https://github.com/Farzansayeed/WinDock/actions/runs/39998130774) passed. Historical notes about only PR/main triggering CI are obsolete.
 - CI does not replace physical-device input/latency tests.
 
 ## P8 — Follow-up ONLY after Gamepad P7 acceptance

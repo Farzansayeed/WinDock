@@ -2,6 +2,8 @@
 
 **Current state:** The fork has a Touch & sign Gamepad UI preview, but NO playable virtual Xbox controller yet. These files are experimental test builds.
 
+**Future development handoff:** [SESSION-HANDOFF.md](SESSION-HANDOFF.md) describes source/release status, safe signing migration and exact next tasks; do not use older release references here as proof of the latest on another day.
+
 ## Latest confirmed development release (at last documentation review)
 
 The latest **permanently signed Android Preview release verified in Actions** was [WinDock Gamepad Preview 0.2.3-gamepad.11](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.11-g175942e), built from commit `175942e`. GitHub Actions confirmed its APK signer matches the owner's permanent Preview keystore, and the release contains SIGNING-INFO.txt. It still only includes a native Android **local-only stick+A preview**, not playable PC gamepad support. It has Windows installer + Android APK and checksums. Newer code may be compiling; open the [Releases page](https://github.com/Farzansayeed/WinDock/releases) to see if a later numbered version passed and was actually published.

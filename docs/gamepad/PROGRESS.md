@@ -27,6 +27,8 @@
 
 For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](UI-REFERENCE.md), [UX flow](01-UX-NAVIGATION.md), and [full technical brief](REQUIREMENTS-v2.md). See [WORKLOG](WORKLOG.md) for chronological changes.
 
+**MANDATORY new-chat context:** [SESSION-HANDOFF.md](SESSION-HANDOFF.md) (verified v11 signed release, blockers, exact source map, tests, what to do next). Future sessions must read root AGENTS.md and preserve this tracker/worklog in the same code commit.
+
 ## Status key
 
 - `[x]` **Done** = committed and reviewed/verified as stated (include test evidence when applicable).
@@ -39,13 +41,13 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 | Phase | Outcome | Status | Evidence / gate |
 |---|---|---|---|
 | P0 | Fork + preserved requirements + actual current-UI screenshots + continuity instructions | **DONE** | Source and docs committed; see [UI reference](UI-REFERENCE.md) |
-| P1 | Gamepad added to existing Touch & sign navigation with UI-only preview | **CODE IMPLEMENTED / TESTS PENDING** | Relevant JS/HTML/CSS tests and manually validated navigation |
+| P1 | Gamepad inside Touch & sign, quick Touchpad return | **SOURCE/CI TESTS PASSED; REAL PHONE UX PENDING** | Regression and physical input navigation still need hands-on test |
 | P2 | Windows virtual Xbox controller backend feasibility and license decision | **READ-ONLY PROBE ADDED; DRIVER PROOF PENDING** | Driver comparison, native proof-of-concept, install/uninstall verification |
-| P3 | Native Android Kotlin gamepad screen + selectable multitouch controls + editor | **NOT STARTED** | Android unit/instrumentation tests on real phone |
+| P3 | Native Kotlin phone gamepad controls/editor | **FIXED LEFT-STICK+A LOCAL VIEW IMPLEMENTED + ANDROID CI PASSED; EDITOR PENDING** | Real-device gestures and full control groups still open |
 | P4 | Native Windows persistent receiver, virtual state mapping, neutral watchdog | **DRIVER-INDEPENDENT STATE CONTRACT ADDED; RECEIVER NOT STARTED** | Windows tests and `joy.cpl` hardware verification |
 | P5 | Secure paired control plane + reliable gamepad transport; Wi-Fi and USB tether | **NOT STARTED** | Auth/replay/loss/reconnect tests + measured transport comparison |
 | P6 | End-to-end game compatibility, input correctness, latency benchmarking | **NOT STARTED** | Real Android + PC; p50/p95/p99; regressions |
-| P7 | Installers, upgrade/fallback handling, release documentation | **PREVIEW BUILDS AVAILABLE; STABLE RELEASE GATE NOT MET** | Windows/Android install and upgrade tests |
+| P7 | Versioned preview packages, self-update and stable signing | **SIGNED V11 VERIFIED IN CI; PHYSICAL UPGRADES/STABLE GAMEPAD PENDING** | Published v11 has public signer proof; physical phone/PC updates unverified |
 | P8 | Improve existing Touchpad latency **after finished Gamepad v1** | **DEFERRED — AFTER P7** | Baseline/measured improvements, existing gesture regression tests |
 
 **Progress accounting:** **P0 complete; P1 code committed pending testing; P2–P7 not complete; P8 Touchpad latency is deferred until Gamepad v1/P7.** No percentage estimate from phase count. Plan audit documented in [AUDIT.md](AUDIT.md) on 2026-10-23 (documentation-only). This is not a percent-of-development estimate. No Windows/Android end-to-end gamepad testing has been run.
@@ -62,7 +64,7 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 - [x] Created this progress tracker and [WORKLOG](WORKLOG.md).
 - [ ] No implementation tasks or native tests are included in P0; see P1–P7.
 
-## P1 — Navigation and UI-only preview — NEXT
+## P1 — Navigation and UI-only preview — SOURCE/CI PASS; MANUAL UX GATE OPEN
 
 **Goal:** one-tap navigation between fullscreen Touchpad and Gamepad while staying inside the existing Touch & sign experience; Signature continues working. **No fake controller connectivity.**
 
@@ -73,7 +75,7 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 - [x] Add responsive gamepad preview styles to `public/style.css` matching navy/charcoal grid, subtle glass and blue accents. **Source code committed; full P1 gate still pending.**
 - [x] Show accurate capability/preview labels: **UI preview, not yet controlling PC games**; no misleading `Connected controller` state. **Source code committed; full P1 gate still pending.**
 - [x] Add regression tests for mode switching and existing `Touchpad`/`Signature` behavior, update existing verification tests as appropriate. **Persistent mode-switch tests added as `scripts/verify-gamepad-ui.mjs` and registered in `test/run.mjs`, plus static `verify-pwa.mjs` assertions.**
-- [ ] Run the full `npm test`/feature-branch CI and record results (not yet executed or confirmed); the **persisted mode-switch test executed in a mocked runtime and passed 21 assertions**; full Node/npm/CI and Android tests remain outstanding in the authoring environment.
+- [x] GitHub feature-branch CI/npm tests and Android preview build/lint passed (for v11: [Actions](https://github.com/Farzansayeed/WinDock/actions/runs/39998130556) and [CI](https://github.com/Farzansayeed/WinDock/actions/runs/39998130774)); mocked mode-switch tests also passed. **Manual phone/WebView regression remains untested**.
 - [ ] Manually verify Touchpad → Gamepad → Touchpad, Signature switching, Touchpad release, responsive layout and WebView behavior on a real Android phone.
 - [x] Update the PWA service-worker cache key to prevent old input UI from persisting after an update.
 - [x] Enable existing CI on pushes to `feature/universal-gamepad` (runs when GitHub Actions is enabled for this fork).
@@ -98,7 +100,7 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [ ] Build isolated native C# proof of concept for creating/removing a virtual controller; no gamepad network plumbing required yet. Compare HIDMaestro (.NET 10/admin + local cert) with existing WinDock .NET 8, licensed libvirtualhid, and retired ViGEmBus. **Never bypass driver signature enforcement.**
 - [ ] Validate clean install, elevation/UAC lifecycle, machine certificate trust, signature legitimacy, Windows 10/11 support, and reversible uninstall; choose safe way to isolate administrative work.
 - [x] Add a no-install, read-only XInput slot inspector in `native/gamepad-probe/` to support real Windows testing. **Source added, compilation/Windows execution pending.**
-- [x] Wire .NET 8 diagnostic build/help into Windows CI and its static read-only invariants into `npm test`. **Source checks executed independently and passed 19 assertions; Windows build/CI still pending.**
+- [x] Read-only .NET 8 XInput diagnostic build/help passed Windows GitHub CI; static source checks passed. **Real device/driver scan on owner's Windows PC is still pending**.
 - [ ] Record a before/after XInput slot scan and changed A/axes against a separately approved virtual driver on real Windows.
 - [ ] Verify recognized controller axes/buttons in Windows `joy.cpl` or equivalent.
 - [ ] Record chosen driver + reasons in `docs/gamepad/`, including caveats; confirm any admin/install requirements.
@@ -115,7 +117,7 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [ ] Implement local presets Full / Single Stick / Racing / Minimal / Custom, persisted per phone; profile changes reset hidden buttons.
 - [x] Model handles per-pointer release and ACTION_CANCEL; overlay neutralizes on Android pause, back, failed connection, dispose and return-to-Touchpad. No haptics or gyro. **Android unit/lint CI passed; real-device tests still needed.**
 - [ ] Real-thumb ergonomics: fixed/floating joystick center, pointer ownership, screen cutouts, button-size/contrast, accidental exit prevention and responsive landscape layouts.
-- [x] Add JVM model unit tests for continuous stick, logical axes, A+stick concurrent pointer IDs, ownership, cancel/release and clamping (CI pending).
+- [x] Add Kotlin/JVM model unit tests for analog axes, two-finger stick+A, pointer ownership, cancel/release and clamping; Android build/unit/lint CI passed. **Real phone testing still pending**.
 - [ ] Android instrumentation and real-device multi-finger usability/orientation tests.
 
 **Exit gate:** native Android screen and gesture/layout state are correct independently of PC games.
@@ -123,7 +125,7 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 ## P4 — Windows native receiver and controller state — PROTOCOL FOUNDATION ADDED, RECEIVER NOT STARTED
 
 - [ ] Implement persistent native C# gamepad service/receiver and a provider abstraction that does not disturb other OS providers.
-- [x] Define and independently test **strict v1 gamepad state protocol** (signed stick integers, byte triggers, XInput-compatible button mask, bounded frame size, exact field allowlist), shared as the future transport contract. Source and Node tests committed; GitHub CI pending.
+- [x] Strict driver-neutral JS/C# v1 gamepad snapshot protocol bounds and parser tests passed GitHub CI. **No live authorized network/driver integration yet**.
 - [x] Add driver-independent **JS and C#** fail-neutral session models (replay/drop, timeout and invalid-state release), with dual-language test suites wired into npm and Windows CI. **Multi-platform CI passed for `d66074ce`; neither model is wired to production network or virtual device.**
 - [ ] Map all analog/digital signals into virtual Xbox-compatible reports; support simultaneous buttons and analog trigger values.
 - [ ] Test bounded rate, validation and ordering; no process spawning per touch/update.
@@ -173,8 +175,8 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [ ] Package updated Windows host and Android APK with any lawful driver dependency/install UX and recovery.
 - [ ] Verify first install, uninstall, updates, Android/WebView host-version mismatch behavior.
 - [ ] Document usage, compatibility limitations and any admin privileges needed; include setup/screenshots and known issues.
-- [ ] Run relevant CI checks and manually document the result. `.github/workflows/ci.yml` runs on PRs and main pushes, **not** by default on this feature branch.
-- [ ] Tag/release **only when explicitly requested** and tested.
+- [x] Feature-branch GitHub CI is enabled and passing; [post-v11 docs CI](https://github.com/Farzansayeed/WinDock/actions/runs/39998883980) passed. Distinguish future CI run results from physical device tests.
+- [x] User approved continuous VERSIONED DEVELOPMENT PREVIEW prereleases from tested feature-branch code builds; stable promotion and driver redistribution still require independent acceptance/authorization.
 
 ## P8 — Touchpad latency optimization — DEFERRED UNTIL AFTER GAMEPAD V1
 

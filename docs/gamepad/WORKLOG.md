@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-23 — Consolidated next-chat handoff + status/documentation corrections
+
+**Requested:** Save everything future ChatGPT/Codex chats need in AGENTS.md and repository docs, including precise current status, user-approved requirements, build/signing details, unresolved Windows driver gate, risks and next steps.
+
+**Documentation changes:** Replaced root AGENTS.md with a concise binding instruction map. Created docs/gamepad/SESSION-HANDOFF.md with complete source/test/release inventory, branch and safety constraints, signed v11 milestone, no-private-key policy, pending phone/PC upgrade/driver/VS1 tests and source precedence. Linked it from 00-START-HERE.md, INSTALL-PREVIEW.md, UPDATES.md, roadmap and progress. Corrected historical P1/P3/CI/release statuses and obsolete Android signing checkboxes. No application logic altered.
+
+**Evidence:** Verified GitHub branch HEAD, non-draft signed [v11 release](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.11-g175942e) with SIGNING-INFO, passing [build #39998130556](https://github.com/Farzansayeed/WinDock/actions/runs/39998130556), [CI #39998130774](https://github.com/Farzansayeed/WinDock/actions/runs/39998130774) and docs [CI #39998883980](https://github.com/Farzansayeed/WinDock/actions/runs/39998883980). Documentation-only commit has not yet passed any new CI. **No physical phone or Windows virtual-gamepad test took place.** No private secrets accessed.
+
+**Next:** Future chat reads AGENTS.md and SESSION-HANDOFF.md, verifies current GitHub evidence, then assists owner with physical v11 and next same-key Android update OR progresses approved P2 Windows signed virtual XInput proof/VS1. Update PROGRESS and WORKLOG in every meaningful code commit. P8 Touchpad latency deferred.
+
+---
+
 ## 2026-10-23 — FIRST PERMANENTLY SIGNED PREVIEW v11 PUBLISHED AND VERIFIED IN ACTIONS
 
 **User setup:** User created a personal WinDock JKS using JDK 21 and said they configured all FOUR private GitHub Actions signing secrets. No key file, password or encoded key material was accessed or committed by the assistant.
