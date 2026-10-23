@@ -58,6 +58,8 @@ jobs:
         run: dotnet build native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release
       - name: Verify XInput diagnostic help (no device access)
         run: dotnet run --no-build --project native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -- --help
+      - name: Verify Windows gamepad protocol and fail-neutral model (no driver)
+        run: dotnet run --project native/gamepad-tests/WinDock.GamepadTests.csproj -c Release
       - name: Verify native touchpad protocol and transparent signature rendering
         run: dotnet run --project native/input-tests/WinDockInputTests.csproj -c Release
       - name: Verify update checks and startup notification policy

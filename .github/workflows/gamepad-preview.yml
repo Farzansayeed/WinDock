@@ -49,6 +49,11 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Input regression tests failed' }
           dotnet run --project native/update-tests/WinDockUpdateTests.csproj -c Release
           if ($LASTEXITCODE -ne 0) { throw 'Update regression tests failed' }
+      - name: Check Windows gamepad protocol and neutral-state model
+        shell: pwsh
+        run: |
+          dotnet run --project native/gamepad-tests/WinDock.GamepadTests.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'Gamepad protocol model tests failed' }
       - name: Build fork preview with a numbered version
         shell: pwsh
         run: |
