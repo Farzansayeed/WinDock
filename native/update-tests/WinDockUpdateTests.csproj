@@ -7,5 +7,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="../tray/UpdateChecker.cs" Link="UpdateChecker.cs" />
+    <Compile Include="../tray/PreviewUpdates.cs" Link="PreviewUpdates.cs" />
   </ItemGroup>
 </Project>

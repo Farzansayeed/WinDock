@@ -60,6 +60,36 @@ if (args.Contains("--live")) {
     var upgrade = await new UpdateChecker(live, "0.2.2-preview.1").CheckAsync();
     Check(upgrade.Status == UpdateStatus.Available && upgrade.Version == "0.2.3-preview.1", "published feed notifies an older installation");
 }
+// Fork Gamepad Preview update feed: only published, prerelease, exact asset + SHA256.
+string Preview(string tag, string digest = "", string? asset = null, bool draft = false) {
+    var name = asset ?? PreviewReleaseCatalog.Installer;
+    var hash = digest.Length > 0 ? digest : "sha256:" + new string('a', 64);
+    var url = "https://github.com/Farzansayeed/WinDock/releases/download/" + tag + "/" + name;
+    return JsonSerializer.Serialize(new {
+        tag_name = tag, prerelease = true, draft,
+        assets = new[] { new { name, digest = hash, size = 12345678L, browser_download_url = url } }
+    });
+}
+string V5 = "gamepad-v0.2.3-gamepad.5-g0a81c2";
+string V6 = "gamepad-v0.2.3-gamepad.6-g0123456";
+var previewList = "[" + Preview(V5) + "," + Preview(V6) + "]";
+var selected = PreviewReleaseCatalog.Newest(previewList, "0.2.3-gamepad.5");
+Check(selected?.Version == "0.2.3-gamepad.6", "preview chooses newest numbered build");
+Check(selected?.Sha256 == new string('a', 64), "preview requires published SHA256 digest");
+Check(selected?.Download.AbsoluteUri == "https://github.com/Farzansayeed/WinDock/releases/download/" + V6 + "/" +
+    PreviewReleaseCatalog.Installer, "preview installer bound to exact fork release asset");
+Check(PreviewReleaseCatalog.Newest(previewList, "0.2.3-gamepad.6") is null, "same version is current");
+Check(PreviewReleaseCatalog.Newest(previewList, "0.2.3-gamepad.7") is null, "older versions do not roll back");
+Check(PreviewReleaseCatalog.Newest("[" + Preview(V6, draft:true) + "]", "0.2.3-gamepad.5") is null,
+    "draft release ignored");
+Check(PreviewReleaseCatalog.Newest("[" + Preview(V6, asset:"evil.exe") + "]", "0.2.3-gamepad.5") is null,
+    "unexpected filename rejected");
+Check(PreviewReleaseCatalog.Newest("[" + Preview(V6, digest:"sha256:123") + "]", "0.2.3-gamepad.5") is null,
+    "missing/broken digest rejected");
+Check(PreviewReleaseCatalog.Newest("[" + Preview("gamepad-v0.2.3-alpha.8-g0123456") + "]", "0.2.3-gamepad.5") is null,
+    "foreign tag ignored");
+Check(PreviewReleaseCatalog.Newest("[]", "0.2.3-gamepad.5") is null, "empty listing is current");
+
 Console.WriteLine($"{checks} update checks passed");
 
 sealed class FixtureHandler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler {
