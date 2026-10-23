@@ -222,6 +222,50 @@ const badJson = await fetch(`${base}/api/tiles`, {
 t.equal(badJson.status, 400, "a malformed JSON body is refused");
 await badJson.arrayBuffer();
 
+// Launch responsiveness: a slow PowerShell running-app scan must not hold
+// the HTTP launch response hostage after the native helper accepted it.
+let freeScan;
+const scanPending = new Promise((resolve) => { freeScan = resolve; });
+let scanStarted;
+const scanned = new Promise((resolve) => { scanStarted = resolve; });
+const slowProvider = createWindowsProvider({
+  helperPath: "H.exe",
+  exec: async (file, args) => {
+    if (file === "H.exe") return { stdout: "" };
+    const script = args.at(-1);
+    if (script.includes("WScript.Shell")) return { stdout: INSTALLED };
+    if (script.includes("MainWindowHandle")) {
+      scanStarted();
+      await scanPending;
+      return { stdout: RUNNING };
+    }
+    return { stdout: "{}" };
+  },
+});
+const slowApp = await createApp({
+  provider: slowProvider, configStore, pin: PIN, trustLoopback: true,
+});
+await new Promise((r) => slowApp.server.listen(0, "127.0.0.1", r));
+const slowPort = slowApp.server.address().port;
+try {
+  const launching = fetch(`http://127.0.0.1:${slowPort}/api/apps/launch`, {
+    method: "POST", headers: { "content-type": "application/json" },
+    body: JSON.stringify({ id: "c:/windows/notepad.exe" }),
+  });
+  // Without the fix, the response waits indefinitely for the running scan.
+  const completedEarly = await Promise.race([
+    launching.then((r) => r.status === 200, () => false),
+    new Promise((resolve) => setTimeout(() => resolve(false), 800)),
+  ]);
+  t.ok(completedEarly, "launch responds before a slow background running-app scan completes");
+  await scanned; // the background scan really was started, not skipped
+} finally {
+  freeScan();
+  await slowApp.hub.close();
+  slowApp.server.closeAllConnections?.();
+  await new Promise((r) => slowApp.server.close(r));
+}
+
 // ---- unauthenticated access ----
 const saved = cookie;
 cookie = "";

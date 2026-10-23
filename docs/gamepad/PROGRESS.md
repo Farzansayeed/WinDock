@@ -3,6 +3,8 @@
 
 **Canonical source of truth for status:** this document, on the `feature/universal-gamepad` branch of [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock/tree/feature/universal-gamepad).  
 **Last reviewed:** 2026-10-23.  
+**Spotify install type confirmed 2026-10-24:** User's Get-StartApps points to Roaming Spotify.exe, Get-AppxPackage Spotify is empty and file exists. **Classic Win32 app, not Store/MSIX.** The v13 COM change is unrelated. New source fix avoids blocking launch HTTP reply on a slow Windows running-process scan; CI and PC launch verification pending. See WORKLOG.
+
 **Spotify investigation 2026-10-23:** Store-packaged Spotify vs Win32 Spotify.exe routes differ. Windows COM activation code plus actionable errors implemented for packaged apps. CI and physical Windows Spotify proof pending; installed Spotify type still unknown.
 
 **2026-10-23 regression remediation:** A user reported external app-status dots not changing, app launch acknowledgement without visible app, and DDC brightness failure. **Source fix committed**: bounded socket running-state polling, honest launch request wording/refresh, and high-level-to-VCP DDC brightness fallback. **GitHub CI and release packages PASSED for v12; physical host/monitor results still pending.** These are cross-feature WinDock functionality fixes, not verified gamepad input. See WORKLOG and [SESSION-HANDOFF.md](SESSION-HANDOFF.md).
@@ -191,7 +193,10 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [x] Replace packaged-app ShellExecute AUMID launch with documented Windows COM IApplicationActivationManager plus HRESULT/process ID check; Win32 EXE route unchanged.
 - [x] Report sanitized HTTP 502 on packaged activation failure, rather than false successful launch.
 - [x] Verify Windows helper COM build/CI and published [Preview v13](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.13-gf164ea0), passing [Actions #40008801028](https://github.com/Farzansayeed/WinDock/actions/runs/40008801028) and [CI #40008801048](https://github.com/Farzansayeed/WinDock/actions/runs/40008801048).
-- [ ] Identify user's real Spotify installation type and whether Windows Start itself opens Spotify.
+- [x] Identify user's Spotify installation as classic unpackaged Win32 Spotify.exe via direct PowerShell Get-StartApps/Get-AppxPackage/Test-Path results. Whether Start actually opens it remains UNKNOWN.
+- [x] Make launch/focus/close HTTP acknowledgements non-blocking on slow post-action Windows process inventory; add delayed-scan integration regression (code committed, CI pending).
+- [ ] Confirm Windows Start and direct PowerShell Spotify.exe launch actually create a visible window; compare with phone tile target and arguments.
+- [ ] Verify new non-blocking launch CI and publication of correct matching preview.
 - [ ] Test real Spotify tile on user's Windows + phone, including visible window and running dot; don't claim fixed on CI alone.
 
 ## Existing WinDock app-launch, running-indicator and brightness regression checks (2026-10-23)

@@ -259,8 +259,13 @@ export async function createApp({
         const app = apps.find((a) => a.id === body.id);
         if (!app) return sendJson(res, 404, { error: "unknown app" });
         await provider.launchApp(app);
-        await hub.broadcast();
-        return sendJson(res, 200, { ok: true, id: app.id });
+        // A Windows PowerShell running-window inventory scan is slow on some
+        // hosts and unrelated to whether the launch request was accepted.
+        // Return promptly; broadcast asynchronously. Authenticated sockets
+        // also receive the normal bounded running-state poll afterwards.
+        sendJson(res, 200, { ok: true, id: app.id });
+        void hub.broadcast().catch(() => {});
+        return;
       }
 
       if ((path === "/api/apps/focus" || path === "/api/apps/close") && req.method === "POST") {
@@ -276,8 +281,9 @@ export async function createApp({
         if (!match) return sendJson(res, 404, { error: "process not running" });
         if (path.endsWith("focus")) await provider.focusApp(match);
         else await provider.closeApp(match);
-        await hub.broadcast();
-        return sendJson(res, 200, { ok: true, pid });
+        sendJson(res, 200, { ok: true, pid });
+        void hub.broadcast().catch(() => {});
+        return;
       }
 
       if (path === "/api/control" && req.method === "POST") {

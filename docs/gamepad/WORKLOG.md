@@ -6,6 +6,22 @@
 
 ---
 
+## 2026-10-24 — Spotify classified as classic Win32; eliminate artificial HTTP launch delay
+
+**Owner's real PowerShell evidence:** Get-StartApps lists Spotify with an AppID pointing at a Spotify.exe under the user's Roaming AppData; Get-AppxPackage -Name '*Spotify*' returned nothing; Test-Path "$env:APPDATA\\Spotify\\Spotify.exe" was True. Thus this installation is an **unpackaged Win32 executable**, NOT Store/MSIX. The v13 IApplicationActivationManager COM change was limited to Store-packaged applications and **cannot explain or fix this Spotify instance**. Retain the v13 COM improvement for other Store apps; do not claim it repaired Spotify.
+
+**Source issue verified:** The launch endpoint in server.js awaited hub.broadcast() after a helper returned. hub.broadcast() calls dockState(), which invokes Windows PowerShell running-process enumeration. That can take seconds and delays the phone's Launch requested toast even though the native launch helper already acknowledged. Focus/close had the same unnecessary post-action response block.
+
+**Fix:** After successful provider.launchApp/focusApp/closeApp, respond HTTP 200 immediately, then launch an asynchronous hub.broadcast() with errors contained; the paired live-state sync/poll still updates dots. Added a live API integration regression that deliberately blocks the Windows running-process enumeration while verifying a launch response completes early and the delayed background scan really started.
+
+**Limitations:** This is a RESPONSE-LATENCY FIX, not proof Spotify launches. Classic Windows Spotify.exe is still started through native Process.Start; it can return success despite the app failing to display or exiting immediately, or an already-running hidden instance. PC test: confirm Spotify opens directly in Windows Start and via "Start-Process -FilePath \"$env:APPDATA\\Spotify\\Spotify.exe\""; inspect process/window after clicking WinDock. If direct launch fails, investigate Spotify itself; if direct works but WinDock does not, inspect WinDock installation and saved tile target/args versus current shortcut. No reinstall, no elevation and no deletion of Spotify data until diagnosed.
+
+**Tests:** npm/CI/release build PENDING for this patch. Physical owner Spotify start and running-dot verification NOT performed.
+
+**Next:** Verify CI and published preview, then compare real direct Windows Spotify launch and phone tile with the same PC session. Keep previous brightness/running dots issues open until hardware confirmation.
+
+---
+
 ## 2026-10-23 — Spotify packaged COM activation Preview v13 published with CI passing
 
 **Verified Preview v13 (2026-10-23):** [WinDock Gamepad Preview 0.2.3-gamepad.13](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.13-gf164ea0) published **NON-DRAFT** from commit `f164ea0`; [release workflow #40008801028](https://github.com/Farzansayeed/WinDock/actions/runs/40008801028) and [multi-platform CI #40008801048](https://github.com/Farzansayeed/WinDock/actions/runs/40008801048) succeeded. Both Windows/Android installers, SHA256SUMS.txt, BUILD-INFO.txt and PUBLIC SIGNING-INFO.txt are published, Windows installer smoke and Android keystore signature checks passed. **No physical Spotify activation or in-place upgrade has yet been tested.**
