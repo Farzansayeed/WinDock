@@ -4,7 +4,7 @@
 **Work branch:** `feature/universal-gamepad`
 **Upstream:** https://github.com/aliihsaad/WinDock
 **Plan recorded:** 23 October 2026
-**Status (2026-10-23 audit):** planning, references, risk review and handoff documentation; **no gamepad implementation or tested controller/latency evidence yet**. Next: safe Windows driver/XInput feasibility spike (P2) in parallel with thin Touch & sign navigation (P1), then VS1 real phone→PC proof.
+**Status (2026-10-23 P1 implementation):** Touch & sign now contains a **Gamepad UI-only preview and direct switching**, with regression/CI/hardware verification still pending. **No real gamepad input, virtual controller or latency measurement exists yet.** P2 Windows driver feasibility is next, followed by VS1 real phone→PC proof.
 
 ## Why this exists
 
@@ -49,7 +49,7 @@ Add an optional **Gamepad** input mode to the **existing** WinDock Android compa
 
 **[Open the live implementation checklist](PROGRESS.md)** (P0–P7, what's done, what is next, blockers, tests and milestone gates). For chronological decisions and commit-by-commit evidence, see **[WORKLOG.md](WORKLOG.md)**.
 
-At the last documented status, **P0 planning/references and the audit are complete; P2 driver/XInput feasibility is the first technical gate, with P1 thin UI/navigation in parallel, then VS1 minimum playable proof**. No working gamepad or real latency measurement has been verified. The tracker takes precedence over this snapshot. Each code batch must update PROGRESS and WORKLOG in its commit; refer to `AGENTS.md`.
+At the last documented status, **P0 is complete; P1 UI-only navigation code is committed pending regression/Android checks; P2 driver/XInput feasibility is the next technical gate, then VS1 minimum playable proof**. No working gamepad or real latency measurement has been verified. The tracker takes precedence over this snapshot. Each code batch must update PROGRESS and WORKLOG in its commit; refer to `AGENTS.md`.
 
 ## What is finished and what is not
 

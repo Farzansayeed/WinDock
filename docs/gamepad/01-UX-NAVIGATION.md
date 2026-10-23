@@ -8,7 +8,7 @@
 2. Choosing **Touch & sign** enters an input modal (`#input-pad`). **Touchpad** is immersive/fullscreen, almost-black background with fine square grid, central instruction (“Tap to click · Two fingers to scroll · Pinch to zoom”), bottom-left Back/Signature/Keyboard controls, bottom-center Left click / Right click / Drag, bottom-right Speed.
 3. **Signature** is a distinct top-tab interface with `Touchpad | Signature` tabs, close at top right, large centered ivory signature canvas reading “Make your mark.” and bottom Undo / Clear / Ink / Save to PC / Insert into PC.
 
-## Requested new navigation (not a separate dashboard tile)
+## Requested navigation (P1 web preview code present; native Kotlin later)
 
 ```
 Dashboard
@@ -57,3 +57,7 @@ Match WinDock's current minimalist dark appearance: black/navy surface, subtle g
 - Single-stick, dual-stick, D-pad-only and face-buttons-only layouts can all be created.
 - Buttons can be pressed simultaneously (e.g. hold LB + use right stick + tap A).
 - An unavailable PC controller driver is not misrepresented as active.
+
+## P1 status (2026-10-23)
+
+The fork now has the preview-only third input mode and reciprocal Touchpad navigation coded in `public/index.html`, `public/input-pad.js`, `public/style.css`, and `public/icons.js`. No joystick/control events reach Windows; no native Android screen exists yet. Do not replace screenshot contact sheet: it documents the **original pre-Gamepad UI**, not the new preview. Visual/browser testing and the full Kotlin/Windows integration remain open in [PROGRESS.md](PROGRESS.md).

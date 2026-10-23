@@ -6,6 +6,24 @@
 
 ---
 
+## 2026-10-23 — P1 Gamepad preview integrated into Touch & sign (code change)
+
+**Branch:** `feature/universal-gamepad`
+**Phase/status:** P1 implementation committed; automated and physical-device verification pending; P2 driver proof not started.
+**Changed:**
+- `public/index.html`: third Gamepad tab, fullscreen Touchpad Gamepad shortcut, in-mode Touchpad return button, visibly noninteractive schematic controller preview.
+- `public/input-pad.js`: explicit Gamepad mode, clean Touchpad disconnect/release on switch, no gameplay socket or host API requests for preview.
+- `public/style.css`, `public/icons.js`: gamepad icon and responsive near-black preview consistent with WinDock.
+- `public/sw.js`: cache namespace bumped so older HTML/JS isn't kept by installed PWAs.
+- `scripts/verify-pwa.mjs`: static test assertions for navigation DOM and explicit preview-only behavior.
+- `.github/workflows/ci.yml`: enable existing CI on feature-branch pushes in this fork.
+
+**Tests:** Source-level consistency assertions executed during patch preparation; **`npm test`, GitHub CI results, Android UI and physical-game tests have NOT been confirmed yet**. See PROGRESS for acceptance gate. Do not claim working gamepad input.
+
+**Next:** Check feature-branch CI status and run `npm test`; manually verify the UI on Android; then continue P2 driver/XInput proof-of-concept safely.
+
+---
+
 ## 2026-10-23 — Critical product and engineering plan audit (documentation only)
 
 **Phase/status:** P2 backend feasibility spike and P1 thin UI shell are next in parallel; P0 remains complete. Added [AUDIT.md](AUDIT.md) with driver feasibility, .NET 8/10 incompatibility, administrator/certificate trust, virtual-device licensing, reliability, pairing, UI interaction, and performance-risk findings. Updated [PROGRESS.md](PROGRESS.md) with VS1 minimum playable gate and decision checklist; updated developer handoff instructions and roadmap priority.

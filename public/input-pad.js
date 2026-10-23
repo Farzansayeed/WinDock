@@ -46,8 +46,10 @@ export function createInputPad({ api, notify, WebSocketClass = WebSocket, storag
     dialog.dataset.mode = mode; dialog.dataset.ready = String(ready); dialog.dataset.demo = String(demo);
     $("touchpad-pane").hidden = mode !== "touchpad";
     $("signature-pane").hidden = mode !== "signature";
+    $("gamepad-pane").hidden = mode !== "gamepad";
     $("input-touchpad-tab").setAttribute("aria-pressed", String(mode === "touchpad"));
     $("input-signature-tab").setAttribute("aria-pressed", String(mode === "signature"));
+    $("input-gamepad-tab").setAttribute("aria-pressed", String(mode === "gamepad"));
     $("touchpad-surface").dataset.ready = String(ready);
     $("input-reconnect").hidden = mode !== "touchpad" || ready || connecting || unsupported;
     for (const id of ["mouse-left", "mouse-right", "mouse-drag"]) $(id).disabled = !ready;
@@ -96,9 +98,16 @@ export function createInputPad({ api, notify, WebSocketClass = WebSocket, storag
     paint();
   }
   async function select(next) {
+    if (!["touchpad", "signature", "gamepad"].includes(next)) next = "touchpad";
     const ticket = ++generation;
-    disconnect(); mode = next; available = false; unsupported = false; connecting = true; demo = false; paint();
+    // Switching modes first releases any held mouse button and closes the input WebSocket.
+    disconnect(); mode = next; available = false; unsupported = false; connecting = next !== "gamepad"; demo = false; paint();
     $("touchpad-surface").dataset.used = "false";
+    if (next === "gamepad") {
+      // Deliberately UI-only. Do not query input capabilities or open a gameplay socket.
+      setStatus("Gamepad UI preview only · No controller input is sent to your PC.");
+      return;
+    }
     setStatus(next === "touchpad" ? "Connecting to your PC…" : "Draw here. Save a transparent PNG to Pictures / WinDock / Signatures.");
     try {
       const status = await api("/api/input");
@@ -159,6 +168,8 @@ export function createInputPad({ api, notify, WebSocketClass = WebSocket, storag
   $("pointer-options-toggle").addEventListener("click", () => { if (dragging) release(); showOptions($("pointer-options").hidden); });
   dialog.addEventListener("cancel", (event) => { if (!$("pointer-options").hidden) { event.preventDefault(); showOptions(false); $("pointer-options-toggle").focus(); } });
   $("touchpad-signature").addEventListener("click", () => select("signature"));
+  $("touchpad-gamepad").addEventListener("click", () => select("gamepad"));
+  $("gamepad-touchpad").addEventListener("click", () => select("touchpad"));
   $("input-reconnect").addEventListener("click", () => select("touchpad"));
 
   function redraw() {
@@ -214,10 +225,11 @@ export function createInputPad({ api, notify, WebSocketClass = WebSocket, storag
   $("signature-insert").addEventListener("click", () => saveSignature(true));
   $("input-touchpad-tab").addEventListener("click", () => select("touchpad"));
   $("input-signature-tab").addEventListener("click", () => select("signature"));
+  $("input-gamepad-tab").addEventListener("click", () => select("gamepad"));
   dialog.addEventListener("close", () => { generation++; disconnect(); finishStroke(); });
   document.addEventListener("visibilitychange", () => { if (document.hidden) { generation++; disconnect(); finishStroke(); if (dialog.open && mode === "touchpad") setStatus("Touchpad paused. Tap Reconnect to continue."); } });
   window.addEventListener("pagehide", disconnect);
   window.addEventListener("blur", () => { if (ready) release(); });
   window.addEventListener("resize", () => { release(); finishStroke(); if (matchMedia("(orientation: portrait)").matches) { generation++; disconnect(); setStatus("Touchpad paused. Turn sideways and tap Reconnect."); } });
-  return { open(initialMode = mode) { $("drawer").close(); if (!dialog.open) dialog.showModal(); select(initialMode === "signature" ? "signature" : "touchpad"); }, disconnect };
+  return { open(initialMode = mode) { $("drawer").close(); if (!dialog.open) dialog.showModal(); select(["touchpad", "signature", "gamepad"].includes(initialMode) ? initialMode : "touchpad"); }, disconnect };
 }

@@ -2,8 +2,8 @@
 
 **Canonical source of truth for status:** this document, on the `feature/universal-gamepad` branch of [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock/tree/feature/universal-gamepad).  
 **Last reviewed:** 2026-10-23.  
-**Current phase:** **P2 driver feasibility spike (first technical gate) + P1 thin Touch & sign UI shell in parallel**; both **NOT STARTED**.  
-**Next concrete task:** run P2 driver/XInput feasibility research and isolated Windows proof-of-concept **before** expanding UI/editor scope; in parallel, do P1 minimal navigation + explicitly UI-only preview. After both, complete a one-stick + A minimum playable Android→PC vertical slice before full customization. See [AUDIT.md](AUDIT.md).  
+**Current phase:** **P1 UI-only preview IMPLEMENTED, pending automated/runtime verification; P2 Windows driver feasibility NOT STARTED**.  
+**Next concrete task:** verify P1 using feature-branch CI and Android/browser interaction testing, fix any regressions; begin P2 isolated Windows virtual Xbox/XInput backend feasibility work. Do not start the complex editor before VS1. See [AUDIT.md](AUDIT.md).  
 **Important status disclaimer:** gamepad input, virtual drivers, and latency measurements **are not implemented or verified**. The progress baseline counts documentation work only.
 
 **Audit / risk gate:** [AUDIT.md](AUDIT.md) — 12 audited risks; A1/A2 (Windows virtual device) and A8 (neutral safety) are critical. Driver integration and app-to-game feasibility unproven. Follow audit execution gates; it supersedes phase ordering where inconsistent.
@@ -22,7 +22,7 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 | Phase | Outcome | Status | Evidence / gate |
 |---|---|---|---|
 | P0 | Fork + preserved requirements + actual current-UI screenshots + continuity instructions | **DONE** | Source and docs committed; see [UI reference](UI-REFERENCE.md) |
-| P1 | Gamepad added to existing Touch & sign navigation with UI-only preview | **PARALLEL NEXT / NOT STARTED** | Relevant JS/HTML/CSS tests and manually validated navigation |
+| P1 | Gamepad added to existing Touch & sign navigation with UI-only preview | **CODE IMPLEMENTED / TESTS PENDING** | Relevant JS/HTML/CSS tests and manually validated navigation |
 | P2 | Windows virtual Xbox controller backend feasibility and license decision | **FIRST TECHNICAL GATE / NOT STARTED** | Driver comparison, native proof-of-concept, install/uninstall verification |
 | P3 | Native Android Kotlin gamepad screen + selectable multitouch controls + editor | **NOT STARTED** | Android unit/instrumentation tests on real phone |
 | P4 | Native Windows persistent receiver, virtual state mapping, neutral watchdog | **NOT STARTED** | Windows tests and `joy.cpl` hardware verification |
@@ -30,7 +30,7 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 | P6 | End-to-end game compatibility, input correctness, latency benchmarking | **NOT STARTED** | Real Android + PC; p50/p95/p99; regressions |
 | P7 | Installers, upgrade/fallback handling, release documentation | **NOT STARTED** | Windows/Android install and upgrade tests |
 
-**Progress accounting:** **P0 complete; P1–P7 not complete**. Plan audit documented in [AUDIT.md](AUDIT.md) on 2026-10-23 (documentation-only). This is not a percent-of-development estimate. No Windows/Android end-to-end gamepad testing has been run.
+**Progress accounting:** **P0 complete; P1 code committed pending testing; P2–P7 not complete**. Plan audit documented in [AUDIT.md](AUDIT.md) on 2026-10-23 (documentation-only). This is not a percent-of-development estimate. No Windows/Android end-to-end gamepad testing has been run.
 
 ## P0 — Repo setup, requirements and UI capture — DONE
 
@@ -48,16 +48,19 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 
 **Goal:** one-tap navigation between fullscreen Touchpad and Gamepad while staying inside the existing Touch & sign experience; Signature continues working. **No fake controller connectivity.**
 
-- [ ] Add third `Gamepad` mode/tab and pane (or equivalent app-controlled launcher) inside `#input-pad` in `public/index.html`.
-- [ ] Add Gamepad shortcut to bottom-left Touchpad toolbar; leave existing Back/Signature/Keyboard controls.
-- [ ] Offer a prominent one-tap **Back to Touchpad** action from Gamepad without returning to dashboard.
-- [ ] Update `public/input-pad.js` mode selection/state teardown safely, preserving existing touchpad release and signature drawing.
-- [ ] Add responsive gamepad preview styles to `public/style.css` matching navy/charcoal grid, subtle glass and blue accents.
-- [ ] Show accurate capability/preview labels: **UI preview, not yet controlling PC games**; no misleading `Connected controller` state.
-- [ ] Add regression tests for mode switching and existing `Touchpad`/`Signature` behavior, update existing verification tests as appropriate.
-- [ ] Run `npm test` and record result; verify touchpad/signature in a real browser or Android WebView if available.
+- [x] Add third `Gamepad` mode/tab and pane (or equivalent app-controlled launcher) inside `#input-pad` in `public/index.html`. **Source code committed; full P1 gate still pending.**
+- [x] Add Gamepad shortcut to bottom-left Touchpad toolbar; leave existing Back/Signature/Keyboard controls. **Source code committed; full P1 gate still pending.**
+- [x] Offer a prominent one-tap **Back to Touchpad** action from Gamepad without returning to dashboard. **Source code committed; full P1 gate still pending.**
+- [ ] Update `public/input-pad.js` mode selection/state teardown safely, preserving existing touchpad release and signature drawing. **Source implementation present; manual regression validation still pending.**
+- [x] Add responsive gamepad preview styles to `public/style.css` matching navy/charcoal grid, subtle glass and blue accents. **Source code committed; full P1 gate still pending.**
+- [x] Show accurate capability/preview labels: **UI preview, not yet controlling PC games**; no misleading `Connected controller` state. **Source code committed; full P1 gate still pending.**
+- [ ] Add regression tests for mode switching and existing `Touchpad`/`Signature` behavior, update existing verification tests as appropriate. **Static navigation assertions added to `verify-pwa.mjs`; full behavioral regressions not yet executed.**
+- [ ] Run `npm test`/feature-branch CI and record results (not yet executed or confirmed).
+- [ ] Manually verify Touchpad → Gamepad → Touchpad, Signature switching, Touchpad release, responsive layout and WebView behavior on a real Android phone.
+- [x] Update the PWA service-worker cache key to prevent old input UI from persisting after an update.
+- [x] Enable existing CI on pushes to `feature/universal-gamepad` (runs when GitHub Actions is enabled for this fork).
 
-**Exit gate:** navigation flows work without dashboard detours, regressions are addressed, tests/results recorded in WORKLOG. **P1 does not mean usable gamepad input.**
+**Exit gate:** navigation flows work without dashboard detours, regressions are addressed, tests/results recorded in WORKLOG. **Code is implemented, but this gate remains open until CI and real UI checks pass. P1 does not mean usable gamepad input.**
 
 ## VS1 — Minimum playable end-to-end proof (NEW mandatory integration gate; after P2, before polished editor) — NOT STARTED
 

@@ -6,7 +6,7 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: [main, feature/universal-gamepad]
   workflow_dispatch:
 
 # Fork pull requests run with a read-only token and no secrets.

@@ -55,6 +55,23 @@ t.ok(css.includes("grid-template-columns"), "the dock uses a responsive grid");
 t.ok(css.includes("100dvh"), "layout uses dynamic viewport height for mobile browsers");
 t.ok(css.includes("safe-area-inset"), "layout respects device safe areas");
 
+
+// ---- gamepad preview navigation contract (not a virtual controller) ----
+const inputUi = read("input-pad.js");
+const inputIcons = read("icons.js");
+for (const id of ["input-pad", "input-touchpad-tab", "input-signature-tab", "input-gamepad-tab", "touchpad-gamepad", "gamepad-pane", "gamepad-touchpad", "gamepad-preview", "gamepad-preview-status"]) {
+  t.ok(html.includes(`id="${id}"`), `Gamepad navigation has #${id}`);
+}
+t.ok(html.includes('aria-label="Gamepad layout preview"'), "gamepad pane is clearly labeled as a preview");
+t.ok(html.includes("Buttons do not control your PC yet"), "Gamepad preview never claims real controller connectivity");
+t.ok(inputUi.includes('if (next === "gamepad") {') && inputUi.includes("Deliberately UI-only. Do not query input capabilities"), "preview mode explicitly bypasses PC gamepad input");
+for (const entry of ["input-gamepad-tab", "touchpad-gamepad", "gamepad-touchpad"]) {
+  t.ok(inputUi.includes(`$("${entry}").addEventListener("click"`), `Gamepad navigation wires #${entry}`);
+}
+t.ok(inputUi.includes('socket.send(\'{"type":"release"}\')'), "existing touchpad releases pressed input on mode change");
+t.ok(css.includes(".gamepad-preview") && css.includes(".input-pad__pane[hidden]"), "new preview styles and reliable hidden panes exist");
+t.ok(inputIcons.includes("gamepad:"), "gamepad button uses its own icon instead of a fallback");
+
 // ---- headless rendering ----
 const empty = renderTiles({ tiles: [] });
 t.ok(empty.includes("No tiles pinned"), "an empty dock renders its empty state");
