@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-10-23 — Spotify launch: desktop vs Store packaging; native activation improvement
+
+**User issue:** Windows Spotify tile takes a while to report Launch requested and Spotify never opens. Spotify desktop is a Chromium Embedded Framework desktop client (NOT just a browser PWA), installable as either traditional Win32 Spotify.exe or a Microsoft Store packaged desktop app. Actual user's installation variant is unknown.
+
+**Cause hypothesis grounded in code:** Packaged app helper used Process.Start on shell:AppsFolder AUMID, which can report success without proving the app started. Microsoft's documented IApplicationActivationManager.ActivateApplication returns a real Windows HRESULT and process ID.
+
+**Code:** Changed ONLY the Store/MSIX packaged activation route to COM IApplicationActivationManager created via CLSCTX_LOCAL_SERVER (short-lived helper), with strict existing app identity validation, HRESULT and processId checks. Node provider returns sanitized HTTP 502 and Start-menu troubleshooting if COM activation fails. Existing Win32 Spotify.exe launch remains unchanged. Added JS regression tests checking packaged COM path and failure reporting.
+
+**Verification:** CI and a new release pending; **no physical Spotify launch on user's Windows**. Successful activation returns PID but doesn't prove visible app window. The user may have classic Spotify.exe instead; if so the COM fix won't affect that path. Ask for Get-StartApps (Spotify AppID), Get-AppxPackage Spotify and Test-Path user roaming Spotify.exe, plus whether Spotify opens from Start. Do not change protected WindowsApps ACLs.
+
+**Next:** Check Windows CI/build/release, then test user's actual install type and launch; record field result before calling fixed.
+
+---
+
 ## 2026-10-23 — Regression-fix Preview v12 tested in CI and published
 
 **Verified 2026-10-23:** [WinDock Gamepad Preview v0.2.3-gamepad.12](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.12-g2e80adb) from code commit `2e80adb` published successfully: [release build #40002230727](https://github.com/Farzansayeed/WinDock/actions/runs/40002230727) Windows installer build/installer smoke, Android APK build/unit/lint + configured permanent signer verification, and publication all PASSED. [multi-platform CI #40002230776](https://github.com/Farzansayeed/WinDock/actions/runs/40002230776) Windows, Linux, macOS and aggregate PASSED. Both Windows installer and Android APK, BUILD-INFO, SHA256SUMS and SIGNING-INFO assets were verified present via GitHub API. **NO physical owner Windows app launch/DDC monitor, phone running-indicator regression or Windows/Android self-upgrade was tested.**

@@ -3,6 +3,8 @@
 
 **Canonical source of truth for status:** this document, on the `feature/universal-gamepad` branch of [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock/tree/feature/universal-gamepad).  
 **Last reviewed:** 2026-10-23.  
+**Spotify investigation 2026-10-23:** Store-packaged Spotify vs Win32 Spotify.exe routes differ. Windows COM activation code plus actionable errors implemented for packaged apps. CI and physical Windows Spotify proof pending; installed Spotify type still unknown.
+
 **2026-10-23 regression remediation:** A user reported external app-status dots not changing, app launch acknowledgement without visible app, and DDC brightness failure. **Source fix committed**: bounded socket running-state polling, honest launch request wording/refresh, and high-level-to-VCP DDC brightness fallback. **GitHub CI and release packages PASSED for v12; physical host/monitor results still pending.** These are cross-feature WinDock functionality fixes, not verified gamepad input. See WORKLOG and [SESSION-HANDOFF.md](SESSION-HANDOFF.md).
 
 **Current phase:** **P3 native Android left-stick+A local-input preview; Windows Xbox/XInput backend not yet proven. P7 preview update system now builds and publishes with stable Android keystore signer verification; real Android/Windows upgrades are still untested.**
@@ -181,6 +183,14 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [x] User approved continuous VERSIONED DEVELOPMENT PREVIEW prereleases from tested feature-branch code builds; stable promotion and driver redistribution still require independent acceptance/authorization.
 
 **Verified 2026-10-23:** [WinDock Gamepad Preview v0.2.3-gamepad.12](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.12-g2e80adb) from code commit `2e80adb` published successfully: [release build #40002230727](https://github.com/Farzansayeed/WinDock/actions/runs/40002230727) Windows installer build/installer smoke, Android APK build/unit/lint + configured permanent signer verification, and publication all PASSED. [multi-platform CI #40002230776](https://github.com/Farzansayeed/WinDock/actions/runs/40002230776) Windows, Linux, macOS and aggregate PASSED. Both Windows installer and Android APK, BUILD-INFO, SHA256SUMS and SIGNING-INFO assets were verified present via GitHub API. **NO physical owner Windows app launch/DDC monitor, phone running-indicator regression or Windows/Android self-upgrade was tested.**
+
+## Spotify Windows launch: packaged app activation
+
+- [x] Replace packaged-app ShellExecute AUMID launch with documented Windows COM IApplicationActivationManager plus HRESULT/process ID check; Win32 EXE route unchanged.
+- [x] Report sanitized HTTP 502 on packaged activation failure, rather than false successful launch.
+- [ ] Verify Windows helper build/CI and newly published numbered Preview assets.
+- [ ] Identify user's real Spotify installation type and whether Windows Start itself opens Spotify.
+- [ ] Test real Spotify tile on user's Windows + phone, including visible window and running dot; don't claim fixed on CI alone.
 
 ## Existing WinDock app-launch, running-indicator and brightness regression checks (2026-10-23)
 

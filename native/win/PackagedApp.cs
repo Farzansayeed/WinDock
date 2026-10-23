@@ -13,18 +13,45 @@ internal static partial class PackagedApp
 
     public static bool IsValid(string id) => id.Length <= 128 && Identifier().IsMatch(id);
 
+    // The Windows app activation API reports actual HRESULT failures; unlike
+    // ShellExecute("shell:AppsFolder"), an unsuccessful activation is visible.
+    [ComImport, Guid("2e941141-7f97-4756-ba1d-9decde894a3d"),
+        InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    private interface IApplicationActivationManager
+    {
+        [PreserveSig]
+        int ActivateApplication(
+            [MarshalAs(UnmanagedType.LPWStr)] string appUserModelId,
+            [MarshalAs(UnmanagedType.LPWStr)] string? arguments,
+            uint options, out uint processId);
+    }
+
+    [DllImport("ole32.dll", ExactSpelling = true)]
+    private static extern int CoCreateInstance(
+        ref Guid clsid, IntPtr outer, uint clsctx, ref Guid iid,
+        [MarshalAs(UnmanagedType.Interface)] out IApplicationActivationManager manager);
+
     public static void Launch(string id)
     {
         if (!IsValid(id)) throw new ArgumentException("Invalid packaged app identifier.");
-        // Shell activation supports packaged desktop and Store apps without
-        // relying on a version-specific WindowsApps executable path. No shell
-        // command line is built; this is one validated Shell namespace item.
-        using var process = Process.Start(new ProcessStartInfo
+        // Use the LOCAL_SERVER class context for this short-lived launcher,
+        // per Windows' IApplicationActivationManager documentation.
+        var clsid = new Guid("45BA127D-10A8-46EA-8AB7-56EA9078943C");
+        var iid = new Guid("2e941141-7f97-4756-ba1d-9decde894a3d");
+        const uint clsctxLocalServer = 0x4;
+        Marshal.ThrowExceptionForHR(CoCreateInstance(
+            ref clsid, IntPtr.Zero, clsctxLocalServer, ref iid, out var activator));
+        if (activator is null)
+            throw new COMException("Windows application activation manager is unavailable.");
+        try
         {
-            FileName = @"shell:AppsFolder\" + id,
-            UseShellExecute = true,
-        });
-        // Shell activation may return no process when an existing app handles it.
+            var hr = activator.ActivateApplication(id, null, 0, out var processId);
+            Marshal.ThrowExceptionForHR(hr);
+            if (processId == 0)
+                throw new COMException("Windows activated app without returning its process.");
+        }
+        finally { Marshal.ReleaseComObject(activator); }
+        // Successful activation still does not guarantee a visible window.
     }
 
     [StructLayout(LayoutKind.Sequential)]

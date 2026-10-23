@@ -1,4 +1,5 @@
 /** G4: launch and focus build exact argv that never reaches a shell. */
+import { readFileSync } from "node:fs";
 import { createChecker } from "./lib/assert.mjs";
 import { createWindowsProvider } from "../src/platform/windows.js";
 import { createLinuxProvider, splitExec, parseDesktop } from "../src/platform/linux.js";
@@ -70,6 +71,12 @@ t.equal(rec.calls.length, 0, "no exec is issued for any rejected input");
 const packagedTarget = "shell:AppsFolder\\OpenAI.Codex_2p2nqsd0c76g0!App";
 const packagedCalls = recorder();
 const packagedProvider = createWindowsProvider({ exec: packagedCalls.exec, helperPath: HELPER });
+const nativeSource = readFileSync(new URL("../native/win/PackagedApp.cs", import.meta.url), "utf8");
+t.ok(nativeSource.includes("IApplicationActivationManager") &&
+  nativeSource.includes("ActivateApplication") &&
+  nativeSource.includes("CoCreateInstance"), "native Store app activation uses Windows COM API");
+t.ok(!nativeSource.includes('FileName = @"shell:AppsFolder'),
+  "Store activation no longer silently ShellExecutes URI");
 await packagedProvider.launchApp({ target: packagedTarget, args: "ignored" });
 t.deepEqual(packagedCalls.calls[0].args, ["launch-packaged", "OpenAI.Codex_2p2nqsd0c76g0!App"], "packaged launch uses one validated activation ID without shortcut arguments");
 await packagedProvider.appIcon({ target: packagedTarget });
@@ -80,6 +87,16 @@ for (const bad of ["shell:AppsFolder\\Bad_id!App & calc", "shell:AppsFolder\\Bad
   await t.rejects(() => packagedProvider.launchApp({ target: bad }), "invalid Shell targets cannot reach native activation");
 }
 t.equal(packagedCalls.calls.length, 3, "invalid packaged launches execute nothing");
+const rejectedPackaged = createWindowsProvider({ helperPath: HELPER, exec: async () => {
+  throw new Error("private Windows helper error path");
+} });
+const packagedFailure = await rejectedPackaged.launchApp({ target: packagedTarget })
+  .then(() => null, error => error);
+t.equal(packagedFailure?.status, 502, "packaged COM activation failure returns HTTP 502");
+t.ok(packagedFailure?.message?.includes("Windows could not activate"),
+  "app activation errors give actionable help");
+t.ok(!packagedFailure?.message?.includes("private Windows"),
+  "internal native helper errors are not leaked to phone");
 
 const shortcutArgs = '--profile "Work Space" --url "https://example.test/?a=1&b=2"';
 await win.launchApp({ target: "C:\\Apps\\browser.exe", args: shortcutArgs });

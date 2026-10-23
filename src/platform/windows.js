@@ -291,7 +291,12 @@ export function createWindowsProvider({ exec, helperPath = process.env.WINDOCK_H
       if (/^shell:/i.test(target)) {
         const aumid = packagedAppId(target);
         if (!aumid) throw new Error("invalid packaged app identifier");
-        await helper(["launch-packaged", aumid]);
+        try { await helper(["launch-packaged", aumid]); }
+        catch {
+          const error = new Error("Windows could not activate this packaged app. Try opening it from the Start menu; if that works, remove and re-add this dock tile.");
+          error.status = 502;
+          throw error;
+        }
         return;
       }
       // argv array: the target is one argument even if it contains spaces,
@@ -308,7 +313,12 @@ export function createWindowsProvider({ exec, helperPath = process.env.WINDOCK_H
       if (typeof running.activationId === "string") {
         const aumid = packagedAppId(PACKAGED_PREFIX + running.activationId);
         if (!aumid) throw new Error("invalid packaged app identifier");
-        await helper(["launch-packaged", aumid]);
+        try { await helper(["launch-packaged", aumid]); }
+        catch {
+          const error = new Error("Windows could not bring this packaged app forward. Try opening it directly from the Start menu.");
+          error.status = 502;
+          throw error;
+        }
         return;
       }
       await helper(["focus", String(pid)]);
