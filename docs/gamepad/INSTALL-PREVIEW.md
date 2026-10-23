@@ -4,7 +4,7 @@
 
 ## Latest confirmed development release (at last documentation review)
 
-The latest version **confirmed published and fully built** at this review was [WinDock Gamepad Preview 0.2.3-gamepad.2](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.2-gd8663f6). It has Windows installer + Android APK and checksums. Newer code may be compiling; open the [Releases page](https://github.com/Farzansayeed/WinDock/releases) to see if a later numbered version passed and was actually published.
+The latest version **confirmed published and fully built** at this review was [WinDock Gamepad Preview 0.2.3-gamepad.5](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.5-g0a81c22), which includes the native Android **local-only one-stick+A input preview**. It has Windows installer + Android APK and checksums. Newer code may be compiling; open the [Releases page](https://github.com/Farzansayeed/WinDock/releases) to see if a later numbered version passed and was actually published.
 
 ## First published development release
 

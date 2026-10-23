@@ -43,6 +43,8 @@ Add an optional **Gamepad** input mode to the **existing** WinDock Android compa
 
 **Native Android input slice (2026-10-23):** `GamepadTouchModel.kt` + `GamepadTouchView.kt` implement a left analog stick + A button local-only prototype, accessible from trusted Touch & sign Gamepad via the existing Kotlin companion bridge; returns directly to Touchpad. **No PC gamepad events yet.** Android JVM tests exist; consult PROGRESS/WORKLOG for actual CI evidence.
 
+**Latest tested installable preview:** [0.2.3-gamepad.5](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.5-g0a81c22) (Android + Windows builds, native JVM tests, automated Windows installer verification and CI passed). Hardware/user acceptance still pending; gamepad is *local-only*, no virtual PC controller.
+
 ## Read next (in order)
 
 0. **[PROGRESS.md — live checklist, done/next/blocked](PROGRESS.md)**, [P2 — Windows driver feasibility test plan](P2-DRIVER-FEASIBILITY.md), **[AUDIT.md — prioritized risks and go/no-go gates](AUDIT.md)** and **[WORKLOG.md — chronological updates](WORKLOG.md)**

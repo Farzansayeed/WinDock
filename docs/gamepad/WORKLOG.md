@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-10-23 — Version 0.2.3-gamepad.5 successfully released (native local input)
+
+**Published:** [WinDock Gamepad Preview 0.2.3-gamepad.5](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.5-g0a81c22), commit `0a81c22`, [GitHub preview run #39991422753](https://github.com/Farzansayeed/WinDock/actions/runs/39991422753) **success** for both Android and Windows jobs, installer smoke and prerelease publication. [General CI #39991422757](https://github.com/Farzansayeed/WinDock/actions/runs/39991422757) passed, as did docs update CI #39992009777. Release contains separate Android APK, Windows preview installer, BUILD-INFO.txt and SHA256SUMS.txt.
+
+**Functionality:** Android native **local-only** MotionEvent left stick + A overlay inside Touch & sign with direct return to Touchpad. This version **does not** control games, have a Windows virtual driver, or support all customizable controls. Physical Android device/Windows gamepad input acceptance tests remain outstanding.
+
+**Next:** Install the matched v5 Android + Windows preview packages on actual devices, verify native multitouch ownership/return behavior and collect bugs; independently clear P2 signed XInput driver gate before implementing authenticated VS1 transport.
+
+---
+
 ## 2026-10-23 — First native Android input screen (local-only implementation)
 
 **Changed:** Native `GamepadTouchModel.kt` pointer-ID model (fixed left analog stick + A button) and `GamepadTouchView.kt` custom native Canvas/MotionEvent input surface, launched via `@JavascriptInterface openGamepad()` in the existing `MainActivity.kt` only on the trusted/paired foreground WebView. Added return-to-Touchpad event and immediate native overlay teardown/neutral on Back, pause, disconnect and activity destruction. Web-only clients retain the existing noninteractive preview. Service-worker cache version bumped. Added `GamepadTouchModelTest.kt` pure JVM tests.
