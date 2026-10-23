@@ -37,11 +37,19 @@ Add an optional **Gamepad** input mode to the **existing** WinDock Android compa
 
 ## Read next (in order)
 
+0. **[PROGRESS.md — live checklist, done/next/blocked](PROGRESS.md)** and **[WORKLOG.md — chronological updates](WORKLOG.md)**
+
 1. [Visual reference — actual current UI screenshots](UI-REFERENCE.md)
 2. [01 — UX and screenshot-derived navigation](01-UX-NAVIGATION.md)
 3. [02 — Implementation, security, testing and milestones](02-IMPLEMENTATION-ROADMAP.md)
 4. [Full low-latency v2 technical handoff](REQUIREMENTS-v2.md) — authoritative detailed baseline except later changes above
 5. [Archived initial requirements](archive/INITIAL-PROPOSAL-v1.md) — historical only; includes rejected ideas; **not** current requirements
+
+## Project progress and continuous handoff
+
+**[Open the live implementation checklist](PROGRESS.md)** (P0–P7, what's done, what is next, blockers, tests and milestone gates). For chronological decisions and commit-by-commit evidence, see **[WORKLOG.md](WORKLOG.md)**.
+
+At the last documented status, **P0 planning/references are complete; P1 navigation/UI-preview implementation is next**. No working gamepad or real latency measurement has been verified. The tracker takes precedence over this snapshot. Each code batch must update PROGRESS and WORKLOG in its commit; refer to `AGENTS.md`.
 
 ## What is finished and what is not
 
@@ -56,4 +64,4 @@ Add an optional **Gamepad** input mode to the **existing** WinDock Android compa
 
 ## Continue in a fresh ChatGPT/Codex chat
 
-> Work on https://github.com/Farzansayeed/WinDock, branch `feature/universal-gamepad`. First read `docs/gamepad/00-START-HERE.md`, `UI-REFERENCE.md`, `01-UX-NAVIGATION.md`, `02-IMPLEMENTATION-ROADMAP.md` and `REQUIREMENTS-v2.md`. Do not ask me to repeat this brief. Implement incrementally on **my fork only**, preserve original features, write tests, and clearly separate a visual prototype from working virtual-controller support. Do not introduce haptics or gyroscope in v1, and do not open a PR to the original project.
+> Work on https://github.com/Farzansayeed/WinDock, branch `feature/universal-gamepad`. First read `docs/gamepad/00-START-HERE.md`, **`PROGRESS.md`** and **`WORKLOG.md`**, `UI-REFERENCE.md`, `01-UX-NAVIGATION.md`, `02-IMPLEMENTATION-ROADMAP.md` and `REQUIREMENTS-v2.md`. Update the checklist and worklog with every code batch, including testing evidence and the next action. Do not ask me to repeat this brief. Implement incrementally on **my fork only**, preserve original features, write tests, and clearly separate a visual prototype from working virtual-controller support. Do not introduce haptics or gyroscope in v1, and do not open a PR to the original project.

@@ -1,5 +1,7 @@
 # Low-latency gamepad — architecture, phased implementation, security & gates
 
+> **Progress note:** For current task checkboxes, status, blockers, verification evidence and next action, consult [PROGRESS.md](PROGRESS.md) and [WORKLOG.md](WORKLOG.md). The milestones below are a design roadmap, not a claim of completion. Update the tracker/worklog alongside every meaningful code commit.
+
 ## Architecture and isolation
 
 ```
