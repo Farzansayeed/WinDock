@@ -37,10 +37,11 @@ Add an optional **Gamepad** input mode to the **existing** WinDock Android compa
 
 ## Read next (in order)
 
-1. [01 — UX and screenshot-derived navigation](01-UX-NAVIGATION.md)
-2. [02 — Implementation, security, testing and milestones](02-IMPLEMENTATION-ROADMAP.md)
-3. [Full low-latency v2 technical handoff](REQUIREMENTS-v2.md) — authoritative detailed baseline except later changes above
-4. [Archived initial requirements](archive/INITIAL-PROPOSAL-v1.md) — historical only; includes rejected ideas; **not** current requirements
+1. [Visual reference — actual current UI screenshots](UI-REFERENCE.md)
+2. [01 — UX and screenshot-derived navigation](01-UX-NAVIGATION.md)
+3. [02 — Implementation, security, testing and milestones](02-IMPLEMENTATION-ROADMAP.md)
+4. [Full low-latency v2 technical handoff](REQUIREMENTS-v2.md) — authoritative detailed baseline except later changes above
+5. [Archived initial requirements](archive/INITIAL-PROPOSAL-v1.md) — historical only; includes rejected ideas; **not** current requirements
 
 ## What is finished and what is not
 
@@ -55,4 +56,4 @@ Add an optional **Gamepad** input mode to the **existing** WinDock Android compa
 
 ## Continue in a fresh ChatGPT/Codex chat
 
-> Work on https://github.com/Farzansayeed/WinDock, branch `feature/universal-gamepad`. First read `docs/gamepad/00-START-HERE.md`, `01-UX-NAVIGATION.md`, `02-IMPLEMENTATION-ROADMAP.md` and `REQUIREMENTS-v2.md`. Do not ask me to repeat this brief. Implement incrementally on **my fork only**, preserve original features, write tests, and clearly separate a visual prototype from working virtual-controller support. Do not introduce haptics or gyroscope in v1, and do not open a PR to the original project.
+> Work on https://github.com/Farzansayeed/WinDock, branch `feature/universal-gamepad`. First read `docs/gamepad/00-START-HERE.md`, `UI-REFERENCE.md`, `01-UX-NAVIGATION.md`, `02-IMPLEMENTATION-ROADMAP.md` and `REQUIREMENTS-v2.md`. Do not ask me to repeat this brief. Implement incrementally on **my fork only**, preserve original features, write tests, and clearly separate a visual prototype from working virtual-controller support. Do not introduce haptics or gyroscope in v1, and do not open a PR to the original project.

@@ -1,6 +1,6 @@
 # Gamepad inside Touch & sign — UX / interaction specification
 
-**Visual sources:** user-shared screenshots of WinDock (23 October 2026) showing (1) Signature page, (2) bottom dashboard glass drawer with “Touch & sign”, and (3) fullscreen dark grid Touchpad with bottom navigation and speed. They were provided in chat; this document records the relevant details so the feature can be implemented even if attachments are inaccessible later.
+**Visual sources:** user-shared screenshots of WinDock (23 October 2026) showing (1) Signature page, (2) bottom dashboard glass drawer with “Touch & sign”, and (3) fullscreen dark grid Touchpad with bottom navigation and speed. A reduced-resolution contact sheet of the **actual user-provided screenshots** is now committed in [`assets/current-ui-screenshots.webp`](assets/current-ui-screenshots.webp) and embedded in [`UI-REFERENCE.md`](UI-REFERENCE.md). Use the images **and** the source files for visual accuracy.
 
 ## Existing visual hierarchy (preserve)
 
