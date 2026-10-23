@@ -7,7 +7,7 @@ import { createChecker } from "./lib/assert.mjs";
 import { createApp } from "../server.js";
 import { createWindowsProvider } from "../src/platform/windows.js";
 import { createConfigStore } from "../src/config.js";
-import { originAllowed, snapshotMessage } from "../src/sync.js";
+import { originAllowed, snapshotMessage, runningFingerprint } from "../src/sync.js";
 
 const t = createChecker("sync");
 const PIN = "8888";
@@ -28,9 +28,15 @@ t.ok(!originAllowed({ headers: { origin: "::::" }, socket: {} }), "a malformed O
 const snap = JSON.parse(snapshotMessage({ tiles: [], running: [] }));
 t.equal(snap.type, "snapshot", "a snapshot message is typed");
 t.ok(Array.isArray(snap.tiles), "a snapshot carries tiles");
+t.equal(runningFingerprint({ running: [{ id: "x", pid: 2 }, { id: "y", pid: 1 }] }),
+  runningFingerprint({ running: [{ id: "y", pid: 1 }, { id: "x", pid: 2 }] }),
+  "running fingerprint ignores process enumeration ordering");
+t.ok(runningFingerprint({ running: [{ id: "x", pid: 2 }] }) !==
+  runningFingerprint({ running: [{ id: "x", pid: 3 }] }),
+  "PID change is a real running state change");
 
 // ---- live socket ----
-const RUNNING = JSON.stringify([
+let RUNNING = JSON.stringify([
   { Id: 4812, ProcessName: "firefox", MainWindowTitle: "FF", Handle: 12, Path: "C:\\Apps\\firefox.exe" },
 ]);
 const provider = createWindowsProvider({
@@ -46,7 +52,8 @@ const provider = createWindowsProvider({
 
 const dir = await mkdtemp(join(tmpdir(), "windock-sync-"));
 const configStore = createConfigStore({ path: join(dir, "config.json") });
-const app = await createApp({ provider, configStore, pin: PIN, trustLoopback: false });
+const app = await createApp({ provider, configStore, pin: PIN, trustLoopback: false,
+  runningPollMs: 160 });
 await new Promise((r) => app.server.listen(0, "127.0.0.1", r));
 const port = app.server.address().port;
 const base = `http://127.0.0.1:${port}`;
@@ -132,6 +139,27 @@ t.ok(frames.length >= 2, `a change broadcasts a new snapshot (frames: ${frames.l
 const latest = frames.at(-1);
 t.equal(latest.tiles.length, 1, "the broadcast snapshot carries the new tile");
 t.equal(latest.tiles[0].verb, "mute-toggle", "the broadcast snapshot carries the correct tile");
+
+// An app closed OUTSIDE WinDock does not produce an HTTP mutation. The
+// authenticated socket must still receive a fresh snapshot without reloading.
+const beforeClose = frames.length;
+RUNNING = "[]";
+const until = async (predicate, label) => {
+  const deadline = Date.now() + 2500;
+  while (!predicate() && Date.now() < deadline) await new Promise((r) => setTimeout(r, 40));
+  t.ok(predicate(), label);
+};
+await until(() => frames.length > beforeClose && frames.at(-1)?.running.length === 0,
+  "external app close makes running dots disappear over WebSocket");
+const afterClose = frames.length;
+await new Promise((r) => setTimeout(r, 400));
+t.equal(frames.length, afterClose, "unchanged running state is not broadcast repeatedly");
+
+RUNNING = JSON.stringify([{ Id: 5712, ProcessName: "firefox", MainWindowTitle: "FF",
+  Handle: 18, Path: "C:\\Apps\\firefox.exe" }]);
+await until(() => frames.at(-1)?.running.some((entry) => entry.pid === 5712),
+  "externally launched application appears without page refresh");
+t.ok(frames.at(-1).running.length === 1, "running state still includes one application");
 
 live.close();
 await new Promise((r) => setTimeout(r, 100));

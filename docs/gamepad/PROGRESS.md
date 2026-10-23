@@ -3,6 +3,8 @@
 
 **Canonical source of truth for status:** this document, on the `feature/universal-gamepad` branch of [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock/tree/feature/universal-gamepad).  
 **Last reviewed:** 2026-10-23.  
+**2026-10-23 regression remediation:** A user reported external app-status dots not changing, app launch acknowledgement without visible app, and DDC brightness failure. **Source fix committed**: bounded socket running-state polling, honest launch request wording/refresh, and high-level-to-VCP DDC brightness fallback. **GitHub CI and physical host/monitor results pending for this change.** These are cross-feature WinDock functionality fixes, not verified gamepad input. See WORKLOG and [SESSION-HANDOFF.md](SESSION-HANDOFF.md).
+
 **Current phase:** **P3 native Android left-stick+A local-input preview; Windows Xbox/XInput backend not yet proven. P7 preview update system now builds and publishes with stable Android keystore signer verification; real Android/Windows upgrades are still untested.**
 **Next concrete task:** Owner downloads newly permanently signed Gamepad Preview v0.2.3-gamepad.11; if upgrading from old ephemeral-debug APK, uninstall ONLY the old Gamepad Preview once, preserving the regular app. Verify native UI and version/check-for-updates on real Android/Windows; produce and test a second stable-key release to prove in-place Android updates. Then resume P2 signed virtual XInput proof and one-stick+A VS1. P8 touchpad latency stays deferred.
 **Important status disclaimer:** Native Android **local** stick+A input preview and unit tests exist; Android-to-Windows gamepad transport, real virtual XInput driver and measured latency **are not implemented or verified**. Do not conflate update signing success with a working PC gamepad.
@@ -177,6 +179,16 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [ ] Document usage, compatibility limitations and any admin privileges needed; include setup/screenshots and known issues.
 - [x] Feature-branch GitHub CI is enabled and passing; [post-v11 docs CI](https://github.com/Farzansayeed/WinDock/actions/runs/39998883980) passed. Distinguish future CI run results from physical device tests.
 - [x] User approved continuous VERSIONED DEVELOPMENT PREVIEW prereleases from tested feature-branch code builds; stable promotion and driver redistribution still require independent acceptance/authorization.
+
+## Existing WinDock app-launch, running-indicator and brightness regression checks (2026-10-23)
+
+- [x] Audit running-window refresh: pre-fix WebSocket broadcasts only covered explicit WinDock changes. Add a bounded live running-state poll for paired clients, avoid duplicate unchanged frames and clean up on server close (source + integration test).
+- [x] Replace unverified "Opened:..." toast with "Launch requested:..." and refresh after launch; do not confuse request acknowledgement with an opened Windows window.
+- [x] Retry DDC/CI VCP 0x10 brightness writes if a monitor reports high-level brightness but refuses SetMonitorBrightness; hardware dependent, no workaround for disabled or unsupported DDC/CI.
+- [ ] Confirm post-fix npm/sync and Windows C# CI and released preview artifacts.
+- [ ] Real Windows host/Android phone: close/start apps outside WinDock; dots should change within a few seconds and launch/foreground requests should create visible windows. If not, collect exact app name, whether manual Windows launch works, installed Preview version, and non-sensitive PC log.
+- [ ] Real monitor: check DDC/CI enabled via OSD, HDR/picture presets, connection and support for monitor brightness; run read-only brightness diagnostics, change/restore once, record model and outcome.
+- [ ] Avoid claiming all three issues fully fixed until the user verifies the actual Windows environment.
 
 ## P8 — Touchpad latency optimization — DEFERRED UNTIL AFTER GAMEPAD V1
 

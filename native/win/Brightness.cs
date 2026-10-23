@@ -40,6 +40,17 @@ internal static class Brightness
             var ok = level.method == "ddc-ci"
                 ? SetMonitorBrightness(monitor.Handle, value)
                 : SetVCPFeature(monitor.Handle, 0x10, value);
+            // A number of external monitors allow the Windows high-level
+            // brightness READ but reject its WRITE, while the VCP 0x10 (luminance)
+            // command remains writable. Retry only when the primary write failed.
+            if (!ok && level.method == "ddc-ci" &&
+                GetVCPFeatureAndVCPFeatureReply(monitor.Handle, 0x10,
+                    out var featureType, out _, out var vcpMax) &&
+                featureType == 1 && vcpMax > 0)
+            {
+                var vcpLevel = (uint)Math.Round(vcpMax * (percent / 100.0));
+                ok = SetVCPFeature(monitor.Handle, 0x10, vcpLevel);
+            }
             if (ok) applied++;
             else
             {

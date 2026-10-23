@@ -124,6 +124,7 @@ export async function createApp({
   lockout = createLockout(),
   allowDestructive = true,
   trustLoopback = true,
+  runningPollMs,
 } = {}) {
   const state = { pin };
   const appIcon = createIconCache(provider);
@@ -336,6 +337,7 @@ export async function createApp({
         trustLoopback,
       }).ok,
     getState: dockState,
+    ...(runningPollMs === undefined ? {} : { runningPollMs }),
   });
 
   const inputHub = createInputHub({ server, input: provider.input, isAuthorized: (req) =>

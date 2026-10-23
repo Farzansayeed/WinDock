@@ -31,3 +31,7 @@ Windows Preview and regular WinDock have separate install/config but share local
 5. Update PROGRESS + WORKLOG in every code commit; update SESSION-HANDOFF as decisions evolve. Never ask user to repeat prior requirements.
 
 Detailed file map, exact build commands, constraints, risks, results and next steps: **docs/gamepad/SESSION-HANDOFF.md**.
+
+## Active base-WinDock regression triage 2026-10-23
+
+Owner reported stale Android dock running indicators, "Opened" toast when Windows app never appears, and brightness DDC/CI failure. Treat these as REAL user-visible acceptance blockers alongside Gamepad work. Core launch/brightness/sync implementations were identical to fork main at audit. New fixes add connected-only ~3s running-state change poll, truthful launch-request toast plus short refresh, and hardware-limited DDC primary-write → VCP0x10 fallback. **Do not claim they're fixed without CI + owner's PC/phone/monitor results.** Next chat checks post-fix build/release, then tests actual running dots/Windows app launch and DDC OSD support. Do not install drivers/elevate host to solve ordinary app launching. Preserve paired-only data refresh; no cloud/telemetry. Document tests and unresolved hardware blockers in PROGRESS/WORKLOG. Touchpad P8 latency remains deferred (this is correctness, not performance optimization).

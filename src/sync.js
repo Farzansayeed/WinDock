@@ -11,6 +11,16 @@
 import { WebSocketServer } from "ws";
 
 export const HEARTBEAT_MS = 30_000;
+// Poll ONLY while a paired WebSocket client is connected. External app launches
+// and exits don't generate WinDock HTTP mutations, so they need their own refresh.
+export const RUNNING_POLL_MS = 3_000;
+
+/** Ignore volatile titles/handles; dock activity is keyed to app identity. */
+export function runningFingerprint(state) {
+  if (!Array.isArray(state?.running)) return "[]";
+  return JSON.stringify(state.running.map((app) => [app?.id ?? "", app?.pid ?? 0])
+    .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))));
+}
 
 export function snapshotMessage(state) {
   return JSON.stringify({ type: "snapshot", ...state });
@@ -41,9 +51,50 @@ export function originAllowed(req) {
  * @param {(req:import('node:http').IncomingMessage)=>boolean} opts.isAuthorized
  * @param {()=>Promise<object>} opts.getState
  */
-export function createSyncHub({ server, isAuthorized, getState, heartbeatMs = HEARTBEAT_MS }) {
+export function createSyncHub({
+  server, isAuthorized, getState, heartbeatMs = HEARTBEAT_MS,
+  runningPollMs = RUNNING_POLL_MS,
+}) {
   const wss = new WebSocketServer({ noServer: true });
   const alive = new WeakMap();
+  let lastRunning = null;
+  let polling = false;
+  let closing = false;
+
+  function sendSnapshot(state) {
+    const payload = snapshotMessage(state);
+    lastRunning = runningFingerprint(state);
+    let sent = 0;
+    for (const ws of wss.clients) {
+      if (ws.readyState !== ws.OPEN) continue;
+      try { ws.send(payload); sent++; }
+      catch { /* heartbeat later removes failed clients */ }
+    }
+    return sent;
+  }
+
+  async function pollRunning() {
+    if (closing || polling || wss.clients.size === 0) return 0;
+    polling = true;
+    try {
+      const state = await getState();
+      const current = runningFingerprint(state);
+      if (lastRunning === null) {
+        lastRunning = current;
+        return 0;
+      }
+      if (current === lastRunning) return 0;
+      return sendSnapshot(state);
+    } catch {
+      // A failed telemetry scan is NOT evidence every app closed.
+      // Preserve the last-known state and try again on the next interval.
+      return 0;
+    } finally {
+      polling = false;
+    }
+  }
+  const runningTimer = setInterval(() => { void pollRunning(); }, runningPollMs);
+  if (typeof runningTimer.unref === "function") runningTimer.unref();
 
   server.on("upgrade", (req, socket, head) => {
     if (req.url?.split("?")[0] === "/input") return; // Separate bounded input channel.
@@ -60,7 +111,9 @@ export function createSyncHub({ server, isAuthorized, getState, heartbeatMs = HE
     ws.on("pong", () => alive.set(ws, true));
     ws.on("error", () => {});
     try {
-      ws.send(snapshotMessage(await getState()));
+      const state = await getState();
+      if (lastRunning === null) lastRunning = runningFingerprint(state);
+      ws.send(snapshotMessage(state));
     } catch {
       /* a client that vanished mid-handshake needs no snapshot */
     }
@@ -89,21 +142,12 @@ export function createSyncHub({ server, isAuthorized, getState, heartbeatMs = HE
     },
     async broadcast() {
       if (wss.clients.size === 0) return 0;
-      const payload = snapshotMessage(await getState());
-      let sent = 0;
-      for (const ws of wss.clients) {
-        if (ws.readyState !== ws.OPEN) continue;
-        try {
-          ws.send(payload);
-          sent += 1;
-        } catch {
-          /* drop; heartbeat will reap it */
-        }
-      }
-      return sent;
+      return sendSnapshot(await getState());
     },
     close() {
+      closing = true;
       clearInterval(timer);
+      clearInterval(runningTimer);
       return new Promise((resolve) => wss.close(resolve));
     },
   };

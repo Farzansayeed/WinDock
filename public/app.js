@@ -264,7 +264,14 @@ async function activate(button) {
       const running = state.running.find((item) => item.id === key);
       const title = state.tiles.find((item) => item.id === key)?.label || "App";
       await api(running ? "/api/apps/focus" : "/api/apps/launch", { method: "POST", body: JSON.stringify(running ? { pid: running.pid, id: running.id } : { id: key }) });
-      notify((running ? "Brought forward: " : "Opened: ") + title);
+      // A successful helper invocation means Windows accepted the REQUEST;
+      // it does not prove the target created a visible window.
+      notify((running ? "Focus requested: " : "Launch requested: ") + title);
+      // Refresh promptly, as well as the server's bounded background running
+      // scan. Never invent a live running dot based on API acknowledgement.
+      setTimeout(() => {
+        if (paired && !document.hidden) refresh().catch(() => {});
+      }, 1200);
     }
   } catch (error) { report(error); }
   finally { button.disabled = false; button.removeAttribute("aria-busy"); }

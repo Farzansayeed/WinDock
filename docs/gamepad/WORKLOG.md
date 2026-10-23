@@ -6,6 +6,22 @@
 
 ---
 
+## 2026-10-23 — User-reported app state, launch and monitor brightness failures; regression repair
+
+**User observation:** Installed Preview showed "Opened: App" but no visible app, and running-app dots did not update after external app exits or launches. Brightness button returned "Could not adjust display brightness; check DDC/CI".
+
+**Source audit:** src/sync.js, server.js, public/app.js, src/platform/windows.js and native/win/Brightness.cs matched fork main exactly before this fix; failures cannot be causally attributed to a Gamepad-specific edit from source diff alone. WebSocket only broadcast state on connected clients and WinDock API mutations; **no periodic scan existed for apps launched/closed elsewhere**. UI showed "Opened" merely after a helper launch request returned, not after Windows confirmed a visible window. Brightness code had only read-level-based primary DDC/CI write, with no alternative VCP fallback if high-level WRITE was rejected.
+
+**Changes:** Added bounded 3-second, connected-clients-only, non-overlapping host running-state polling with fingerprint suppression of unchanged snapshots; resilient scan errors; explicit cleanup on socket hub close. Android browser now displays "Launch requested"/"Focus requested" and asks for a fresh snapshot shortly after each request; do not claim app opened until running status confirms. Added sync integration tests for external app exit, next launch and no duplicate unchanged broadcasts. Native Windows brightness falls back to VCP 0x10 with its own range when high-level DDC/CI write fails (hardware support permitting).
+
+**Safety/limitations:** Physical Windows app launch can still fail for independent OS reasons: expired shortcut, elevation/UAC boundary, single-instance application, wrong target or focus restriction. The UI now reports requests honestly but cannot force Windows to open an application. Some monitors lack writable DDC/CI or block it in HDR/picture modes; the fallback cannot bypass monitor firmware. No kernel driver, privilege escalation or monitor menu changes. **Real PC/monitor hardware testing outstanding.**
+
+**Tests:** CI/npm/Windows builds pending after this code commit; physical device acceptance pending. Do not mark the reported issue fully resolved without confirmation from user.
+
+**Next:** Verify GitHub CI and publish matching new Windows+Android Preview release, have owner quit regular WinDock before Preview (both port 8620), test app launch and external close/open running dots after ~3 seconds; test monitor DDC menu and read-only brightness diagnostic, record actual monitor model/connection and results; then return to P2 Windows virtual Xbox driver proof.
+
+---
+
 ## 2026-10-23 — Consolidated next-chat handoff + status/documentation corrections
 
 **Requested:** Save everything future ChatGPT/Codex chats need in AGENTS.md and repository docs, including precise current status, user-approved requirements, build/signing details, unresolved Windows driver gate, risks and next steps.

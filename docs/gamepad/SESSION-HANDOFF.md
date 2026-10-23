@@ -62,6 +62,10 @@
 - Build fails rather than falling back to an ephemeral Android signing key. Every future release should include both platforms + SHA256SUMS, BUILD-INFO, SIGNING-INFO. Match PUBLIC signer SHA-256 across future APKs and test actual Android package installer confirmation. No signing secrets, backups or private JKS in repository, release artifacts, logs or chat.
 - CI tests do not prove physical upgrade or gamepad compatibility. Windows unsigned preview installer not silently trusted; installer may need user confirmation. Avoid inaccurate user messaging.
 
+## Active user-reported non-gamepad regression — 2026-10-23
+
+The user reports Android dock running-app dots don't update when Windows processes open/close outside WinDock, tapping an app says "Opened" but it never visibly opens, and monitor brightness returns the DDC/CI error. Audited relevant source: Windows provider, server sync, launch and brightness code matched fork main before the repair (not demonstrably caused by the Gamepad branch). A new code batch adds a connected-only running snapshot poll every 3 seconds, only emits changed running state, handles scan errors, updates UI toast to **Launch requested** instead of falsely claiming launch completion, refreshes shortly after tap, and retries brightness with VCP 0x10 if high-level DDC/CI WRITE fails. Unit/integration and CI + REAL DEVICE verification are required. If launch STILL doesn't work, inspect actual Windows shortcuts and process/session/permissions; don't mark solved based on toast. Monitor firmware/DDC menu may still prevent brightness changes. See WORKLOG and PROGRESS for evidence. **Prioritize preserving/fixing core WinDock app functions before proceeding to P2/VS1.**
+
 ## Priority next steps for any future agent
 
 1. Recheck fork HEAD, GitHub Actions and numeric latest NON-DRAFT release; validate matching asset names/version/provenance. Don't assume GitHub releases ordering.
