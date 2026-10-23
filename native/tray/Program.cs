@@ -45,6 +45,10 @@ internal sealed partial class TrayApp : ApplicationContext
     private bool _recording;
     private readonly HttpClient _updateHttp = new(new HttpClientHandler { AllowAutoRedirect = false })
         { Timeout = TimeSpan.FromSeconds(12), MaxResponseContentBufferSize = 64 * 1024 };
+#if GAMEPAD_PREVIEW
+    private readonly HttpClient _previewMetadataHttp = new() { Timeout = TimeSpan.FromSeconds(18), MaxResponseContentBufferSize = 2_000_000 };
+    private readonly HttpClient _previewInstallerHttp = new() { Timeout = TimeSpan.FromMinutes(10) };
+#endif
     private readonly CancellationTokenSource _shutdown = new();
     private readonly System.Windows.Forms.Timer _updateTimer = new() { Interval = 8000 };
     private ToolStripMenuItem _checkUpdates = null!, _downloadUpdate = null!;
@@ -81,9 +85,12 @@ internal sealed partial class TrayApp : ApplicationContext
         _checkUpdates = new ToolStripMenuItem("Check for updates…", null, async (_, _) => await CheckUpdates(true));
         _downloadUpdate = new ToolStripMenuItem("Download update…", null, (_, _) => OpenRelease(_availableUpdate?.ReleasePage)) { Visible = false };
 #if GAMEPAD_PREVIEW
-        // Fork previews must never advertise updates from the original WinDock.
+        // Fork previews use their OWN release channel and never call upstream updates.
         _icon.Text = "WinDock Gamepad Preview";
-        _icon.ContextMenuStrip.Items.Add("Preview downloads…", null,
+        _checkUpdates = new ToolStripMenuItem("Check for Gamepad Preview updates…", null,
+            async (_, _) => await CheckPreviewUpdates());
+        _icon.ContextMenuStrip.Items.Add(_checkUpdates);
+        _icon.ContextMenuStrip.Items.Add("View preview releases…", null,
             (_, _) => OpenRelease(new Uri("https://github.com/Farzansayeed/WinDock/releases")));
 #else
         _icon.ContextMenuStrip.Items.Add(_checkUpdates);
@@ -211,6 +218,61 @@ internal sealed partial class TrayApp : ApplicationContext
         _icon.ShowBalloonTip(8000, title, text, ToolTipIcon.Info);
     }
 
+#if GAMEPAD_PREVIEW
+    private async Task CheckPreviewUpdates()
+    {
+        if (_checkingUpdates || _stopping || _smoke) return;
+        _checkingUpdates = true;
+        _checkUpdates.Enabled = false;
+        _checkUpdates.Text = "Checking Gamepad Preview updates…";
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Get, PreviewReleaseCatalog.Api);
+            request.Headers.UserAgent.ParseAdd("WinDock-GamepadPreview/" + UpdateChecker.InstalledVersion);
+            request.Headers.CacheControl = new() { NoCache = true };
+            using var response = await _previewMetadataHttp.SendAsync(request, _shutdown.Token);
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadAsStringAsync(_shutdown.Token);
+            var newer = PreviewReleaseCatalog.Newest(json, UpdateChecker.InstalledVersion);
+            if (_stopping) return;
+            if (newer is null)
+            {
+                MessageBox.Show($"You're up to date.\nInstalled: {UpdateChecker.InstalledVersion}",
+                    "Gamepad Preview updates", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            if (MessageBox.Show(
+                $"Gamepad Preview {newer.Version} is available.\nInstalled: {UpdateChecker.InstalledVersion}\n\n" +
+                "Download the new Windows installer from your GitHub fork, verify its SHA-256 and open the setup wizard?\n\n" +
+                "The current preview will quit. The installer is experimental and unsigned; Windows will ask for confirmation.",
+                "Gamepad Preview update", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+                return;
+            _checkUpdates.Text = "Downloading and verifying installer…";
+            var path = await PreviewUpdateDownload.DownloadVerifiedAsync(_previewInstallerHttp, newer, _shutdown.Token);
+            if (_stopping) return;
+            if (MessageBox.Show($"Verified SHA-256 for {newer.Version}.\n\nLaunch setup now and quit WinDock Gamepad Preview?",
+                    "Install Gamepad Preview update", MessageBoxButtons.YesNo, MessageBoxIcon.Information) != DialogResult.Yes)
+                return;
+            Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+            ExitThread(); // Dispose stops the running local host before setup copies files.
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidDataException or
+            JsonException or FormatException or UnauthorizedAccessException or OperationCanceledException or
+            System.ComponentModel.Win32Exception)
+        {
+            if (!_stopping) MessageBox.Show(
+                "The update could not be downloaded or verified. Nothing was installed.\n\n" + ex.Message +
+                "\n\nYou can download a verified preview manually at github.com/Farzansayeed/WinDock/releases.",
+                "Gamepad Preview update", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+        finally
+        {
+            _checkingUpdates = false;
+            if (!_stopping) { _checkUpdates.Enabled = true; _checkUpdates.Text = "Check for Gamepad Preview updates…"; }
+        }
+    }
+#endif
+
     private async Task CheckUpdates(bool interactive)
     {
         if (interactive) _updateTimer.Stop();
@@ -314,6 +376,10 @@ internal sealed partial class TrayApp : ApplicationContext
             _updateTimer.Dispose();
             _shutdown.Cancel();
             _updateHttp.Dispose();
+#if GAMEPAD_PREVIEW
+            _previewMetadataHttp.Dispose();
+            _previewInstallerHttp.Dispose();
+#endif
             _shutdown.Dispose();
             _captureTimer.Dispose();
             _captureHttp.Dispose();
