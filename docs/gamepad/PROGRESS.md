@@ -54,7 +54,7 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 | P1 | Gamepad inside Touch & sign, quick Touchpad return | **SOURCE/CI TESTS PASSED; REAL PHONE UX PENDING** | Regression and physical input navigation still need hands-on test |
 | P2 | Windows virtual Xbox controller backend feasibility and license decision | **READ-ONLY PROBE ADDED; DRIVER PROOF PENDING** | Driver comparison, native proof-of-concept, install/uninstall verification |
 | P3 | Native Kotlin phone gamepad controls/editor | **FIXED LEFT-STICK+A LOCAL VIEW IMPLEMENTED + ANDROID CI PASSED; EDITOR PENDING** | Real-device gestures and full control groups still open |
-| P4 | Native Windows persistent receiver, virtual state mapping, neutral watchdog | **DRIVER-INDEPENDENT STATE CONTRACT ADDED; RECEIVER NOT STARTED** | Windows tests and `joy.cpl` hardware verification |
+| P4 | Native Windows persistent receiver, virtual state mapping, neutral watchdog | **NATIVE .NET 8 INDEPENDENT TIMER FAIL-NEUTRAL OUTPUT OWNER ADDED; ACTUAL DEVICE/IPC NOT WIRED** | Windows tests and `joy.cpl` hardware verification |
 | P5 | Secure paired control plane + reliable gamepad transport; Wi-Fi and USB tether | **AUTHENTICATED SINGLE-OWNER DRIVER-NEUTRAL /gamepad WS LAB CHANNEL CODED; NO PRODUCTION SINK OR ANDROID WIRING** | Auth/replay/loss/reconnect tests + measured transport comparison |
 | P6 | End-to-end game compatibility, input correctness, latency benchmarking | **NOT STARTED** | Real Android + PC; p50/p95/p99; regressions |
 | P7 | Versioned preview packages, self-update and stable signing | **SIGNED V11 VERIFIED IN CI; PHYSICAL UPGRADES/STABLE GAMEPAD PENDING** | Published v11 has public signer proof; physical phone/PC updates unverified |
@@ -131,6 +131,14 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [ ] Android instrumentation and real-device multi-finger usability/orientation tests.
 
 **Exit gate:** native Android screen and gesture/layout state are correct independently of PC games.
+
+## P4 — Windows native receiver and controller state — TIMER-DRIVEN SAFE OUTPUT OWNER CODED, HARDWARE NOT CONNECTED
+
+- [x] Add real .NET 8 timer-driven ControllerReceiver with private controller-sink interface; write neutral at start/lease expiry/invalid input/stop, dispose backend exactly once, refuse replay and never revive closed lease.
+- [x] Verify independent PC-side watchdog with a REAL periodic Timer (no further websocket frames) and deterministic mock clock; test initial uninitialized session timeout, malformed/replayed data, native sink cleanup, neutral state.
+- [ ] Build and test .NET native timer in GitHub Windows CI; document exact build/run results.
+- [ ] Implement actual persistent native receiver IPC authenticated to the WinDock owner, with native failure handling even if Node process dies. Current fake sink emits NO XInput device.
+- [ ] Select a licensed, deployed, signed virtual Xbox backend (P2 proof). Plug backend into IControllerReportSink and verify XInput reports, neutral and crash/restart/uninstall on physical Windows PC.
 
 ## P4 — Windows native receiver and controller state — PROTOCOL FOUNDATION ADDED, RECEIVER NOT STARTED
 

@@ -1,4 +1,5 @@
 using WinDock.Gamepad;
+using System.Threading;
 
 static class Check
 {
@@ -9,6 +10,14 @@ static class Check
         if (!condition) throw new Exception("Gamepad test failed: " + reason);
     }
 }
+internal sealed class FakeController : IControllerReportSink
+{
+    internal List<ControllerState> Reports { get; } = new();
+    internal int DisposeCount;
+    public void Write(ControllerState state) { lock (Reports) Reports.Add(state); }
+    public void Dispose() => Interlocked.Increment(ref DisposeCount);
+}
+
 internal static class Program
 {
     private const string Valid =
@@ -68,6 +77,64 @@ internal static class Program
         Check.That(closed.Accept(Valid) == "ok", "third session");
         closed.Close();
         Check.That(closed.Current == ControllerState.Neutral, "explicit stop releases controls");
+
+        // Native-side device-independent report owner with an INDEPENDENT
+        // timer and neutral output. No virtual Xbox driver is installed.
+        long receiverClock = 0;
+        var fake = new FakeController();
+        using (var receiver = new ControllerReceiver(fake, () => receiverClock,
+            timeoutMs: 180, pollMs: 20, startTimer: false))
+        {
+            Check.That(fake.Reports.Count == 1 && fake.Reports[0] == ControllerState.Neutral,
+                "new native device starts neutral");
+            Check.That(receiver.Receive(Valid) == "ok", "valid native input reaches sink");
+            Check.That(fake.Reports[^1].Buttons == 4352, "native sink holds intended A and LB");
+            receiverClock = 80;
+            Check.That(receiver.Receive(Valid) == "replay", "replay ignored at native output");
+            Check.That(fake.Reports.Count == 2, "replay cannot hit physical sink");
+            receiverClock = 181;
+            receiver.Tick();
+            Check.That(receiver.Closed, "independent watchdog expires state on Tick");
+            Check.That(fake.Reports[^1] == ControllerState.Neutral, "watchdog sends neutral");
+            Check.That(fake.DisposeCount == 1, "watchdog disposes virtual device exactly once");
+            Check.That(receiver.Receive(Valid.Replace("\"seq\":1", "\"seq\":2")) == "closed",
+                "old session cannot revive after PC-side watchdog");
+        }
+        Check.That(fake.DisposeCount == 1, "native stop/dispose idempotent");
+
+        var wrong = new FakeController();
+        using (var receiver = new ControllerReceiver(wrong, () => 0,
+            timeoutMs: 180, startTimer: false))
+        {
+            Check.That(receiver.Receive(Valid) == "ok", "second PC session active");
+            Check.That(receiver.Receive("{}") == "invalid", "invalid report stops native session");
+            Check.That(wrong.Reports[^1] == ControllerState.Neutral,
+                "invalid report neutralizes native sink");
+        }
+        var abandoned = new FakeController();
+        receiverClock = 0;
+        using (var receiver = new ControllerReceiver(abandoned, () => receiverClock,
+            timeoutMs: 180, startTimer: false))
+        {
+            receiverClock = 1001;
+            receiver.Tick();
+            Check.That(receiver.Closed, "session that never sent a first frame expires");
+            Check.That(abandoned.DisposeCount == 1, "idle session disposes sink");
+        }
+
+        // Live timer proof: expiry occurs WITHOUT a Tick call or additional
+        // websocket/frame traffic. Timed fake sink, no driver/admin action.
+        var timed = new FakeController();
+        using (var receiver = new ControllerReceiver(timed, timeoutMs: 60, pollMs: 15))
+        {
+            Check.That(receiver.Receive(Valid) == "ok", "real timer test presses A");
+            Check.That(SpinWait.SpinUntil(() => receiver.Closed, 1500),
+                "independent native timer expires held input with no extra frames");
+            lock (timed.Reports)
+                Check.That(timed.Reports[^1] == ControllerState.Neutral,
+                    "real timer resets all native buttons/sticks/triggers");
+            Check.That(timed.DisposeCount == 1, "real native timer disposes fake device");
+        }
 
         Console.WriteLine($"{Check.Count} assertions");
         Console.WriteLine("gamepad-native-state verification passed");

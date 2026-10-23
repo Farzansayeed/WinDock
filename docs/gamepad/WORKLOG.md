@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-24 — P4 independent PC-side timer fail-neutral receiver without driver
+
+**Why:** A server-side inactivity timer is not sufficient to neutralize a stuck real Xbox device when Node crashes. Built native .NET 8 adapter-independent safety controller before driver choice.
+
+**Source:** native/gamepad-tests/GamepadReceiver.cs (ControllerReceiver) owns explicit IControllerReportSink and a timer that runs independent of new phone/network packets. Writes neutral at initialization and on lease expiry, invalid frames, explicit Dispose, sink failure and idle no-first-frame; sends accepted strictly increasing full-state frames only. A lock serializes report writes with the timer, and the real backend must neutralize/remove a device from Dispose even if its final neutral report fails. Native class uses Stopwatch monotonic elapsed time by default; controller DLL/driver not installed, launched or bundled.
+
+**Tests:** Extended native/gamepad-tests/Program.cs with in-memory sink and clock for valid state, replay drop, invalid fail neutral, expiry no revival, idle initial timeout, exactly-once backend cleanup, and REAL background timer expiry without Tick/frame calls. Existing CI already invokes this C# test project. No hardware verification yet; Github CI pending at commit time.
+
+**Status:** P4 native in-process safety owner developed and testable, but NOT an OS virtual Xbox device or persistent transport subprocess. Next bridge authorized P5 gamepad socket to an actual native receiver IPC with native process-liveness safety, contingent on P2 supported licensed driver and physical PC tests. Original Touchpad input untouched.
+
+---
+
 ## 2026-10-24 — Correct WebSocket route ownership exposed by CI
 
 **Observed test failure:** npm CI on first /gamepad channel commit 86b21f21 failed with "server.handleUpgrade() was called more than once with the same socket." Existing src/sync.js dock-status upgrade listener accepted ALL paths except /input, so the new /gamepad listener and dock listener both upgraded one socket.

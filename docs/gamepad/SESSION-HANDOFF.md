@@ -30,6 +30,10 @@
 - All inputs MUST neutralize on release, cancel, background, screen/mode exit, disconnect, stale/replayed packets, phone/PC process crash, driver loss. PC timer-based stale-state watchdog must actually run in native receiver; tested JS/C# models alone do NOT protect a real device.
 - No unapproved Windows elevated driver installation, certificate trust-store changes, signature-enforcement bypass or silently elevated Node host.
 
+## Native PC fail-neutral timer foundation (2026-10-24)
+
+Added .NET 8 native/gamepad-tests/GamepadReceiver.cs with a real independent watchdog Timer, monotonic elapsed clock and IControllerReportSink interface; all report writes/timeout/Dispose synchronized. It starts neutral, rejects replay, times out no further frames and never lets stale state survive, with native fake sink tests including real timer expiry and disposals. It is DRIVER-INDEPENDENT, not a persistent Windows service or XInput controller. At initial commit new CI not yet verified; future chat check test run and advance P2 driver feasibility + native IPC. P5 /gamepad remains disabled without backend sink; Android native view still not network attached.
+
 ## Latest user priority / backend groundwork (2026-10-24)
 
 The user explicitly requests to **defer Spotify and other old Windows app launching issues** and return to unfinished Gamepad plan. Do NOT pursue Spotify unless re-requested. P2 real signed virtual XInput backend remains unproven. Added driver-neutral src/gamepad/hub.js: a **real paired WebSocket /gamepad channel** that only becomes available if an injected device sink is configured, using authenticated single-owner lease, strict 256-byte full snapshots, sequence replay check and short timer-driven neutral on invalid, stale, disconnect or authorization loss. The production default is DISABLED (HTTP 503) because no actual Xbox backend exists. Real WebSocket integration test in scripts/verify-gamepad-hub.mjs; npm CI result must be verified. This is **P5 secure transport groundwork, NOT Android-to-PC control**. Next developer focus native Windows timer watchdog and real P2 driver proof; avoid fabricating end-to-end gameplay.
