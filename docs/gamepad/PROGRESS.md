@@ -55,7 +55,7 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 | P2 | Windows virtual Xbox controller backend feasibility and license decision | **READ-ONLY PROBE ADDED; DRIVER PROOF PENDING** | Driver comparison, native proof-of-concept, install/uninstall verification |
 | P3 | Native Kotlin phone gamepad controls/editor | **FIXED LEFT-STICK+A LOCAL VIEW IMPLEMENTED + ANDROID CI PASSED; EDITOR PENDING** | Real-device gestures and full control groups still open |
 | P4 | Native Windows persistent receiver, virtual state mapping, neutral watchdog | **DRIVER-INDEPENDENT STATE CONTRACT ADDED; RECEIVER NOT STARTED** | Windows tests and `joy.cpl` hardware verification |
-| P5 | Secure paired control plane + reliable gamepad transport; Wi-Fi and USB tether | **NOT STARTED** | Auth/replay/loss/reconnect tests + measured transport comparison |
+| P5 | Secure paired control plane + reliable gamepad transport; Wi-Fi and USB tether | **AUTHENTICATED SINGLE-OWNER DRIVER-NEUTRAL /gamepad WS LAB CHANNEL CODED; NO PRODUCTION SINK OR ANDROID WIRING** | Auth/replay/loss/reconnect tests + measured transport comparison |
 | P6 | End-to-end game compatibility, input correctness, latency benchmarking | **NOT STARTED** | Real Android + PC; p50/p95/p99; regressions |
 | P7 | Versioned preview packages, self-update and stable signing | **SIGNED V11 VERIFIED IN CI; PHYSICAL UPGRADES/STABLE GAMEPAD PENDING** | Published v11 has public signer proof; physical phone/PC updates unverified |
 | P8 | Improve existing Touchpad latency **after finished Gamepad v1** | **DEFERRED — AFTER P7** | Baseline/measured improvements, existing gesture regression tests |
@@ -143,6 +143,15 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [ ] Windows helper tests and manual driver/controller inspection.
 
 **Exit gate:** PC can apply validated synthetic test frames to the virtual controller safely.
+
+## P5 — Android ↔ PC pairing and low-latency transport — SECURE LAB CHANNEL IMPLEMENTED, HARDWARE NOT CONNECTED
+
+- [x] Add /gamepad WebSocket endpoint guarded by existing WinDock paired session and same-origin authorization; reject host without an actual backend sink (HTTP 503) rather than pretend controller connected.
+- [x] Single owner/session lease; reject simultaneous phone owners; revalidate authorization; bounded 256-byte full-state frames, sequence replay protection, 180ms timer expiry, invalid/binary/overrate/disconnect neutralization, sink cleanup.
+- [x] Add real WebSocket integration tests for session authorization, second-owner rejection, replay filtering, stale lease, invalid frames, clean handoff, and absence of driver sink; tests operate only on an in-memory sink, NOT an XInput device.
+- [ ] Wire native Kotlin stick+A to authenticated local WinDock /gamepad socket, with correct touch/Back/background/lost pairing neutral.
+- [ ] Implement a real Windows adapter/native receiver with its OWN timer-based watchdog and proven legally deployable signed virtual XInput driver (P2).
+- [ ] Measure Wi-Fi/USB tether latency and recoverability; later compare secure UDP only if measured improvements justify it.
 
 ## P5 — Android ↔ PC pairing and low-latency transport — NOT STARTED
 

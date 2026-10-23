@@ -15,6 +15,7 @@ import { validateControl, isDestructiveVerb, CONTROL_VERBS } from "./src/platfor
 import { createConfigStore } from "./src/config.js";
 import { createSyncHub } from "./src/sync.js";
 import { createInputHub } from "./src/input-hub.js";
+import { createGamepadHub } from "./src/gamepad/hub.js";
 import { validateSignature } from "./src/input.js";
 import { createIconCache, iconType, FALLBACK_ICON } from "./src/icons.js";
 import { startDiscovery, primaryAddress, DISCOVERY_PORT } from "./src/discovery.js";
@@ -125,6 +126,9 @@ export async function createApp({
   allowDestructive = true,
   trustLoopback = true,
   runningPollMs,
+  gamepadSinkFactory = null,
+  gamepadTimeoutMs = 180,
+  gamepadTickMs = 30,
 } = {}) {
   const state = { pin };
   const appIcon = createIconCache(provider);
@@ -346,11 +350,26 @@ export async function createApp({
     ...(runningPollMs === undefined ? {} : { runningPollMs }),
   });
 
+  const gamepadHub = createGamepadHub({
+    server,
+    isAuthorized: (req) => authorize({
+      req, sessions, lockout, remote: req.socket.remoteAddress || "",
+      trustLoopback,
+    }).ok,
+    sinkFactory: gamepadSinkFactory,
+    timeoutMs: gamepadTimeoutMs,
+    tickMs: gamepadTickMs,
+  });
+
   const inputHub = createInputHub({ server, input: provider.input, isAuthorized: (req) =>
     authorize({ req, sessions, lockout, remote: req.socket.remoteAddress || "", trustLoopback }).ok,
   });
-  server.on("close", () => { provider.capture?.dispose().catch(() => {}); provider.input?.dispose(); });
-  return { server, hub, inputHub, provider, configStore, dockState, state, sessions, lockout };
+  server.on("close", () => {
+    provider.capture?.dispose().catch(() => {});
+    provider.input?.dispose();
+    void gamepadHub.close().catch(() => {});
+  });
+  return { server, hub, inputHub, gamepadHub, provider, configStore, dockState, state, sessions, lockout };
 }
 
 export async function start({ port = Number(process.env.PORT) || DEFAULT_PORT, host = process.env.WINDOCK_HOST || "" } = {}) {

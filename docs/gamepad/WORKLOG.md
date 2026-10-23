@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-10-24 — P5 isolated paired Gamepad WebSocket channel with no unsafe fake controller
+
+**User priority:** Park Spotify/brightness/dock regression investigations (still unresolved) and resume unfinished Gamepad phases. Current P2 XInput virtual driver remains unproven. Chose implementation independent of any privileged driver before device approval.
+
+**Source changes:** src/gamepad/hub.js is a new /gamepad WebSocket channel, separate from /input and read-only state sync. It uses existing paired-cookie authorization + same-Origin check, a single owner lock, 256-byte full snapshots, per-session increasing sequence gate (replays ignored, do not extend timeout), 180ms timer-based stale fail-neutral, invalid/binary/rate/authorization/disconnect cleanup and sink close. Backend sink injection is explicit. When no real native sink is configured (production today), WebSocket upgrade returns HTTP 503 — NOT a fake Xbox controller, NOT keyboard emulation, and no packet state accepted. server.js wires the isolated hub without changing existing mouse/input channel.
+
+**Automated test:** scripts/verify-gamepad-hub.mjs creates a real HTTP/WS WinDock test server and in-memory fake sink; tests authenticated ownership, origin refusal, second-client conflict, valid/replay/malformed state, active timer cleanup/neutral on inactivity and abrupt disconnect, disabled production route. Registered into npm test. This tests security/logic only, NOT Android native sending or Windows virtual XInput output.
+
+**Safety:** No driver installed or bundled, no UAC, no cloud gameplay, no new app account or arbitrary OS device access. Real native sink must itself fail neutral on process crash independent of Node timer; this Node gate alone is NOT sufficient for Xbox input safety.
+
+**Verification:** GitHub npm and CI pending at commit creation; actual device tests none. Next step implement native .NET 8 timer-driven device-independent receiver + fake output tests and assess P2 signed driver deployment in isolated reversible environment. Then wire Android input and native XInput backend when available. P8 Touchpad latency deferred.
+
+---
+
 ## 2026-10-24 — Universal desktop launcher Preview v16 published; CI/installer green
 
 **Universal desktop launcher Preview v16 verified (2026-10-24):** [WinDock Gamepad Preview 0.2.3-gamepad.16](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.16-gf8d8a0e) is published and non-draft from source commit `f8d8a0e`; [Windows+Android release workflow #40011693658](https://github.com/Farzansayeed/WinDock/actions/runs/40011693658) **PASSED** Windows native helper build, installer installation/upgrade/uninstall smoke, Android APK/unit/lint+permanent keystore signer validation, and release publication. [CI #40011693770](https://github.com/Farzansayeed/WinDock/actions/runs/40011693770) passed Linux, macOS, Windows and aggregate. Both Windows/Android packages, BUILD-INFO.txt, SHA256SUMS.txt and PUBLIC SIGNING-INFO.txt are present. **Actual user's WinDock Spotify/window focus, other app and running dot, DDC/CI, and Android in-place upgrade remain UNTESTED on physical devices**; never claim universal resolution solely on CI.
