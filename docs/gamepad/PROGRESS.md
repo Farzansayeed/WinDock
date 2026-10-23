@@ -3,7 +3,9 @@
 
 **Canonical source of truth for status:** this document, on the `feature/universal-gamepad` branch of [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock/tree/feature/universal-gamepad).  
 **Last reviewed:** 2026-10-23.  
-**Universal Win32 launch repair 2026-10-24:** Implemented native exact executable-path + top-level-window lookup, focus/restore on existing classic app rather than spawning another process, preserved shortcut arguments, safety tests and correctly detached input thread. C#/CI/physical user tests PENDING. **No Spotify hardcoding**. See WORKLOG.
+**Universal desktop launcher Preview v16 verified (2026-10-24):** [WinDock Gamepad Preview 0.2.3-gamepad.16](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.16-gf8d8a0e) is published and non-draft from source commit `f8d8a0e`; [Windows+Android release workflow #40011693658](https://github.com/Farzansayeed/WinDock/actions/runs/40011693658) **PASSED** Windows native helper build, installer installation/upgrade/uninstall smoke, Android APK/unit/lint+permanent keystore signer validation, and release publication. [CI #40011693770](https://github.com/Farzansayeed/WinDock/actions/runs/40011693770) passed Linux, macOS, Windows and aggregate. Both Windows/Android packages, BUILD-INFO.txt, SHA256SUMS.txt and PUBLIC SIGNING-INFO.txt are present. **Actual user's WinDock Spotify/window focus, other app and running dot, DDC/CI, and Android in-place upgrade remain UNTESTED on physical devices**; never claim universal resolution solely on CI.
+
+**Universal Win32 launch repair 2026-10-24:** Implemented native exact executable-path + top-level-window lookup, focus/restore on existing classic app rather than spawning another process, preserved shortcut arguments, safety tests and correctly detached input thread. Windows build/CI and public Preview v16 PASSED; physical user tests PENDING. **No Spotify hardcoding**. See WORKLOG.
 
 **Spotify install type confirmed 2026-10-24:** User's Get-StartApps points to Roaming Spotify.exe, Get-AppxPackage Spotify is empty and file exists. **Classic Win32 app, not Store/MSIX.** The v13 COM change is unrelated. New source fix avoids blocking launch HTTP reply on a slow Windows running-process scan; CI and PC launch verification pending. See WORKLOG.
 
@@ -196,7 +198,7 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [x] Prefer focus of exact matching existing classic app window before Process.Start when shortcut has NO argument/profile; preserve Store/MSIX and argument-bearing shortcut routes.
 - [x] Unify WinDock existing PID focus and native fast-path focus, with proper temporary foreground thread attachment cleanup.
 - [x] Add source regression tests ensuring exact path and real window matching, no app-name hardcoding and safe profile behavior; CI and field tests still pending.
-- [ ] Windows native helper compilation, npm tests, full CI and installable numbered Preview release pass on this commit.
+- [x] Windows native helper compilation, npm tests, full CI and published [Preview v16](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.16-gf8d8a0e) all passed ([release workflow](https://github.com/Farzansayeed/WinDock/actions/runs/40011693658), [CI](https://github.com/Farzansayeed/WinDock/actions/runs/40011693770)).
 - [ ] Owner verifies Spotify and other classic apps launch/focus correctly from phone and dots reflect real windows, including multi-process closed/open and other EXE paths. No silent elevation or background process killing.
 
 ## Spotify Windows launch: packaged app activation

@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-10-24 — Universal desktop launcher Preview v16 published; CI/installer green
+
+**Universal desktop launcher Preview v16 verified (2026-10-24):** [WinDock Gamepad Preview 0.2.3-gamepad.16](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.16-gf8d8a0e) is published and non-draft from source commit `f8d8a0e`; [Windows+Android release workflow #40011693658](https://github.com/Farzansayeed/WinDock/actions/runs/40011693658) **PASSED** Windows native helper build, installer installation/upgrade/uninstall smoke, Android APK/unit/lint+permanent keystore signer validation, and release publication. [CI #40011693770](https://github.com/Farzansayeed/WinDock/actions/runs/40011693770) passed Linux, macOS, Windows and aggregate. Both Windows/Android packages, BUILD-INFO.txt, SHA256SUMS.txt and PUBLIC SIGNING-INFO.txt are present. **Actual user's WinDock Spotify/window focus, other app and running dot, DDC/CI, and Android in-place upgrade remain UNTESTED on physical devices**; never claim universal resolution solely on CI.
+
+**User next acceptance:** Quit regular WinDock tray before preview (same port 8620), update PC and paired phone to matching v16 packages through approved update flow. Test Spotify when already running with one visible window among multiple processes, then fully close/relaunch; repeat with Notepad and another classic app; confirm running dot appears/disappears, no duplicate unnecessary process, and actual visible/foreground window. Test browser shortcut with profile args separately to catch regressions. Record Windows/phone results in PROGRESS/WORKLOG. If focus still fails, Windows foreground restrictions or saved tile target/args may be responsible; don't silently elevate, kill process or reinstall.
+
+---
+
 ## 2026-10-24 — Generic Win32 existing-window activation for multi-process desktop apps (owner-approved universal fix)
 
 **Owner evidence:** Spotify's classic Roaming Spotify.exe succeeds via Start-Process. Eight Spotify processes are visible but only one (Spotify Free) has a nonzero MainWindowHandle. This is characteristic of multi-process desktop frameworks, so an app-name special case would be wrong.
