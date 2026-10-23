@@ -4,7 +4,7 @@
 **Work branch:** `feature/universal-gamepad`
 **Upstream:** https://github.com/aliihsaad/WinDock
 **Plan recorded:** 23 October 2026
-**Status (2026-10-23 P1 implementation):** Touch & sign now contains a **Gamepad UI-only preview and direct switching**; an isolated mocked mode-switch test passed 21 assertions, but full npm/CI/Android verification is pending. Windows driver candidate research and [P2 feasibility test plan](P2-DRIVER-FEASIBILITY.md) are documented, but hardware proof has not begun. **No real gamepad input, virtual controller or latency measurement exists yet.** P2 Windows driver feasibility is next, followed by VS1 real phone→PC proof.
+**Status (2026-10-23 P1 implementation):** Touch & sign now contains a **Gamepad UI-only preview and direct switching**; an isolated mocked mode-switch test passed 21 assertions, but full npm/CI/Android verification is pending. Windows driver candidate research and [P2 feasibility test plan](P2-DRIVER-FEASIBILITY.md) are documented, and a [read-only XInput diagnostic](../../native/gamepad-probe/README.md) is coded; real Windows build/hardware proof has not begun. **No real gamepad input, virtual controller or latency measurement exists yet.** P2 Windows driver feasibility is next, followed by VS1 real phone→PC proof.
 
 ## Why this exists
 

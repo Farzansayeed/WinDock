@@ -54,6 +54,10 @@ jobs:
           dotnet-version: '8.0.x'
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm test
+      - name: Build read-only XInput diagnostic (no driver install)
+        run: dotnet build native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release
+      - name: Verify XInput diagnostic help (no device access)
+        run: dotnet run --no-build --project native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -- --help
       - name: Verify native touchpad protocol and transparent signature rendering
         run: dotnet run --project native/input-tests/WinDockInputTests.csproj -c Release
       - name: Verify update checks and startup notification policy

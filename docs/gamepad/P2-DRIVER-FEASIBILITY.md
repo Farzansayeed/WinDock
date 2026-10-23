@@ -1,9 +1,9 @@
 # P2 — Windows virtual Xbox controller feasibility and acceptance gate
 
-**Status:** RESEARCH / TEST PLAN ONLY. No driver selected, installed, redistributed, or tested on a Windows machine.  
+**Status:** RESEARCH + READ-ONLY XINPUT DIAGNOSTIC CODE ADDED. No driver selected, installed, redistributed, or tested on a Windows machine. Diagnostic compilation/Windows run still pending.  
 **Last reviewed:** 2026-10-23.  
 **Owner fork:** [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock), branch `feature/universal-gamepad`.  
-**Next step:** a separate, removable, test-only Windows proof that a controller appears to **XInput**, not merely as a generic USB/HID device. No action here elevates or changes the user's Windows machine.
+**Next step:** build and run [WinDock's read-only XInput diagnostic](../../native/gamepad-probe/README.md) to capture a Windows baseline, then run a separately approved, removable virtual-controller test and compare. No action here elevates or changes the user's Windows machine.
 
 ## Why P2 gates subsequent development
 
@@ -18,6 +18,12 @@ The Android touch UI is achievable using the existing WinDock Kotlin application
 | [ViGEmBus](https://github.com/nefarius/ViGEmBus) | Familiar historical virtual Xbox 360 compatibility | Repository is **archived**; retired driver, long-term maintenance and security concerns. | **LAB COMPARISON ONLY**, not an automatic distribution choice |
 
 Source statements are developer claims, not independently verified. Re-check upstream repository, releases, supported OS, licensing and signing documentation at the time of testing.
+
+## Read-only diagnostic now available
+
+A standalone `native/gamepad-probe/` .NET 8 project calls only Windows `XInputGetState`. It does not install, trust, or emit anything. It records Xbox-visible slots, A/button bits, stick axes, and analog triggers, and offers `--scan` and bounded `--watch`. [Usage and safety instructions](../../native/gamepad-probe/README.md).
+
+**This is instrumentation, NOT driver feasibility success.** Actual .NET build/Windows run and driver install/rollback evidence must still be collected. Use physical controllers disconnected during before/after comparisons.
 
 ## Minimum Windows proof (P2 acceptance)
 
@@ -51,4 +57,4 @@ Source statements are developer claims, not independently verified. Re-check ups
 
 ## Pending information / evidence
 
-**P2 remains NOT STARTED as an install/proof-of-concept.** No physical Windows host accessible through this GitHub integration, no Windows driver binary tested, and no Windows admin action undertaken. P1 preview and its mock DOM navigation tests are separate from this gate.
+**P2 driver validation remains NOT STARTED as an install/proof-of-concept.** A read-only diagnostic project and CI checks are committed but Windows hardware/driver tests have not been performed. No physical Windows host accessible through this GitHub integration, no Windows driver binary tested, and no Windows admin action undertaken. P1 preview and its mock DOM navigation tests are separate from this gate.

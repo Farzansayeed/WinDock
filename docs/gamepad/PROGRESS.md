@@ -2,8 +2,8 @@
 
 **Canonical source of truth for status:** this document, on the `feature/universal-gamepad` branch of [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock/tree/feature/universal-gamepad).  
 **Last reviewed:** 2026-10-23.  
-**Current phase:** **P1 UI-only preview IMPLEMENTED, pending automated/runtime verification; P2 Windows driver feasibility NOT STARTED**.  
-**Next concrete task:** P1 manual Android/browser verification and full npm/CI results; then [P2 driver proof](P2-DRIVER-FEASIBILITY.md) on a safe Windows test host. Static P2 candidate assessment and acceptance checklist are recorded, but **no driver proof has started**. Do not build the full editor before VS1.  
+**Current phase:** **P1 UI-only preview implemented, full CI/Android verification pending; P2 driver-independent diagnostic CODE READY, real Windows virtual-device test NOT STARTED**.  
+**Next concrete task:** Run updated npm/Windows CI tests, then use the [read-only XInput slot probe](../../native/gamepad-probe/README.md) on a safe Windows 10/11 machine to capture a baseline; only then assess an approved signed driver with reversible install. P1 physical Android navigation check remains pending. No virtual-device proof exists yet; do not start editor before VS1.  
 **Important status disclaimer:** gamepad input, virtual drivers, and latency measurements **are not implemented or verified**. The progress baseline counts documentation work only.
 
 **Driver-feasibility test plan:** [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md), research only; no Windows driver selected or installed. **Feature-branch GitHub Actions runs:** zero observed through GitHub at the most recent check; don't interpret this as a pass. Actions may need enabling/review in the fork.
@@ -27,7 +27,7 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 |---|---|---|---|
 | P0 | Fork + preserved requirements + actual current-UI screenshots + continuity instructions | **DONE** | Source and docs committed; see [UI reference](UI-REFERENCE.md) |
 | P1 | Gamepad added to existing Touch & sign navigation with UI-only preview | **CODE IMPLEMENTED / TESTS PENDING** | Relevant JS/HTML/CSS tests and manually validated navigation |
-| P2 | Windows virtual Xbox controller backend feasibility and license decision | **FIRST TECHNICAL GATE / NOT STARTED** | Driver comparison, native proof-of-concept, install/uninstall verification |
+| P2 | Windows virtual Xbox controller backend feasibility and license decision | **READ-ONLY PROBE ADDED; DRIVER PROOF PENDING** | Driver comparison, native proof-of-concept, install/uninstall verification |
 | P3 | Native Android Kotlin gamepad screen + selectable multitouch controls + editor | **NOT STARTED** | Android unit/instrumentation tests on real phone |
 | P4 | Native Windows persistent receiver, virtual state mapping, neutral watchdog | **NOT STARTED** | Windows tests and `joy.cpl` hardware verification |
 | P5 | Secure paired control plane + reliable gamepad transport; Wi-Fi and USB tether | **NOT STARTED** | Auth/replay/loss/reconnect tests + measured transport comparison |
@@ -77,13 +77,16 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 
 **Exit gate:** one genuine phone→PC→virtual controller path works safely. Visual demo or synthetic-only frames do not pass.
 
-## P2 — Windows virtual device feasibility — NOT STARTED (candidate research documented; actual proof pending)
+## P2 — Windows virtual device feasibility — INSTRUMENTATION ADDED, DRIVER PROOF NOT STARTED
 
 See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend tradeoffs, safe install/rollback, XInput tests and go/no-go evidence requirements.
 
 - [ ] Research and record signed Windows 10/11 virtual Xbox-compatible backend candidates, maintenance, redistribution/licensing, and uninstall/rollback.
 - [ ] Build isolated native C# proof of concept for creating/removing a virtual controller; no gamepad network plumbing required yet. Compare HIDMaestro (.NET 10/admin + local cert) with existing WinDock .NET 8, licensed libvirtualhid, and retired ViGEmBus. **Never bypass driver signature enforcement.**
 - [ ] Validate clean install, elevation/UAC lifecycle, machine certificate trust, signature legitimacy, Windows 10/11 support, and reversible uninstall; choose safe way to isolate administrative work.
+- [x] Add a no-install, read-only XInput slot inspector in `native/gamepad-probe/` to support real Windows testing. **Source added, compilation/Windows execution pending.**
+- [x] Wire .NET 8 diagnostic build/help into Windows CI and its static read-only invariants into `npm test`. **Not yet CI-confirmed.**
+- [ ] Record a before/after XInput slot scan and changed A/axes against a separately approved virtual driver on real Windows.
 - [ ] Verify recognized controller axes/buttons in Windows `joy.cpl` or equivalent.
 - [ ] Record chosen driver + reasons in `docs/gamepad/`, including caveats; confirm any admin/install requirements.
 - [ ] Prove neutral + destroy behavior and crash recovery on a real Windows PC.
