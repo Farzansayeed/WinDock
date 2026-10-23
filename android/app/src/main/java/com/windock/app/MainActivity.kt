@@ -50,6 +50,8 @@ class MainActivity : Activity() {
     private var connecting = false
     private lateinit var idleDisplay: IdleDisplayController
     private var phoneDialog: AlertDialog? = null
+    private var gamepadLayer: FrameLayout? = null
+    private var gamepadTouch: GamepadTouchView? = null
     private var wakingGesture = false
     private val wakingKeys = mutableSetOf<Int>()
     private var usbOnly = false
@@ -133,7 +135,51 @@ class MainActivity : Activity() {
 
     private fun syncIdleDisplay() {
         if (::idleDisplay.isInitialized) idleDisplay.setActive(resumed && !connecting && !loadFailed &&
-            web.visibility == View.VISIBLE && phoneDialog == null)
+            web.visibility == View.VISIBLE && phoneDialog == null && gamepadLayer == null)
+    }
+
+    /**
+     * Native first-slice UI shares the existing WinDock Activity/WebView.
+     * It does not own a controller socket; it NEVER forwards test frames to PC.
+     */
+    private fun openNativeGamepad() {
+        if (gamepadLayer != null || !trustedKeyboardPage()) return
+        hideRemoteKeyboard()
+        val dp = resources.displayMetrics.density
+        val layer = FrameLayout(this).apply { setBackgroundColor(0xff0a101b.toInt()) }
+        val pad = GamepadTouchView(this)
+        layer.addView(pad, FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
+        val back = Button(this).apply {
+            text = "← Touchpad"
+            contentDescription = "Leave native gamepad input test and return to Touchpad"
+            isAllCaps = false
+            setOnClickListener { closeNativeGamepad(true) }
+        }
+        layer.addView(back, FrameLayout.LayoutParams((138 * dp).toInt(),
+            (52 * dp).toInt(), Gravity.TOP or Gravity.START).apply {
+            leftMargin = (12 * dp).toInt()
+            topMargin = (12 * dp).toInt()
+        })
+        gamepadTouch = pad
+        gamepadLayer = layer
+        findViewById<FrameLayout>(R.id.root).addView(layer)
+        syncIdleDisplay()
+    }
+
+    private fun closeNativeGamepad(returnToTouchpad: Boolean) {
+        val layer = gamepadLayer ?: return
+        gamepadTouch?.neutralize()
+        (layer.parent as? FrameLayout)?.removeView(layer)
+        gamepadLayer = null
+        gamepadTouch = null
+        syncIdleDisplay()
+        if (returnToTouchpad && trustedKeyboardPage()) {
+            web.evaluateJavascript(
+                "window.dispatchEvent(new CustomEvent('windock-gamepad-action',{detail:{action:'touchpad'}}))",
+                null,
+            )
+        }
     }
 
     private fun showPhoneOptions() {
@@ -257,6 +303,7 @@ class MainActivity : Activity() {
         }
         @JavascriptInterface fun hideKeyboard() { runOnUiThread { hideRemoteKeyboard() } }
         @JavascriptInterface fun showPhoneSettings() { runOnUiThread { if (trustedKeyboardPage()) showPhoneOptions() } }
+        @JavascriptInterface fun openGamepad() { runOnUiThread { if (trustedKeyboardPage()) openNativeGamepad() } }
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -290,6 +337,7 @@ class MainActivity : Activity() {
     }
 
     private fun failConnection(message: Int) {
+        closeNativeGamepad(false)
         hideRemoteKeyboard()
         loadFailed = true
         setBusy(false)
@@ -302,6 +350,7 @@ class MainActivity : Activity() {
     /** Validate remembered, entered and discovered hosts with the same health check. */
     private fun connect(manual: String? = null, restoreOnStartup: Boolean = false) {
         if (connecting) return
+        closeNativeGamepad(false)
         (getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager)
             .hideSoftInputFromWindow(address.windowToken, 0)
         web.stopLoading()
@@ -366,6 +415,7 @@ class MainActivity : Activity() {
 
     @Deprecated("Activity back dispatch for the supported API 24+ range")
     override fun onBackPressed() {
+        if (gamepadLayer != null) { closeNativeGamepad(true); return }
         if (keyboardBar.visibility == View.VISIBLE) {
             keyboardEditor.commitDraft()
             hideRemoteKeyboard()
@@ -386,8 +436,9 @@ class MainActivity : Activity() {
     }
 
     override fun onResume() { super.onResume(); resumed = true; if (::web.isInitialized) web.onResume(); syncIdleDisplay() }
-    override fun onPause() { resumed = false; wakingGesture = false; wakingKeys.clear(); syncIdleDisplay(); hideRemoteKeyboard(); if (::web.isInitialized) web.onPause(); super.onPause() }
+    override fun onPause() { closeNativeGamepad(false); resumed = false; wakingGesture = false; wakingKeys.clear(); syncIdleDisplay(); hideRemoteKeyboard(); if (::web.isInitialized) web.onPause(); super.onPause() }
     override fun onDestroy() {
+        closeNativeGamepad(false)
         phoneDialog?.setOnDismissListener(null)
         phoneDialog?.dismiss()
         idleDisplay.close()

@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-23 — First native Android input screen (local-only implementation)
+
+**Changed:** Native `GamepadTouchModel.kt` pointer-ID model (fixed left analog stick + A button) and `GamepadTouchView.kt` custom native Canvas/MotionEvent input surface, launched via `@JavascriptInterface openGamepad()` in the existing `MainActivity.kt` only on the trusted/paired foreground WebView. Added return-to-Touchpad event and immediate native overlay teardown/neutral on Back, pause, disconnect and activity destruction. Web-only clients retain the existing noninteractive preview. Service-worker cache version bumped. Added `GamepadTouchModelTest.kt` pure JVM tests.
+
+**Scope:** This is **local input visualization only**, NOT an authenticated controller transport, virtual Windows gamepad, full customizable editor, or end-to-end multiplayer/game test. The PC receives no gamepad state; existing Touchpad/WebSocket path remains separate. No vibration/gyro added.
+
+**Tests:** Android unit tests + existing CI/preview workflow still to be checked after commit. **No real Android or Windows hardware tests.** P2 driver installation/signing remains undecided.
+
+**Next:** Fix any CI issues, inspect latest preview download, run phone gesture tests, then P2 Windows signed XInput proof/VS1 connection.
+
+---
+
 ## 2026-10-23 — Preview publishing retry after GitHub 403 (CI troubleshooting)
 
 **Found:** Windows and Android build jobs both passed for [preview run 39989554161](https://github.com/Farzansayeed/WinDock/actions/runs/39989554161), but publish failed: GitHub REST returned HTTP 403 "Resource not accessible by integration" during `gh release create`. Job token log advertised `Contents: write`, so exact reason remains unverified. Retry of the failed publish job was requested via connected GitHub action; **not yet confirmed successful**. Newer versioned run for `d66074ce` remains in progress.

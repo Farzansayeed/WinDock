@@ -9,7 +9,7 @@
  *    worse, replay a control action from cache. Neither is acceptable.
  */
 
-const VERSION = "windock-v13-gamepad-preview";
+const VERSION = "windock-v14-native-gamepad-preview";
 const SHELL = [
   "/",
   "/index.html",

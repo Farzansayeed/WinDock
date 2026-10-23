@@ -2,8 +2,8 @@
 
 **Canonical source of truth for status:** this document, on the `feature/universal-gamepad` branch of [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock/tree/feature/universal-gamepad).  
 **Last reviewed:** 2026-10-23.  
-**Current phase:** **P1 Gamepad UI preview and automated builds available; P2 virtual Xbox driver hardware proof pending; driver-neutral gamepad state model now implemented in both JS and C# with tests pending GitHub CI.**  
-**Next concrete task:** JS + .NET controller contract CI has passed; manually install and test the current prerelease (or newest successful) on a real Android phone and Windows PC, then use the [read-only XInput slot probe](../../native/gamepad-probe/README.md) on a safe Windows 10/11 machine to capture a baseline; only then assess an approved signed driver with reversible install. P1 physical Android navigation check remains pending. No virtual-device proof exists yet; do not start editor before VS1.  
+**Current phase:** **P3 first native Android Kotlin one-stick+A local input surface implemented for build/test verification. No PC gamepad connection. P2 Windows XInput driver hardware proof still pending.**  
+**Next concrete task:** Check native Android Kotlin UI/gesture unit tests in CI and verify on a real phone; manually install and test the current prerelease (or newest successful) on a real Android phone and Windows PC, then use the [read-only XInput slot probe](../../native/gamepad-probe/README.md) on a safe Windows 10/11 machine to capture a baseline; only then assess an approved signed driver with reversible install. P1 physical Android navigation check remains pending. No virtual-device proof exists yet; do not start editor before VS1.  
 **Important status disclaimer:** gamepad input, virtual drivers, and latency measurements **are not implemented or verified**. The progress baseline counts documentation work only.
 
 **Driver-feasibility test plan:** [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md), research only; no Windows driver selected or installed. **Feature-branch GitHub Actions runs:** zero observed again after diagnostic commit; don't interpret this as a pass. The fork may require enabling Actions. Actions may need enabling/review in the fork.
@@ -97,16 +97,17 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 
 **Exit gate:** a legal/deployable virtual controller backend works locally; if not, mark P2 **BLOCKED** and do not pretend generic keyboard emulation is equivalent.
 
-## P3 — Native Kotlin UI, input and profiles — NOT STARTED
+## P3 — Native Kotlin UI, input and profiles — ONE-STICK+A NATIVE UI CODED, TEST GATE PENDING
 
-- [ ] Integrate native Kotlin `GamepadActivity`/`View` with trusted WinDock WebView bridge, preserving same connected PC and existing APK.
+- [x] Add **native GamepadTouchView overlay** using the existing trusted Kotlin WebView bridge (zero-argument call, trusted endpoint guard), with direct Touchpad return through an explicit UI event. Source committed; device validation outstanding.
 - [ ] Support individual pointer-ID multitouch: independent 0/1/2 sticks, D-pad, ABXY, LB/RB, LT/RT, Menu/View.
-- [ ] Support one-stick mapping to logical left **or** right stick and true analog positions (not WASD), deadzones and Y inversion.
+- [ ] Support one-stick mapping to logical left **or** right stick and true analog positions (not WASD), deadzones and Y inversion. **Initial local test uses fixed logical left stick (signed continuous values, 6% deadzone), no selectable right role yet.**
 - [ ] Implement Edit Layout: drag/resize/toggle groups, safe regions; gameplay inputs neutral while editing.
 - [ ] Implement local presets Full / Single Stick / Racing / Minimal / Custom, persisted per phone; profile changes reset hidden buttons.
-- [ ] Native pause/cancel/background/rotate/exit handling neutralizes input immediately; no haptics or gyro v1.
+- [x] Model handles per-pointer release and ACTION_CANCEL; overlay neutralizes on Android pause, back, failed connection, dispose and return-to-Touchpad. No haptics or gyro. **Hardware tests still needed.**
 - [ ] Real-thumb ergonomics: fixed/floating joystick center, pointer ownership, screen cutouts, button-size/contrast, accidental exit prevention and responsive landscape layouts.
-- [ ] Android unit/instrumentation testing; check real device with concurrent multi-finger presses.
+- [x] Add JVM model unit tests for continuous stick, logical axes, A+stick concurrent pointer IDs, ownership, cancel/release and clamping (CI pending).
+- [ ] Android instrumentation and real-device multi-finger usability/orientation tests.
 
 **Exit gate:** native Android screen and gesture/layout state are correct independently of PC games.
 

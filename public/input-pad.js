@@ -105,7 +105,10 @@ export function createInputPad({ api, notify, WebSocketClass = WebSocket, storag
     $("touchpad-surface").dataset.used = "false";
     if (next === "gamepad") {
       // Deliberately UI-only. Do not query input capabilities or open a gameplay socket.
-      setStatus("Gamepad UI preview only · No controller input is sent to your PC.");
+      setStatus("Gamepad input preview · No controller input is sent to your PC.");
+      // Trusted Android companion opens a native MotionEvent view. Ordinary
+      // browser/PWA users remain on the clearly labeled visual preview.
+      try { window.WinDockAndroid?.openGamepad?.(); } catch { /* web preview remains available */ }
       return;
     }
     setStatus(next === "touchpad" ? "Connecting to your PC…" : "Draw here. Save a transparent PNG to Pictures / WinDock / Signatures.");
@@ -226,6 +229,9 @@ export function createInputPad({ api, notify, WebSocketClass = WebSocket, storag
   $("input-touchpad-tab").addEventListener("click", () => select("touchpad"));
   $("input-signature-tab").addEventListener("click", () => select("signature"));
   $("input-gamepad-tab").addEventListener("click", () => select("gamepad"));
+  window.addEventListener("windock-gamepad-action", (event) => {
+    if (event.detail?.action === "touchpad" && dialog.open && mode === "gamepad") select("touchpad");
+  });
   dialog.addEventListener("close", () => { generation++; disconnect(); finishStroke(); });
   document.addEventListener("visibilitychange", () => { if (document.hidden) { generation++; disconnect(); finishStroke(); if (dialog.open && mode === "touchpad") setStatus("Touchpad paused. Tap Reconnect to continue."); } });
   window.addEventListener("pagehide", disconnect);

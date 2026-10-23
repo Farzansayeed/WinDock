@@ -61,3 +61,7 @@ Match WinDock's current minimalist dark appearance: black/navy surface, subtle g
 ## P1 status (2026-10-23)
 
 The fork now has the preview-only third input mode and reciprocal Touchpad navigation coded in `public/index.html`, `public/input-pad.js`, `public/style.css`, and `public/icons.js`. No joystick/control events reach Windows; no native Android screen exists yet. Do not replace screenshot contact sheet: it documents the **original pre-Gamepad UI**, not the new preview. Visual/browser testing and the full Kotlin/Windows integration remain open in [PROGRESS.md](PROGRESS.md).
+
+## Native first-slice UI status — October 2026
+
+Existing Kotlin WinDock Activity now overlays a *local-only* native GamepadTouchView when the trusted WebView selects Gamepad. Only one fixed left analog stick and A button are drawn and tracked independently with Android pointer IDs. The Android preview visibly states it is not connected to the PC controller. Back/close returns to the existing Touchpad pane, neutralizes local state and does not revisit the dashboard. This is intentionally not the eventual full customizable layout editor. Physical Android UI/device testing is pending; Windows driver/transport is still missing.

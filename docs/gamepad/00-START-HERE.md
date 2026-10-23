@@ -41,6 +41,8 @@ Add an optional **Gamepad** input mode to the **existing** WinDock Android compa
 
 **Protocol foundation (2026-10-23):** `src/gamepad/protocol.js` defines strict bounded controller snapshots and a unit-tested fail-neutral state gate, **not yet wired to a live controller, native Windows driver, Android transport, or paired WebSocket**. Source tests in `scripts/verify-gamepad-protocol.mjs`. Keep this separate from the existing Touchpad protocol.
 
+**Native Android input slice (2026-10-23):** `GamepadTouchModel.kt` + `GamepadTouchView.kt` implement a left analog stick + A button local-only prototype, accessible from trusted Touch & sign Gamepad via the existing Kotlin companion bridge; returns directly to Touchpad. **No PC gamepad events yet.** Android JVM tests exist; consult PROGRESS/WORKLOG for actual CI evidence.
+
 ## Read next (in order)
 
 0. **[PROGRESS.md — live checklist, done/next/blocked](PROGRESS.md)**, [P2 — Windows driver feasibility test plan](P2-DRIVER-FEASIBILITY.md), **[AUDIT.md — prioritized risks and go/no-go gates](AUDIT.md)** and **[WORKLOG.md — chronological updates](WORKLOG.md)**
