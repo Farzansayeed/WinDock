@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-24 — Signed Gamepad Preview v20 published with P3/P4/P5 driver-neutral foundations
+
+**Gamepad roadmap development milestone (2026-10-24):** [Gamepad Preview v0.2.3-gamepad.20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083) from source commit `c138083` was verified **non-draft/published** with Android Preview APK, Windows Preview installer, SHA256SUMS.txt, BUILD-INFO.txt and public SIGNING-INFO.txt. [Preview workflow #40015513571](https://github.com/Farzansayeed/WinDock/actions/runs/40015513571) passed Android unit/lint/APK/permanent signer, Windows installer smoke and publishing; [feature-branch multi-OS CI #40015513520](https://github.com/Farzansayeed/WinDock/actions/runs/40015513520) passed. It includes authenticated driver-neutral single-owner /gamepad WebSocket + strict state/replay/timeout checks, native .NET 8 independent real-timer fail-neutral fake report sink, and new Kotlin v1 stick+A full-state codec/JVM tests. **Production /gamepad upgrade intentionally returns 503 without real Xbox device backend; Gamepad remains local-only on Android, NOT usable in Windows games.** Real signed device + end-to-end hardware acceptance required.
+
+**What passed:** Android full-state codec JVM tests, Android app Kotlin build/lint, Node authenticated WebSocket integration tests with in-memory sink, C# fake device receiver's real independent timer tests, Windows installer smoke, macOS/Linux/Windows CI and published non-draft release with correct assets and public signer info. **No** Windows driver, virtual XInput/controller in games, phone-to-Windows stick+A, authentic native report IPC or physical phone update was run.
+
+**Driver gate:** Vendor documentation reviewed: HIDMaestro .NET10/UAC and machine-trust certificate installer; licensed libvirtualhid requires periodic online licence checks/offline limits; ViGEmBus retired. No backend chosen or installed. P2 proof/test on owner-controlled disposable Windows host with explicit consent and documented recovery is outstanding. Maintain the local/no-cloud runtime product requirement. Continue next code from P2 safety then VS1 integration.
+
+**User priority:** Spotify launching and DDC are intentionally postponed at user's request and must not distract next chat unless re-requested. P8 Touchpad latency remains after Gamepad P7.
+
+---
+
 ## 2026-10-24 — Kotlin Android full-state frame contract for stick+A
 
 **Scope:** Added Android GamepadFrameEncoder.kt, pure Kotlin with exact protocol v1 ten-field full snapshot (seq, LX/LY signed stick, RX/RY zero, LT/RT zero, buttons A=0x1000), bounded axes, monotonic positive sequence and explicit neutral snapshot. This is a serializer only; no socket creation, app permissions, backend or virtual device. It does NOT misrepresent current local input preview as a PC controller. Sessions must start with a fresh codec, never silently wrap the sequence.

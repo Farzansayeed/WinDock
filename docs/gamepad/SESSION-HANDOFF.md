@@ -1,6 +1,6 @@
 # WinDock Universal Gamepad — CURRENT CHAT / AGENT HANDOFF
 
-**Snapshot checked:** 2026-10-23. **Use this to resume work, but re-check live GitHub HEAD, Releases and Actions before making current-status claims.**
+**Snapshot checked:** 2026-10-24. **Use this to resume work, but re-check live GitHub HEAD, Releases and Actions before making current-status claims.**
 
 ## Read-first workflow for the next chat
 
@@ -10,6 +10,14 @@
 4. Continue actual coding/testing where possible, rather than restarting planning. On EVERY meaningful code batch, update BOTH **docs/gamepad/PROGRESS.md** and **docs/gamepad/WORKLOG.md** in the SAME commit, recording exact tests, failures, untested device work, release links, blockers and next concrete action. Update this handoff and AGENTS.md when major milestones/decisions change.
 5. Never ask the user to repeat existing product requirements or send the private JKS, passwords, base64 signing secret, pairing PINs or GitHub tokens. User's secrets are already configured and CI-proven. Keep offline backup ownership with the user.
 6. Distinguish SOURCE CODED, MOCK/UNIT TESTS PASSED, CI BUILT, GITHUB RELEASE PUBLISHED, REAL PHONE/WINDOWS TESTED and GENUINE PC GAMEPAD FUNCTIONAL. These are NOT interchangeable.
+
+## 2026-10-24 top-priority handoff — new actual development milestone
+
+**Gamepad roadmap development milestone (2026-10-24):** [Gamepad Preview v0.2.3-gamepad.20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083) from source commit `c138083` was verified **non-draft/published** with Android Preview APK, Windows Preview installer, SHA256SUMS.txt, BUILD-INFO.txt and public SIGNING-INFO.txt. [Preview workflow #40015513571](https://github.com/Farzansayeed/WinDock/actions/runs/40015513571) passed Android unit/lint/APK/permanent signer, Windows installer smoke and publishing; [feature-branch multi-OS CI #40015513520](https://github.com/Farzansayeed/WinDock/actions/runs/40015513520) passed. It includes authenticated driver-neutral single-owner /gamepad WebSocket + strict state/replay/timeout checks, native .NET 8 independent real-timer fail-neutral fake report sink, and new Kotlin v1 stick+A full-state codec/JVM tests. **Production /gamepad upgrade intentionally returns 503 without real Xbox device backend; Gamepad remains local-only on Android, NOT usable in Windows games.** Real signed device + end-to-end hardware acceptance required.
+
+**Near-term development:** The user said *leave Spotify later, complete the remaining Gamepad plan*. Treat prior app-launch/monitor UX bugs as known and deferred, not new priority. P2 genuine virtual Xbox controller is the blocking gate; selecting a driver still requires explicit informed approval because HIDMaestro installs locally trusted signing cert with admin and libvirtualhid requires paid/online licence validation. Source: P2-DRIVER-FEASIBILITY.md (reviewed with primary vendor docs). First get safe OS and XInput baseline (read-only probe), then physical test driver in disposable machine with rollback; only then connect Kotlin codec/native input → authenticated /gamepad websocket → long-lived native receiver independent watchdog → real XInput backend. Do not claim working gamepad before actual controller appears in XInput + supported game. Keep all existing features and local runtime constraints.
+
+**File additions:** `src/gamepad/hub.js`, `scripts/verify-gamepad-hub.mjs`, `native/gamepad-tests/GamepadReceiver.cs`, `android/app/src/main/java/com/windock/app/GamepadFrameEncoder.kt`, `android/app/src/test/java/com/windock/app/GamepadFrameEncoderTest.kt`. `src/sync.js` now limits root WS upgrade to only "/" after CI caught a duplicate upgrade; /input remains touchpad, /gamepad remains driver-neutral gamepad. This branch's initial fail in CI was fixed in subsequent commits and v20 CI passed. The native Android view still only renders LOCAL input; frame codec is not wired to a socket. The Node gamepad hub returns 503 by default. No backend drivers bundled.
 
 ## Verified exact release and test status
 

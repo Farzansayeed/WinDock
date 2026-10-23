@@ -13,8 +13,10 @@
 
 **2026-10-23 regression remediation:** A user reported external app-status dots not changing, app launch acknowledgement without visible app, and DDC brightness failure. **Source fix committed**: bounded socket running-state polling, honest launch request wording/refresh, and high-level-to-VCP DDC brightness fallback. **GitHub CI and release packages PASSED for v12; physical host/monitor results still pending.** These are cross-feature WinDock functionality fixes, not verified gamepad input. See WORKLOG and [SESSION-HANDOFF.md](SESSION-HANDOFF.md).
 
-**Current phase:** **P3 native Android left-stick+A local-input preview; Windows Xbox/XInput backend not yet proven. P7 preview update system now builds and publishes with stable Android keystore signer verification; real Android/Windows upgrades are still untested.**
-**Next concrete task:** Owner downloads newly permanently signed Gamepad Preview v0.2.3-gamepad.11; if upgrading from old ephemeral-debug APK, uninstall ONLY the old Gamepad Preview once, preserving the regular app. Verify native UI and version/check-for-updates on real Android/Windows; produce and test a second stable-key release to prove in-place Android updates. Then resume P2 signed virtual XInput proof and one-stick+A VS1. P8 touchpad latency stays deferred.
+**Current phase:** **P2 signed Xbox virtual-device feasibility BLOCKED pending approved physical/driver test; P3 Android stick+A plus frame codec DONE in source/CI (not network-wired); P4 real native independent watchdog and P5 paired WS lab transport DONE in source/CI (no device sink or Android wiring). P7 experimental v20 signed preview built and published; physical update/gameplay gates OPEN.**
+**Next concrete task:** Obtain safe Windows 10/11 version/architecture and read-only XInput baseline on a test PC; evaluate one **explicitly approved** signed, redistributable, offline-compatible XInput backend in an isolated, rollback-capable environment. Then connect Android native stick+A via the now-tested paired /gamepad transport to persistent native receiver and real device; hardware-test fail-neutral and VS1. Preserve Touchpad/Signature; P8 tuning deferred; Spotify/app launching deferred by owner.
+**Gamepad roadmap development milestone (2026-10-24):** [Gamepad Preview v0.2.3-gamepad.20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083) from source commit `c138083` was verified **non-draft/published** with Android Preview APK, Windows Preview installer, SHA256SUMS.txt, BUILD-INFO.txt and public SIGNING-INFO.txt. [Preview workflow #40015513571](https://github.com/Farzansayeed/WinDock/actions/runs/40015513571) passed Android unit/lint/APK/permanent signer, Windows installer smoke and publishing; [feature-branch multi-OS CI #40015513520](https://github.com/Farzansayeed/WinDock/actions/runs/40015513520) passed. It includes authenticated driver-neutral single-owner /gamepad WebSocket + strict state/replay/timeout checks, native .NET 8 independent real-timer fail-neutral fake report sink, and new Kotlin v1 stick+A full-state codec/JVM tests. **Production /gamepad upgrade intentionally returns 503 without real Xbox device backend; Gamepad remains local-only on Android, NOT usable in Windows games.** Real signed device + end-to-end hardware acceptance required.
+
 **Important status disclaimer:** Native Android **local** stick+A input preview and unit tests exist; Android-to-Windows gamepad transport, real virtual XInput driver and measured latency **are not implemented or verified**. Do not conflate update signing success with a working PC gamepad.
 
 **Driver-feasibility test plan:** [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md), research only; no Windows virtual Xbox driver selected or installed. GitHub Actions are **enabled and passing**, including the v11 stable-signing preview build above.
@@ -37,7 +39,7 @@
 
 For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](UI-REFERENCE.md), [UX flow](01-UX-NAVIGATION.md), and [full technical brief](REQUIREMENTS-v2.md). See [WORKLOG](WORKLOG.md) for chronological changes.
 
-**MANDATORY new-chat context:** [SESSION-HANDOFF.md](SESSION-HANDOFF.md) (verified v11 signed release, blockers, exact source map, tests, what to do next). Future sessions must read root AGENTS.md and preserve this tracker/worklog in the same code commit.
+**MANDATORY new-chat context:** [SESSION-HANDOFF.md](SESSION-HANDOFF.md) (latest verified v20 code/release milestone, blockers, source map, tests, what to do next). Future sessions must read root AGENTS.md and preserve this tracker/worklog in the same code commit.
 
 ## Status key
 
@@ -139,7 +141,7 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 
 - [x] Add real .NET 8 timer-driven ControllerReceiver with private controller-sink interface; write neutral at start/lease expiry/invalid input/stop, dispose backend exactly once, refuse replay and never revive closed lease.
 - [x] Verify independent PC-side watchdog with a REAL periodic Timer (no further websocket frames) and deterministic mock clock; test initial uninitialized session timeout, malformed/replayed data, native sink cleanup, neutral state.
-- [ ] Build and test .NET native timer in GitHub Windows CI; document exact build/run results.
+- [x] Build and test .NET real periodic watchdog Timer and report-sink fake in [Windows CI #40015513520](https://github.com/Farzansayeed/WinDock/actions/runs/40015513520); native tests passed. No real XInput driver output.
 - [ ] Implement actual persistent native receiver IPC authenticated to the WinDock owner, with native failure handling even if Node process dies. Current fake sink emits NO XInput device.
 - [ ] Select a licensed, deployed, signed virtual Xbox backend (P2 proof). Plug backend into IControllerReportSink and verify XInput reports, neutral and crash/restart/uninstall on physical Windows PC.
 
@@ -159,7 +161,7 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 
 - [x] Add /gamepad WebSocket endpoint guarded by existing WinDock paired session and same-origin authorization; reject host without actual backend sink (HTTP 503). Fixed previously broad dock-sync WebSocket upgrader so only '/' is owned by dock, '/input' by touchpad and '/gamepad' by gamepad. Initial CI caught duplicate upgrade, awaiting rerun.
 - [x] Single owner/session lease; reject simultaneous phone owners; revalidate authorization; bounded 256-byte full-state frames, sequence replay protection, 180ms timer expiry, invalid/binary/overrate/disconnect neutralization, sink cleanup.
-- [x] Add real WebSocket integration tests for session authorization, second-owner rejection, replay filtering, stale lease, invalid frames, clean handoff, and absence of driver sink; tests operate only on an in-memory sink, NOT an XInput device.
+- [x] Real WebSocket integration tests pass on [multi-OS CI #40015513520](https://github.com/Farzansayeed/WinDock/actions/runs/40015513520) (authenticated ownership, 503 without sink, replay, invalid/rate/timeouts, disconnect neutral). No XInput output.
 - [ ] Wire native Kotlin stick+A to authenticated local WinDock /gamepad socket, with correct touch/Back/background/lost pairing neutral.
 - [ ] Implement a real Windows adapter/native receiver with its OWN timer-based watchdog and proven legally deployable signed virtual XInput driver (P2).
 - [ ] Measure Wi-Fi/USB tether latency and recoverability; later compare secure UDP only if measured improvements justify it.
