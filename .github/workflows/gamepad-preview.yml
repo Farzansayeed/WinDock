@@ -1,0 +1,160 @@
+name: Gamepad fork preview downloads
+
+# Builds only this owner's feature branch. A GitHub prerelease is published only
+# when BOTH independent Windows and Android jobs succeed.
+on:
+  push:
+    branches: [feature/universal-gamepad]
+    paths:
+      - '.github/workflows/gamepad-preview.yml'
+      - 'public/**'
+      - 'native/**'
+      - 'src/**'
+      - 'android/**'
+      - 'scripts/**'
+      - 'test/**'
+      - 'server.js'
+      - 'package.json'
+      - 'package-lock.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gamepad-preview-downloads
+  cancel-in-progress: false
+
+jobs:
+  windows:
+    name: Windows installer (isolated preview)
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - name: Windows native input and updater regression tests
+        shell: pwsh
+        run: |
+          dotnet run --project native/input-tests/WinDockInputTests.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'Input regression tests failed' }
+          dotnet run --project native/update-tests/WinDockUpdateTests.csproj -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'Update regression tests failed' }
+      - name: Build fork preview with a numbered version
+        shell: pwsh
+        run: |
+          $base = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $preview = "$($base)-gamepad.$env:GITHUB_RUN_NUMBER"
+          ./scripts/build-windows.ps1 -GamepadPreview -PreviewVersion $preview
+      - name: Install verified Inno Setup compiler
+        shell: pwsh
+        run: ./scripts/install-inno.ps1
+      - name: Build isolated Windows preview installer
+        shell: pwsh
+        run: ./scripts/build-installer.ps1 -GamepadPreview
+      - name: Test install, launch, upgrade and uninstall
+        shell: pwsh
+        run: ./scripts/test-installer.ps1 -GamepadPreview
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: artifacts/installer/WinDockGamepadPreviewSetup.exe
+          if-no-files-found: error
+
+  android:
+    name: Android APK (separate preview app)
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Android SDK platform and tools
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
+      - name: Build numbered APK, unit tests and lint
+        working-directory: android
+        run: |
+          BASE_VERSION=$(node -p "require('../package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          PREVIEW_CODE=$((100000 + GITHUB_RUN_NUMBER))
+          bash ./gradlew assembleDebug testDebugUnitTest lintDebug \
+            "-PwindockPreviewVersionName=$PREVIEW_VERSION" \
+            "-PwindockPreviewVersionCode=$PREVIEW_CODE" \
+            --no-daemon --console=plain
+      - name: Validate APK and use stable artifact name
+        run: |
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose android/app/build/outputs/apk/debug/app-debug.apk
+          mkdir -p artifacts
+          cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/WinDockGamepadPreview-Android.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: artifacts/WinDockGamepadPreview-Android.apk
+          if-no-files-found: error
+
+  publish:
+    name: Publish versioned GitHub prerelease
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: dist
+      - name: Create checksums and prerelease from tested artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          TAG="gamepad-v$PREVIEW_VERSION-g$SHORT_SHA"
+          cd dist
+          sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk > SHA256SUMS.txt
+          printf 'Version: %s\nCommit: %s\nRun: %s\nChannel: gamepad-preview\n' \
+            "$PREVIEW_VERSION" "$GITHUB_SHA" "$GITHUB_RUN_NUMBER" > BUILD-INFO.txt
+          cat > RELEASE-NOTES.md <<EOF
+          ## WinDock Gamepad Preview $PREVIEW_VERSION
+
+          EXPERIMENTAL BUILD - THE GAMEPAD IS ONLY A UI PREVIEW, NOT A PLAYABLE XBOX CONTROLLER.
+
+          Source: https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA
+          Workflow run: $GITHUB_RUN_NUMBER
+
+          Windows: WinDockGamepadPreviewSetup.exe - separate installation and configuration. Quit regular WinDock first (both use port 8620).
+          Android: WinDockGamepadPreview-Android.apk - separate app ID; debug signing can differ between runs, so uninstall the older preview APK if an update conflicts.
+
+          No gamepad driver is bundled. Windows installer is unsigned and Android APK is debug signed.
+
+          Progress: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/PROGRESS.md
+          How to install: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/INSTALL-PREVIEW.md
+          Check SHA256SUMS.txt and BUILD-INFO.txt for verifiable version and source identity.
+          EOF
+          gh release create "$TAG" \
+            WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk SHA256SUMS.txt BUILD-INFO.txt \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "WinDock Gamepad Preview $PREVIEW_VERSION" --notes-file RELEASE-NOTES.md
