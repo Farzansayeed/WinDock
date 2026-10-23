@@ -11,12 +11,20 @@ android {
         applicationId 'com.windock.app'
         minSdk 24
         targetSdk 34
-        versionCode 4
-        versionName '0.2.2-preview.1'
+        // CI injects monotonically increasing preview versions; the default
+        // upstream Android variant remains untouched.
+        versionCode project.hasProperty('windockPreviewVersionCode') ? Integer.parseInt(project.property('windockPreviewVersionCode').toString()) : 4
+        versionName project.hasProperty('windockPreviewVersionName') ? project.property('windockPreviewVersionName').toString() : '0.2.2-preview.1'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
 
     buildTypes {
+        debug {
+            if (project.hasProperty('windockPreviewVersionName')) {
+                // Unique Android application ID: does not overwrite original WinDock.
+                applicationIdSuffix '.gamepadpreview'
+            }
+        }
         release {
             minifyEnabled false
             // Release builds remain unsigned until external signing is configured.

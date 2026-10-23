@@ -80,12 +80,21 @@ internal sealed partial class TrayApp : ApplicationContext
         _icon.ContextMenuStrip.Items.Add(new ToolStripSeparator());
         _checkUpdates = new ToolStripMenuItem("Check for updates…", null, async (_, _) => await CheckUpdates(true));
         _downloadUpdate = new ToolStripMenuItem("Download update…", null, (_, _) => OpenRelease(_availableUpdate?.ReleasePage)) { Visible = false };
+#if GAMEPAD_PREVIEW
+        // Fork previews must never advertise updates from the original WinDock.
+        _icon.Text = "WinDock Gamepad Preview";
+        _icon.ContextMenuStrip.Items.Add("Preview downloads…", null,
+            (_, _) => OpenRelease(new Uri("https://github.com/Farzansayeed/WinDock/releases")));
+#else
         _icon.ContextMenuStrip.Items.Add(_checkUpdates);
         _icon.ContextMenuStrip.Items.Add(_downloadUpdate);
+#endif
         _icon.ContextMenuStrip.Items.Add("Quit WinDock", null, async (_, _) => { if (await StopRecording()) ExitThread(); });
         _icon.DoubleClick += (_, _) => ShowInfo();
         _icon.BalloonTipClicked += (_, _) => { if (_balloonRelease is { } page) OpenRelease(page); };
+#if !GAMEPAD_PREVIEW
         _updateTimer.Tick += async (_, _) => { _updateTimer.Stop(); await CheckUpdates(false); };
+#endif
         _captureTimer.Tick += async (_, _) => await CheckCapture();
         if (!smoke) _captureTimer.Start();
 
@@ -138,6 +147,14 @@ internal sealed partial class TrayApp : ApplicationContext
             RedirectStandardError = true,
             WorkingDirectory = root,
         };
+#if GAMEPAD_PREVIEW
+        // The fork preview must not overwrite the upstream personal dock configuration.
+        // An explicit WINDOCK_CONFIG override is honored for isolated smoke tests.
+        if (!psi.Environment.ContainsKey("WINDOCK_CONFIG"))
+            psi.Environment["WINDOCK_CONFIG"] = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "windock-gamepad-preview", "config.json");
+#endif
         psi.ArgumentList.Add(Path.Combine(root, "server.js"));
         var proc = new Process { StartInfo = psi, EnableRaisingEvents = true };
         _server = proc;
@@ -170,11 +187,17 @@ internal sealed partial class TrayApp : ApplicationContext
         var pin = PinLine().Match(line);
         if (!pin.Success) return;
         _pin = pin.Groups[1].Value;
+#if GAMEPAD_PREVIEW
+        _icon.Text = "WinDock Gamepad Preview — running";
+#else
         _icon.Text = "WinDock — running";
+#endif
         if (!_smoke)
         {
             ShowBalloon("WinDock is running", $"{_endpoint}\nPIN {_pin}");
+#if !GAMEPAD_PREVIEW
             if (!_startupCheckScheduled) { _startupCheckScheduled = true; _updateTimer.Start(); }
+#endif
         }
     }
 

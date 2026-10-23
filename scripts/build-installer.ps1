@@ -1,6 +1,7 @@
 param(
     [string]$Compiler = '',
-    [string]$PackageDirectory = 'artifacts\WinDock-win-x64'
+    [string]$PackageDirectory = 'artifacts\WinDock-win-x64',
+    [switch]$GamepadPreview
 )
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
@@ -18,6 +19,10 @@ foreach ($name in @('WinDockTray.exe','WinDockHelper.exe','node.exe','server.js'
 $version = (Get-Content -LiteralPath (Join-Path $projectRoot 'package.json') -Raw | ConvertFrom-Json).version
 if ($version -notmatch '^\d+\.\d+\.\d+$') { throw 'Installer version must have three numeric components.' }
 New-Item -ItemType Directory -Path $outputRoot -Force | Out-Null
-& $Compiler "/DAppVersion=$version" "/DPackageDir=$packageRoot" "/DOutputDir=$outputRoot" (Join-Path $projectRoot 'native\installer\WinDock.iss')
+$compilerArgs = @("/DAppVersion=$version", "/DPackageDir=$packageRoot", "/DOutputDir=$outputRoot")
+if ($GamepadPreview) { $compilerArgs += '/DGamepadPreview=1' }
+$compilerArgs += (Join-Path $projectRoot 'native\installer\WinDock.iss')
+& $Compiler @compilerArgs
 if ($LASTEXITCODE -ne 0) { throw "Installer compilation failed ($LASTEXITCODE)" }
-Write-Output "Windows installer ready: $outputRoot\WinDockSetup.exe"
+$outFile = if ($GamepadPreview) { 'WinDockGamepadPreviewSetup.exe' } else { 'WinDockSetup.exe' }
+Write-Output "Windows installer ready: $outputRoot\$outFile"
