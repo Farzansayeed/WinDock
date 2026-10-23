@@ -16,6 +16,10 @@ screen — all over your local network, with no account or cloud service.
 
 *WinDock at your desk — an AI-generated product illustration.*
 
+## This fork: Gamepad development preview
+
+**The upstream download links below are for original WinDock, not this fork's Gamepad changes.** Download the fork's experimental [Windows and Android preview builds](docs/gamepad/INSTALL-PREVIEW.md) from [this fork's Releases](https://github.com/Farzansayeed/WinDock/releases) **after its build workflow succeeds**. Each successful source build is versioned and gets a prerelease with checksums. The Gamepad is currently **UI preview only**, not yet a working controller.
+
 ## Get started
 
 | Platform | Availability |

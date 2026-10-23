@@ -10,6 +10,8 @@
 
 **Audit / risk gate:** [AUDIT.md](AUDIT.md) — 12 audited risks; A1/A2 (Windows virtual device) and A8 (neutral safety) are critical. Driver integration and app-to-game feasibility unproven. Follow audit execution gates; it supersedes phase ordering where inconsistent.
 
+**Preview installation and release automation:** [INSTALL-PREVIEW.md](INSTALL-PREVIEW.md). Windows/Android CI prerelease workflow committed, **not yet confirmed green**; fork installers are isolated from upstream. No valid package/release is claimed until GitHub Actions succeeds.
+
 **New research:** [OPEN-SOURCE-RESEARCH.md](OPEN-SOURCE-RESEARCH.md) compares six phone-controller projects, licensing, security flags and architecture integration. **Deferred P8:** [TOUCHPAD-LATENCY-P8.md](TOUCHPAD-LATENCY-P8.md) is queued strictly **after Gamepad v1/P7** and is NOT part of the current work.
 
 For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](UI-REFERENCE.md), [UX flow](01-UX-NAVIGATION.md), and [full technical brief](REQUIREMENTS-v2.md). See [WORKLOG](WORKLOG.md) for chronological changes.
@@ -138,8 +140,13 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 
 **Exit gate:** evidence of usable gamepad with measured performance; targets are goals, **not achieved claims**.
 
-## P7 — Packaging / handoff — NOT STARTED
+## P7 — Packaging / handoff — EARLY AUTOMATION COMMITTED, RELEASE GATE NOT MET
 
+- [x] Set up automated versioned **preview** Windows installer/Android APK workflow on the fork feature branch (release pending successful CI).
+- [x] Isolate Windows preview installer name, AppId, install path and dock config; disable upstream update notifications in preview builds.
+- [x] Isolate Android preview via applicationId suffix, versionCode and versionName; debug signing limitations documented.
+- [x] Document beginner download/install/update instructions in [INSTALL-PREVIEW.md](INSTALL-PREVIEW.md), including hashes and Git commit identity.
+- [ ] Verify successful GitHub Actions Windows installer + Android APK, test artifacts, and published prerelease; **not yet verified**.
 - [ ] Package updated Windows host and Android APK with any lawful driver dependency/install UX and recovery.
 - [ ] Verify first install, uninstall, updates, Android/WebView host-version mismatch behavior.
 - [ ] Document usage, compatibility limitations and any admin privileges needed; include setup/screenshots and known issues.

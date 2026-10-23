@@ -40,7 +40,11 @@ DisableReadyPage=yes
 WizardStyle=modern dark
 SetupIconFile=..\tray\Assets\WinDock.ico
 UninstallDisplayIcon={app}\WinDockTray.exe
+#ifdef GamepadPreview
+UninstallDisplayName=WinDock Gamepad Preview
+#else
 UninstallDisplayName=WinDock
+#endif
 OutputDir={#OutputDir}
 #ifdef GamepadPreview
 OutputBaseFilename=WinDockGamepadPreviewSetup
