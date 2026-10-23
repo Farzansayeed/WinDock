@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-24 — End-of-session handoff, source status frozen
+
+**Owner priority:** User asked to close, prepare next chat and preserve all information. Spotify remains BROKEN from WinDock on user's PC despite v16, although direct Spotify.exe works; owner explicitly deferred Spotify, brightness/DDC and running-dot issues to focus Gamepad P2/VS1.
+
+**Verified:** published non-draft [v20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083), EXE + signed APK + SHA256SUMS/BUILD-INFO/SIGNING-INFO. [Preview Actions #40015513571](https://github.com/Farzansayeed/WinDock/actions/runs/40015513571), [multi-OS CI #40015513520](https://github.com/Farzansayeed/WinDock/actions/runs/40015513520) succeeded, and docs-only parent 5def46d [CI #40016195647](https://github.com/Farzansayeed/WinDock/actions/runs/40016195647) succeeded. This handoff commit is docs-only; new CI should be checked separately. No hardware controller, physical upgrade or gameplay acceptance was tested.
+
+**Created:** [NEXT-SESSION.md](NEXT-SESSION.md) with exact frozen checkpoint, priorities/constraints/driver risk, optional read-only Windows baseline and paste-ready prompt; linked it from AGENTS and major docs and clarified P7/v20 summary. Historical entries preserved. Never ask for the owner's private JKS/secrets.
+
+**Next:** Check live HEAD/Actions/releases, then continue safe P2 feasibility and persistent native fake-sink IPC toward VS1. No privileged Windows driver/cert change without explicit consent and rollback. P8 Touchpad tuning remains deferred.
+
+---
+
 ## 2026-10-24 — Signed Gamepad Preview v20 published with P3/P4/P5 driver-neutral foundations
 
 **Gamepad roadmap development milestone (2026-10-24):** [Gamepad Preview v0.2.3-gamepad.20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083) from source commit `c138083` was verified **non-draft/published** with Android Preview APK, Windows Preview installer, SHA256SUMS.txt, BUILD-INFO.txt and public SIGNING-INFO.txt. [Preview workflow #40015513571](https://github.com/Farzansayeed/WinDock/actions/runs/40015513571) passed Android unit/lint/APK/permanent signer, Windows installer smoke and publishing; [feature-branch multi-OS CI #40015513520](https://github.com/Farzansayeed/WinDock/actions/runs/40015513520) passed. It includes authenticated driver-neutral single-owner /gamepad WebSocket + strict state/replay/timeout checks, native .NET 8 independent real-timer fail-neutral fake report sink, and new Kotlin v1 stick+A full-state codec/JVM tests. **Production /gamepad upgrade intentionally returns 503 without real Xbox device backend; Gamepad remains local-only on Android, NOT usable in Windows games.** Real signed device + end-to-end hardware acceptance required.

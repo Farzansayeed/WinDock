@@ -1,5 +1,7 @@
 # Gamepad Preview — Updates, signing and next-chat handoff
 
+**NEXT SESSION (2026-10-24):** [NEXT-SESSION.md](NEXT-SESSION.md) is the current frozen handoff, verified Preview [v20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083), P2 signed/offline Xbox driver blocked, P3/P4/P5 driver-neutral CI done, live PC gamepad NOT functional. **Spotify still fails from WinDock and user has deferred Spotify/DDC/dot issues**. Historical notes below may be older; do not mistake v5/v11/v16 for latest.
+
 **Repo:** https://github.com/Farzansayeed/WinDock
 **Branch:** feature/universal-gamepad
 **Status:** [Gamepad Preview build #39998130556](https://github.com/Farzansayeed/WinDock/actions/runs/39998130556) and [CI #39998130774](https://github.com/Farzansayeed/WinDock/actions/runs/39998130774) **PASSED**. The Android signer was confirmed to match the private keystore and [v11](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.11-g175942e) was published with public SIGNING-INFO.txt. **No physical Android in-place update has been tested yet.** No unattended installation.

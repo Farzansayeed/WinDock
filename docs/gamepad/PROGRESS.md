@@ -1,8 +1,10 @@
 <!-- 2026-10-23: signing security update — owner reports four GitHub Actions secrets provisioned; requires a new successful release proving signer consistency. -->
 # WinDock Universal Gamepad — LIVE PROGRESS TRACKER
 
+**NEXT SESSION (2026-10-24):** [NEXT-SESSION.md](NEXT-SESSION.md) is the current frozen handoff, verified Preview [v20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083), P2 signed/offline Xbox driver blocked, P3/P4/P5 driver-neutral CI done, live PC gamepad NOT functional. **Spotify still fails from WinDock and user has deferred Spotify/DDC/dot issues**. Historical notes below may be older; do not mistake v5/v11/v16 for latest.
+
 **Canonical source of truth for status:** this document, on the `feature/universal-gamepad` branch of [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock/tree/feature/universal-gamepad).  
-**Last reviewed:** 2026-10-23.  
+**Last reviewed:** 2026-10-24 (closing handoff).  
 **Universal desktop launcher Preview v16 verified (2026-10-24):** [WinDock Gamepad Preview 0.2.3-gamepad.16](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.16-gf8d8a0e) is published and non-draft from source commit `f8d8a0e`; [Windows+Android release workflow #40011693658](https://github.com/Farzansayeed/WinDock/actions/runs/40011693658) **PASSED** Windows native helper build, installer installation/upgrade/uninstall smoke, Android APK/unit/lint+permanent keystore signer validation, and release publication. [CI #40011693770](https://github.com/Farzansayeed/WinDock/actions/runs/40011693770) passed Linux, macOS, Windows and aggregate. Both Windows/Android packages, BUILD-INFO.txt, SHA256SUMS.txt and PUBLIC SIGNING-INFO.txt are present. **Actual user's WinDock Spotify/window focus, other app and running dot, DDC/CI, and Android in-place upgrade remain UNTESTED on physical devices**; never claim universal resolution solely on CI.
 
 **Universal Win32 launch repair 2026-10-24:** Implemented native exact executable-path + top-level-window lookup, focus/restore on existing classic app rather than spawning another process, preserved shortcut arguments, safety tests and correctly detached input thread. Windows build/CI and public Preview v16 PASSED; physical user tests PENDING. **No Spotify hardcoding**. See WORKLOG.
@@ -59,7 +61,7 @@ For requirements, read [START HERE](00-START-HERE.md), [actual UI screenshots](U
 | P4 | Native Windows persistent receiver, virtual state mapping, neutral watchdog | **NATIVE .NET 8 INDEPENDENT TIMER FAIL-NEUTRAL OUTPUT OWNER ADDED; ACTUAL DEVICE/IPC NOT WIRED** | Windows tests and `joy.cpl` hardware verification |
 | P5 | Secure paired control plane + reliable gamepad transport; Wi-Fi and USB tether | **AUTHENTICATED SINGLE-OWNER DRIVER-NEUTRAL /gamepad WS LAB CHANNEL CODED; NO PRODUCTION SINK OR ANDROID WIRING** | Auth/replay/loss/reconnect tests + measured transport comparison |
 | P6 | End-to-end game compatibility, input correctness, latency benchmarking | **NOT STARTED** | Real Android + PC; p50/p95/p99; regressions |
-| P7 | Versioned preview packages, self-update and stable signing | **SIGNED V11 VERIFIED IN CI; PHYSICAL UPGRADES/STABLE GAMEPAD PENDING** | Published v11 has public signer proof; physical phone/PC updates unverified |
+| P7 | Versioned preview packages, self-update and stable signing | **SIGNED V20 VERIFIED & PUBLISHED; REAL PHONE/PC UPGRADES UNTESTED** | v20 CI and signing checks passed; stable playable controller not ready |
 | P8 | Improve existing Touchpad latency **after finished Gamepad v1** | **DEFERRED — AFTER P7** | Baseline/measured improvements, existing gesture regression tests |
 
 **Progress accounting:** **P0 complete; P1 code committed pending testing; P2–P7 not complete; P8 Touchpad latency is deferred until Gamepad v1/P7.** No percentage estimate from phase count. Plan audit documented in [AUDIT.md](AUDIT.md) on 2026-10-23 (documentation-only). This is not a percent-of-development estimate. No Windows/Android end-to-end gamepad testing has been run.
@@ -135,7 +137,7 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 
 **Exit gate:** native Android screen and gesture/layout state are correct independently of PC games.
 
-**Android P3 serializer foundation (2026-10-24):** Implemented GamepadFrameEncoder.kt with strict ten-field V1 full-state JSON, monotonic session sequence, stick axes, A XInput 0x1000, optional neutral frame; new JVM tests for exact shape, multi-touch source state, cancellation neutral and numeric bounds. **NOT yet connected to a WebSocket or XInput driver.** Kotlin Android CI pending for this commit.
+**Android P3 serializer foundation (2026-10-24):** Implemented GamepadFrameEncoder.kt with strict ten-field V1 full-state JSON, monotonic session sequence, stick axes, A XInput 0x1000, optional neutral frame; new JVM tests for exact shape, multi-touch source state, cancellation neutral and numeric bounds. **NOT yet connected to a WebSocket or XInput driver.** Android build/JVM/lint passed in v20 preview workflow #40015513571.
 
 ## P4 — Windows native receiver and controller state — TIMER-DRIVEN SAFE OUTPUT OWNER CODED, HARDWARE NOT CONNECTED
 
@@ -159,7 +161,7 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 
 ## P5 — Android ↔ PC pairing and low-latency transport — SECURE LAB CHANNEL IMPLEMENTED, HARDWARE NOT CONNECTED
 
-- [x] Add /gamepad WebSocket endpoint guarded by existing WinDock paired session and same-origin authorization; reject host without actual backend sink (HTTP 503). Fixed previously broad dock-sync WebSocket upgrader so only '/' is owned by dock, '/input' by touchpad and '/gamepad' by gamepad. Initial CI caught duplicate upgrade, awaiting rerun.
+- [x] Add /gamepad WebSocket endpoint guarded by existing WinDock paired session and same-origin authorization; reject host without actual backend sink (HTTP 503). Fixed previously broad dock-sync WebSocket upgrader so only '/' is owned by dock, '/input' by touchpad and '/gamepad' by gamepad. Initial duplicate-upgrade CI failure corrected; v20 CI passed.
 - [x] Single owner/session lease; reject simultaneous phone owners; revalidate authorization; bounded 256-byte full-state frames, sequence replay protection, 180ms timer expiry, invalid/binary/overrate/disconnect neutralization, sink cleanup.
 - [x] Real WebSocket integration tests pass on [multi-OS CI #40015513520](https://github.com/Farzansayeed/WinDock/actions/runs/40015513520) (authenticated ownership, 503 without sink, replay, invalid/rate/timeouts, disconnect neutral). No XInput output.
 - [ ] Wire native Kotlin stick+A to authenticated local WinDock /gamepad socket, with correct touch/Back/background/lost pairing neutral.

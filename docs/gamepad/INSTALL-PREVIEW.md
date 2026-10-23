@@ -1,5 +1,7 @@
 # Install WinDock Gamepad development builds
 
+**NEXT SESSION (2026-10-24):** [NEXT-SESSION.md](NEXT-SESSION.md) is the current frozen handoff, verified Preview [v20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083), P2 signed/offline Xbox driver blocked, P3/P4/P5 driver-neutral CI done, live PC gamepad NOT functional. **Spotify still fails from WinDock and user has deferred Spotify/DDC/dot issues**. Historical notes below may be older; do not mistake v5/v11/v16 for latest.
+
 **Current state:** The fork has a Touch & sign Gamepad UI preview, but NO playable virtual Xbox controller yet. These files are experimental test builds.
 
 **Future development handoff:** [SESSION-HANDOFF.md](SESSION-HANDOFF.md) describes source/release status, safe signing migration and exact next tasks; do not use older release references here as proof of the latest on another day.

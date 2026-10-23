@@ -1,5 +1,7 @@
 # WinDock Universal Gamepad — CURRENT CHAT / AGENT HANDOFF
 
+**NEXT SESSION (2026-10-24):** [NEXT-SESSION.md](NEXT-SESSION.md) is the current frozen handoff, verified Preview [v20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083), P2 signed/offline Xbox driver blocked, P3/P4/P5 driver-neutral CI done, live PC gamepad NOT functional. **Spotify still fails from WinDock and user has deferred Spotify/DDC/dot issues**. Historical notes below may be older; do not mistake v5/v11/v16 for latest.
+
 **Snapshot checked:** 2026-10-24. **Use this to resume work, but re-check live GitHub HEAD, Releases and Actions before making current-status claims.**
 
 ## Read-first workflow for the next chat

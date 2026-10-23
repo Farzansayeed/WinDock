@@ -1,5 +1,7 @@
 # WinDock — binding instructions for future ChatGPT/Codex agents
 
+**NEXT CHAT (2026-10-24):** Read [docs/gamepad/NEXT-SESSION.md](docs/gamepad/NEXT-SESSION.md) first. Latest verified experimental signed v20 build + CI passed. Owner wants Gamepad P2/VS1 next and explicitly deferred Spotify/DDC/dot issues (Spotify still fails through WinDock). No production virtual Xbox controller. No privileged driver action or private signing secrets. Check live GitHub before acting.
+
 **READ FIRST:** docs/gamepad/SESSION-HANDOFF.md (complete current-context snapshot) → docs/gamepad/PROGRESS.md (live canonical task checklist) → docs/gamepad/WORKLOG.md (chronological test evidence). Then docs/gamepad/UPDATES.md, 00-START-HERE.md, AUDIT.md, P2-DRIVER-FEASIBILITY.md and REQUIREMENTS-v2.md as required. Old drafts and historical status snapshots are not current verification.
 
 ## Repo and scope

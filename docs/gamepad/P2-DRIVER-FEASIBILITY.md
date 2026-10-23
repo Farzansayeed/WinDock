@@ -1,5 +1,7 @@
 # P2 — Windows virtual Xbox controller feasibility and acceptance gate
 
+**NEXT SESSION (2026-10-24):** [NEXT-SESSION.md](NEXT-SESSION.md) is the current frozen handoff, verified Preview [v20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083), P2 signed/offline Xbox driver blocked, P3/P4/P5 driver-neutral CI done, live PC gamepad NOT functional. **Spotify still fails from WinDock and user has deferred Spotify/DDC/dot issues**. Historical notes below may be older; do not mistake v5/v11/v16 for latest.
+
 **Status:** RESEARCH + READ-ONLY XINPUT DIAGNOSTIC ADDED; driver-neutral authenticated /gamepad WebSocket and independent native watchdog implemented/tested in CI. **No driver selected, installed, licensed, redistributed, or physically tested**. A built diagnostic and simulated state tests cannot prove XInput output.  
 **Last reviewed:** 2026-10-24.  
 **Owner fork:** [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock), branch `feature/universal-gamepad`.  
