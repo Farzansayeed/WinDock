@@ -1,16 +1,20 @@
-param()
+param([switch]$GamepadPreview)
 $ErrorActionPreference = 'Stop'
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $artifactsRoot = [IO.Path]::GetFullPath((Join-Path $projectRoot 'artifacts'))
 $installRoot = Join-Path $artifactsRoot ('installer-smoke-' + [guid]::NewGuid().ToString('N'))
 if (-not $installRoot.StartsWith($artifactsRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) { throw 'Test path escaped artifacts.' }
-$setupPath = Join-Path $artifactsRoot 'installer\WinDockSetup.exe'
-$uninstallKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{A5613067-949D-4D26-B81D-8FD6328D8A7A}_is1'
-$shortcutPath = Join-Path ([Environment]::GetFolderPath('Programs')) 'WinDock.lnk'
+$setupName = if ($GamepadPreview) { 'WinDockGamepadPreviewSetup.exe' } else { 'WinDockSetup.exe' }
+$setupPath = Join-Path $artifactsRoot ('installer\' + $setupName)
+$appId = if ($GamepadPreview) { 'DF04349C-257D-4DF7-9EAC-518AE55DC83A' } else { 'A5613067-949D-4D26-B81D-8FD6328D8A7A' }
+$uninstallKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{$appId}_is1"
+$shortcutName = if ($GamepadPreview) { 'WinDock Gamepad Preview.lnk' } else { 'WinDock.lnk' }
+$shortcutPath = Join-Path ([Environment]::GetFolderPath('Programs')) $shortcutName
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+$runName = if ($GamepadPreview) { 'WinDockGamepadPreview' } else { 'WinDock' }
 if (Test-Path -LiteralPath $uninstallKey) { throw 'An installed WinDock already exists; refusing to replace it during testing.' }
 if (Test-Path -LiteralPath $shortcutPath) { throw 'An existing WinDock Start menu shortcut would conflict with this test.' }
-if (Get-ItemProperty -LiteralPath $runKey -Name 'WinDock' -ErrorAction SilentlyContinue) { throw 'An existing WinDock autostart setting would conflict with this test.' }
+if (Get-ItemProperty -LiteralPath $runKey -Name $runName -ErrorAction SilentlyContinue) { throw 'An existing WinDock autostart setting would conflict with this test.' }
 $personalConfig = Join-Path $env:APPDATA 'windock\config.json'
 $originalConfig = if (Test-Path -LiteralPath $personalConfig) { [Convert]::ToBase64String([IO.File]::ReadAllBytes($personalConfig)) } else { $null }
 New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
