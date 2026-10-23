@@ -3,6 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { request, Agent } from "node:http";
+import { WebSocket } from "ws";
 import { createChecker } from "./lib/assert.mjs";
 import { createApp } from "../server.js";
 import { createWindowsProvider } from "../src/platform/windows.js";
@@ -224,6 +225,7 @@ await badJson.arrayBuffer();
 
 // Launch responsiveness: a slow PowerShell running-app scan must not hold
 // the HTTP launch response hostage after the native helper accepted it.
+let blockScan = false;
 let freeScan;
 const scanPending = new Promise((resolve) => { freeScan = resolve; });
 let scanStarted;
@@ -235,8 +237,10 @@ const slowProvider = createWindowsProvider({
     const script = args.at(-1);
     if (script.includes("WScript.Shell")) return { stdout: INSTALLED };
     if (script.includes("MainWindowHandle")) {
-      scanStarted();
-      await scanPending;
+      if (blockScan) {
+        scanStarted();
+        await scanPending;
+      }
       return { stdout: RUNNING };
     }
     return { stdout: "{}" };
@@ -247,7 +251,15 @@ const slowApp = await createApp({
 });
 await new Promise((r) => slowApp.server.listen(0, "127.0.0.1", r));
 const slowPort = slowApp.server.address().port;
+const live = new WebSocket(`ws://127.0.0.1:${slowPort}`);
 try {
+  await new Promise((resolve, reject) => {
+    live.once("message", resolve);
+    live.once("error", reject);
+  });
+  // Without a paired socket hub.broadcast deliberately skips the inventory.
+  // Keep one live socket so the simulated slow inventory truly gets called.
+  blockScan = true;
   const launching = fetch(`http://127.0.0.1:${slowPort}/api/apps/launch`, {
     method: "POST", headers: { "content-type": "application/json" },
     body: JSON.stringify({ id: "c:/windows/notepad.exe" }),
@@ -261,6 +273,7 @@ try {
   await scanned; // the background scan really was started, not skipped
 } finally {
   freeScan();
+  live.terminate();
   await slowApp.hub.close();
   slowApp.server.closeAllConnections?.();
   await new Promise((r) => slowApp.server.close(r));

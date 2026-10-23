@@ -16,7 +16,7 @@
 
 **Limitations:** This is a RESPONSE-LATENCY FIX, not proof Spotify launches. Classic Windows Spotify.exe is still started through native Process.Start; it can return success despite the app failing to display or exiting immediately, or an already-running hidden instance. PC test: confirm Spotify opens directly in Windows Start and via "Start-Process -FilePath \"$env:APPDATA\\Spotify\\Spotify.exe\""; inspect process/window after clicking WinDock. If direct launch fails, investigate Spotify itself; if direct works but WinDock does not, inspect WinDock installation and saved tile target/args versus current shortcut. No reinstall, no elevation and no deletion of Spotify data until diagnosed.
 
-**Tests:** npm/CI/release build PENDING for this patch. Physical owner Spotify start and running-dot verification NOT performed.
+**Tests:** npm/CI/release build PENDING for this patch. Test explicitly opens a paired WebSocket before blocking a second running-state scan, proving that an active broadcast cannot delay the HTTP response. Physical owner Spotify start and running-dot verification NOT performed.
 
 **Next:** Verify CI and published preview, then compare real direct Windows Spotify launch and phone tile with the same PC session. Keep previous brightness/running dots issues open until hardware confirmation.
 

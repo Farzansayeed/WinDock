@@ -194,7 +194,7 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 - [x] Report sanitized HTTP 502 on packaged activation failure, rather than false successful launch.
 - [x] Verify Windows helper COM build/CI and published [Preview v13](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.13-gf164ea0), passing [Actions #40008801028](https://github.com/Farzansayeed/WinDock/actions/runs/40008801028) and [CI #40008801048](https://github.com/Farzansayeed/WinDock/actions/runs/40008801048).
 - [x] Identify user's Spotify installation as classic unpackaged Win32 Spotify.exe via direct PowerShell Get-StartApps/Get-AppxPackage/Test-Path results. Whether Start actually opens it remains UNKNOWN.
-- [x] Make launch/focus/close HTTP acknowledgements non-blocking on slow post-action Windows process inventory; add delayed-scan integration regression (code committed, CI pending).
+- [x] Make launch/focus/close HTTP acknowledgements non-blocking on slow post-action Windows process inventory; add a paired-WebSocket delayed-scan integration regression (code committed, CI pending).
 - [ ] Confirm Windows Start and direct PowerShell Spotify.exe launch actually create a visible window; compare with phone tile target and arguments.
 - [ ] Verify new non-blocking launch CI and publication of correct matching preview.
 - [ ] Test real Spotify tile on user's Windows + phone, including visible window and running dot; don't claim fixed on CI alone.
