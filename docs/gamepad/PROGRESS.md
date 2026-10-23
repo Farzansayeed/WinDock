@@ -184,11 +184,13 @@ See [P2-DRIVER-FEASIBILITY.md](P2-DRIVER-FEASIBILITY.md) for individual backend 
 
 **Verified 2026-10-23:** [WinDock Gamepad Preview v0.2.3-gamepad.12](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.12-g2e80adb) from code commit `2e80adb` published successfully: [release build #40002230727](https://github.com/Farzansayeed/WinDock/actions/runs/40002230727) Windows installer build/installer smoke, Android APK build/unit/lint + configured permanent signer verification, and publication all PASSED. [multi-platform CI #40002230776](https://github.com/Farzansayeed/WinDock/actions/runs/40002230776) Windows, Linux, macOS and aggregate PASSED. Both Windows installer and Android APK, BUILD-INFO, SHA256SUMS and SIGNING-INFO assets were verified present via GitHub API. **NO physical owner Windows app launch/DDC monitor, phone running-indicator regression or Windows/Android self-upgrade was tested.**
 
+**Verified Preview v13 (2026-10-23):** [WinDock Gamepad Preview 0.2.3-gamepad.13](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.13-gf164ea0) published **NON-DRAFT** from commit `f164ea0`; [release workflow #40008801028](https://github.com/Farzansayeed/WinDock/actions/runs/40008801028) and [multi-platform CI #40008801048](https://github.com/Farzansayeed/WinDock/actions/runs/40008801048) succeeded. Both Windows/Android installers, SHA256SUMS.txt, BUILD-INFO.txt and PUBLIC SIGNING-INFO.txt are published, Windows installer smoke and Android keystore signature checks passed. **No physical Spotify activation or in-place upgrade has yet been tested.**
+
 ## Spotify Windows launch: packaged app activation
 
 - [x] Replace packaged-app ShellExecute AUMID launch with documented Windows COM IApplicationActivationManager plus HRESULT/process ID check; Win32 EXE route unchanged.
 - [x] Report sanitized HTTP 502 on packaged activation failure, rather than false successful launch.
-- [ ] Verify Windows helper build/CI and newly published numbered Preview assets.
+- [x] Verify Windows helper COM build/CI and published [Preview v13](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.13-gf164ea0), passing [Actions #40008801028](https://github.com/Farzansayeed/WinDock/actions/runs/40008801028) and [CI #40008801048](https://github.com/Farzansayeed/WinDock/actions/runs/40008801048).
 - [ ] Identify user's real Spotify installation type and whether Windows Start itself opens Spotify.
 - [ ] Test real Spotify tile on user's Windows + phone, including visible window and running dot; don't claim fixed on CI alone.
 

@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-10-23 — Spotify packaged COM activation Preview v13 published with CI passing
+
+**Verified Preview v13 (2026-10-23):** [WinDock Gamepad Preview 0.2.3-gamepad.13](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.13-gf164ea0) published **NON-DRAFT** from commit `f164ea0`; [release workflow #40008801028](https://github.com/Farzansayeed/WinDock/actions/runs/40008801028) and [multi-platform CI #40008801048](https://github.com/Farzansayeed/WinDock/actions/runs/40008801048) succeeded. Both Windows/Android installers, SHA256SUMS.txt, BUILD-INFO.txt and PUBLIC SIGNING-INFO.txt are published, Windows installer smoke and Android keystore signature checks passed. **No physical Spotify activation or in-place upgrade has yet been tested.**
+
+**How to diagnose owner install:** In PowerShell without admin run Get-StartApps filtering Spotify, Get-AppxPackage *Spotify*, and Test-Path "$env:APPDATA\Spotify\Spotify.exe". If Store packaged and Start launches, test packaged WinDock v13 route; if Win32 EXE, the COM improvement does not apply. If Spotify doesn't launch from Start, debug Spotify installation itself independently. The "Launch requested" toast is not proof of an opened window.
+
+**Next:** Collect user-installed Spotify type and physical Spotify start/WinDock result, only then mark issue fixed. Same security/signed preview/driver v1 and P8 deferral constraints.
+
+---
+
 ## 2026-10-23 — Spotify launch: desktop vs Store packaging; native activation improvement
 
 **User issue:** Windows Spotify tile takes a while to report Launch requested and Spotify never opens. Spotify desktop is a Chromium Embedded Framework desktop client (NOT just a browser PWA), installable as either traditional Win32 Spotify.exe or a Microsoft Store packaged desktop app. Actual user's installation variant is unknown.
