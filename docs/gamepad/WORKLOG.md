@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-10-23 — GitHub build/test status reviewed (documentation)
+
+**Verified existing successful assets:** Preview [0.2.3-gamepad.2](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.2-gd8663f6) from `d8663f6`; [preview build run 39988429549](https://github.com/Farzansayeed/WinDock/actions/runs/39988429549) and [general CI run 39988429632](https://github.com/Farzansayeed/WinDock/actions/runs/39988429632) completed successfully, with Windows installer, Android APK, checksums and build identity. The intermediate JavaScript protocol commit `7caf907d` passed [general CI run 39989554258](https://github.com/Farzansayeed/WinDock/actions/runs/39989554258). Windows/.NET dual-language commit `d66074ce` is queued/in progress at the latest tool check; **not yet described as passed or released**.
+
+**Manual hardware state:** No personally installed APK/installer or Windows virtual Xbox device tested in this chat. Next: check new dual-language CI; physical device/driver proof remains open.
+
+---
+
 ## 2026-10-23 — Matching native .NET 8 gamepad state parser, fail-neutral lease and CI tests (code; CI pending)
 
 **Changed:** Added `native/gamepad-tests/WinDock.GamepadTests.csproj`, `GamepadState.cs`, `Program.cs`. The Windows-only test job and Windows preview installer gate now validate a zero-driver, hardware-independent C# parser with the *same strict snapshot fields* and range checks as `src/gamepad/protocol.js`. It rejects malformed, replayed, oversized, unsupported or reserved-button frames, and neutralizes all fields on invalid, timed out or closed sessions.
