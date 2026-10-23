@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-10-23 — Regression-fix Preview v12 tested in CI and published
+
+**Verified 2026-10-23:** [WinDock Gamepad Preview v0.2.3-gamepad.12](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.12-g2e80adb) from code commit `2e80adb` published successfully: [release build #40002230727](https://github.com/Farzansayeed/WinDock/actions/runs/40002230727) Windows installer build/installer smoke, Android APK build/unit/lint + configured permanent signer verification, and publication all PASSED. [multi-platform CI #40002230776](https://github.com/Farzansayeed/WinDock/actions/runs/40002230776) Windows, Linux, macOS and aggregate PASSED. Both Windows installer and Android APK, BUILD-INFO, SHA256SUMS and SIGNING-INFO assets were verified present via GitHub API. **NO physical owner Windows app launch/DDC monitor, phone running-indicator regression or Windows/Android self-upgrade was tested.**
+
+**User acceptance steps:** On Windows completely quit the regular WinDock app before running Gamepad Preview (both bind port 8620). Install matching v12 PC + Android Preview packages; if Android v11 installed, the new v12 APK should update via Android system confirmation with the same stable signing key, but **NOT yet user-tested**. Directly launch and close e.g. Notepad on Windows and verify dock running dot appears/disappears within a few seconds without manual refresh. Tap a dock app tile and see whether a visible app window opens; **Launch requested** alone is NOT proof. Check external monitor DDC/CI enabled in OSD and compatible picture/HDR mode, retry brightness. Report app names, screen model/connection and whether Windows itself launches them; do not request PINs/passwords. Record outcome and remaining failures in PROGRESS/WORKLOG.
+
+---
+
 ## 2026-10-23 — User-reported app state, launch and monitor brightness failures; regression repair
 
 **User observation:** Installed Preview showed "Opened: App" but no visible app, and running-app dots did not update after external app exits or launches. Brightness button returned "Could not adjust display brightness; check DDC/CI".

@@ -4,6 +4,8 @@
 
 **Future development handoff:** [SESSION-HANDOFF.md](SESSION-HANDOFF.md) describes source/release status, safe signing migration and exact next tasks; do not use older release references here as proof of the latest on another day.
 
+**Newest verified corrective Preview at 2026-10-23:** [0.2.3-gamepad.12](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.12-g2e80adb), GitHub [build #40002230727](https://github.com/Farzansayeed/WinDock/actions/runs/40002230727) and [CI #40002230776](https://github.com/Farzansayeed/WinDock/actions/runs/40002230776) PASSED. This build adds automatic connected-only running-app status refresh, an honest launch request toast and an alternate DDC/CI brightness write fallback. The Android signing secrets were confirmed at build; in-place phone upgrade and real monitor response are NOT yet tested. Older v11 is a previously verified signed baseline.
+
 ## Latest confirmed development release (at last documentation review)
 
 The latest **permanently signed Android Preview release verified in Actions** was [WinDock Gamepad Preview 0.2.3-gamepad.11](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.11-g175942e), built from commit `175942e`. GitHub Actions confirmed its APK signer matches the owner's permanent Preview keystore, and the release contains SIGNING-INFO.txt. It still only includes a native Android **local-only stick+A preview**, not playable PC gamepad support. It has Windows installer + Android APK and checksums. Newer code may be compiling; open the [Releases page](https://github.com/Farzansayeed/WinDock/releases) to see if a later numbered version passed and was actually published.

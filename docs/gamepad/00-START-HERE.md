@@ -52,6 +52,8 @@ Add an optional **Gamepad** input mode to the **existing** WinDock Android compa
 
 **Signing release milestone:** [Preview v0.2.3-gamepad.11](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.11-g175942e) published following passing stable-keystore APK signer verification ([Actions #39998130556](https://github.com/Farzansayeed/WinDock/actions/runs/39998130556)). Public signer SHA-256 recorded as SIGNING-INFO.txt. **Hardware/phone installation not verified yet; do not claim seamless APK upgrading until second same-key version updates over v11 on a real device.**
 
+**Newer Preview v12 with fixes:** [v0.2.3-gamepad.12](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.12-g2e80adb) passed CI and Windows+Android build/publish checks, while real owner phone/monitor tests are still outstanding. Its running-app update, truthful launch acknowledgement and DDC/CI fallback implementation is in [WORKLOG.md](WORKLOG.md) and [SESSION-HANDOFF.md](SESSION-HANDOFF.md). Earlier v11 references are historical signing milestones, not the newest download.
+
 ## Read next (in order)
 
 0. **[PROGRESS.md — live checklist, done/next/blocked](PROGRESS.md)**, [P2 — Windows driver feasibility test plan](P2-DRIVER-FEASIBILITY.md), **[AUDIT.md — prioritized risks and go/no-go gates](AUDIT.md)** and **[WORKLOG.md — chronological updates](WORKLOG.md)**
