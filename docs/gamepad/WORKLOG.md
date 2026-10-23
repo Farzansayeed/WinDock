@@ -18,7 +18,7 @@
 - `scripts/verify-pwa.mjs`: static test assertions for navigation DOM and explicit preview-only behavior.
 - `.github/workflows/ci.yml`: enable existing CI on feature-branch pushes in this fork.
 
-**Tests:** Source-level consistency assertions executed during patch preparation; **`npm test`, GitHub CI results, Android UI and physical-game tests have NOT been confirmed yet**. See PROGRESS for acceptance gate. Do not claim working gamepad input.
+**Tests:** Fixed a static assertion that mistakenly searched for `socket.send` instead of the existing `previous.send` release call. Source-level consistency checks performed; **`npm test`, GitHub CI results, Android UI and physical-game tests have NOT been confirmed yet**. See PROGRESS for acceptance gate. Do not claim working gamepad input.
 
 **Next:** Check feature-branch CI status and run `npm test`; manually verify the UI on Android; then continue P2 driver/XInput proof-of-concept safely.
 

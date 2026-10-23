@@ -68,7 +68,7 @@ t.ok(inputUi.includes('if (next === "gamepad") {') && inputUi.includes("Delibera
 for (const entry of ["input-gamepad-tab", "touchpad-gamepad", "gamepad-touchpad"]) {
   t.ok(inputUi.includes(`$("${entry}").addEventListener("click"`), `Gamepad navigation wires #${entry}`);
 }
-t.ok(inputUi.includes('socket.send(\'{"type":"release"}\')'), "existing touchpad releases pressed input on mode change");
+t.ok(inputUi.includes('previous.send(\'{"type":"release"}\')'), "existing touchpad releases pressed input on mode change");
 t.ok(css.includes(".gamepad-preview") && css.includes(".input-pad__pane[hidden]"), "new preview styles and reliable hidden panes exist");
 t.ok(inputIcons.includes("gamepad:"), "gamepad button uses its own icon instead of a fallback");
 
