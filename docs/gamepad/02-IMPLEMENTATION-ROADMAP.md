@@ -1,5 +1,7 @@
 # Low-latency gamepad — architecture, phased implementation, security & gates
 
+> **October 2026 audit correction:** [AUDIT.md](AUDIT.md) identifies Windows driver feasibility as the first technical gate. Execute an isolated P2 driver/XInput proof **in parallel with a thin P1 Touch & sign UI-only preview**; **then VS1 one-stick+A real Android→Windows virtual gamepad proof** before polished layout editor/UDP optimization. Existing phase numbering reflects feature areas, not recommended strict sequential implementation. Start with authenticated persistent WebSocket baseline and measure; do **not** presume UDP is necessary. HIDMaestro currently targets .NET 10 with elevated device setup, unlike WinDock's .NET 8 helper; alternative licensed/archived backends also have constraints. No driver has been validated.
+
 > **Progress note:** For current task checkboxes, status, blockers, verification evidence and next action, consult [PROGRESS.md](PROGRESS.md) and [WORKLOG.md](WORKLOG.md). The milestones below are a design roadmap, not a claim of completion. Update the tracker/worklog alongside every meaningful code commit.
 
 ## Architecture and isolation
@@ -11,12 +13,12 @@ Existing PC discovery / PIN pairing / normal dock:
 Gamepad setup/control plane:
   Trusted Android native session request ↔ authenticated Node API ↔ native Windows gamepad service
 
-Gameplay hot path, preferred after benchmarks:
+Gameplay hot path, OPTIONAL after baseline benchmarking:
   Kotlin native MotionEvent + button state
     → bounded latest-state queue → sequenced compact UDP via trusted LAN / USB tether
     → persistent C# receiver → virtual XInput-compatible controller → Windows game
 
-Baseline/fallback comparison:
+Baseline FIRST to implement and measure:
   WebView/JS or native Android ↔ authenticated WebSocket → Node hub
     → persistent C# helper → virtual controller
 ```
@@ -47,8 +49,8 @@ Avoid copying the existing `src/input.js` mouse protocol for controller frames; 
 
 1. **UI foundation:** implement third input mode/navigation inside Touch & sign, capability state and preview. All prior modes remain functional; browser-only preview explicitly **not a working PC controller**.
 2. **Native Android v1:** layout model, multi-pointer input, local profiles, configurable group visibility/geometry, release behavior, unit/instrumentation tests.
-3. **Windows controller service:** driver evaluation and virtual Xbox report integration, persistent service and neutral watchdog, direct Windows test harness.
-4. **Pairing and transport:** authorized session start/stop, native Android ↔ PC updates over secure bounded LAN connection, compare WebSocket vs UDP, USB/Wi-Fi fallback.
+3. **Windows controller service (gate before full editor):** driver evaluation and virtual Xbox report integration, persistent service and neutral watchdog, direct Windows test harness.
+4. **Pairing and transport (WebSocket baseline first; UDP optional only if demonstrated benefit):** authorized session start/stop, native Android ↔ PC updates over secure bounded LAN connection, compare WebSocket vs UDP, USB/Wi-Fi fallback.
 5. **Validation and polish:** Windows Game Controllers / `joy.cpl`, Steam input tests, real games (where compatible), game focus transitions, CPU/battery and p50/p95/p99 measured processing latency, packet drop and reconnect tests, layout usability.
 6. **Gyroscope** is explicitly *out of scope* until user approves after normal controls work. **Never add haptics.**
 
