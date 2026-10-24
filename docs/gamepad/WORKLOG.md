@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-24 — P2 baseline / Kotlin handshake v24 released and CI passed (documentation update)
+
+**Branch:** `feature/universal-gamepad`; source [`a98eef2`](https://github.com/Farzansayeed/WinDock/commit/a98eef26a74ddba11e97397aae3930ccd29b4997). [CI #40113968394](https://github.com/Farzansayeed/WinDock/actions/runs/40113968394) **PASSED** Linux/macOS/Windows and aggregate, including Windows read-only XInput baseline command and Node static checks. [Release workflow #40113968453](https://github.com/Farzansayeed/WinDock/actions/runs/40113968453) **PASSED** Android Preview JVM tests/lint/signing, Windows installer smoke and publishing. [Published Preview v24](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.24-ga98eef2) verified non-draft with Windows installer, signed Android Preview APK, SHA256SUMS.txt, BUILD-INFO.txt, public SIGNING-INFO.txt.
+
+**Acceptance reality:** Owner confirmed v23 install/update, local Gamepad navigation, native multitouch/neutral and existing features passed; v24 has **NOT** been physically upgraded/inspected on owner's hardware yet. Windows read-only P2 `--baseline` command **NOT** run on owner's PC yet (CI ran on Windows runner only). Kotlin owner/WS ACK tests use FAKE SOCKETS and do not prove actual Android-to-PC controls or Xbox XInput. New findings: Microsoft Edge tile shows M rather than its logo — deferred, not investigated.
+
+**Next:** Provide user acceptance checklist for v24 signed in-place Android Preview update and optional nonadmin .NET 8 read-only XInput baseline. Capture any unexpected behavior in verbatim findings box. Do not attempt real signed driver installation, admin elevation or trust modifications without explicit approval. Production `/gamepad` remains disabled; Xbox game support UNVERIFIED.
+
+---
+
+
 ## 2026-10-24 — Owner v23 acceptance + P2 read-only baseline and VS1 native handshake model
 
 **Branch:** `feature/universal-gamepad`; this implementation commit. Baseline `ab23f133ceb98c7c54c6a2e089005dc7bcc3a87f`, [CI #40111404640](https://github.com/Farzansayeed/WinDock/actions/runs/40111404640) passed. Latest published numbered [Preview v23](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.23-g325bcb6), release CI/build previously passed.
