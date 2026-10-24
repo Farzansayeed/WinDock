@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-24 — Verified unsigned portable XInput baseline Preview v28 / owner check pending (documentation only)
+
+**Implementation source:** [0ad2b5f](https://github.com/Farzansayeed/WinDock/commit/0ad2b5f342355622b2d525ab9ec83b413ba5fc3e) on feature/universal-gamepad. [CI #40119186037](https://github.com/Farzansayeed/WinDock/actions/runs/40119186037) **PASSED** Linux, Windows, macOS and aggregate. [Preview workflow #40119186029](https://github.com/Farzansayeed/WinDock/actions/runs/40119186029) **PASSED** Windows installer smoke, .NET native checks, self-contained portable XInput x64 --help/--baseline test from System32 with all four XInput slots, Android unit/lint/stable-signer and GitHub publication. Published [Preview v28](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.28-g0ad2b5f) is non-draft and includes x64 and ARM64 portable read-only EXEs (with release SHA256SUMS.txt and BUILD-INFO.txt). ARM64 was cross-compiled only, not executed on ARM64 hardware.
+
+**Owner acceptance:** Android v25 in-place update PASS; native local stick + A and original Touchpad/Signature/keyboard/dock regression PASS, retained without repetition. Windows owner SDK approach FAILED (SDK absent) and downloaded unsigned PowerShell script FAILED (security policy refuses unsigned scripts); both failed before invoking XInput. **Owner's Windows physical XInput baseline remains NOT WORKING/UNCHECKED pending portable EXE test.** Zero slots reported by owner's PC, if so, will count as valid baseline; there is no real Windows virtual controller installed or approved.
+
+**Safety:** Windows portable EXEs are unsigned, not virtual drivers, do not install or modify Windows trust. If antivirus, SmartScreen, AppLocker or WDAC blocks the EXE, stop and report; never bypass security policy. No driver installation, privileges, passwords, signing keys, licences or cloud gameplay. No real Android-to-PC game controls tested.
+
+**Next:** Only owner runs the appropriate checksum-confirmed Preview v28 standalone read-only EXE with --baseline without administrator privileges and reports the output or exact block. Then evaluate P2 signed, legally distributable offline XInput device on separately approved disposable PC. This documentation follow-up should not publish a new runtime build. Spotify/indicators/DDC deferred.
+
+---
+
 ## 2026-10-24 — Owner signed-script policy blocks XInput baseline: ship portable executable
 
 **Branch / commit:** feature/universal-gamepad; this code commit includes both PROGRESS.md and WORKLOG.md. Prior [d58c31f](https://github.com/Farzansayeed/WinDock/commit/d58c31f0f2096341cd4882383f63cd44ededf1e4), [CI #40117938713](https://github.com/Farzansayeed/WinDock/actions/runs/40117938713) and Preview v27 verified.
