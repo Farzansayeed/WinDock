@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-25 — Verified v31 Node gamepad clock-safety tests and Preview release (docs follow-up)
+
+**Code commit:** [559b10e](https://github.com/Farzansayeed/WinDock/commit/559b10ef931146836dc3344597e0c272b4db0453), `feature/universal-gamepad`. [CI #40130490213](https://github.com/Farzansayeed/WinDock/actions/runs/40130490213) **SUCCESS** (Windows/Linux/macOS/aggregate). [Preview release job #40130490212](https://github.com/Farzansayeed/WinDock/actions/runs/40130490212) **SUCCESS**, including Windows isolated Preview installer smoke and native fake-sink verification, Android unit/lint/stable preview signer and publish. Published [NON-DRAFT Preview v31](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.31-g559b10e) has WinDockGamepadPreviewSetup.exe, Android APK, standalone x64/ARM64 read-only XInput probes, hashes, build and public signer information.
+
+**Validated code behavior (automated only):** Node controller state lease fails closed on monotonic time rollback during receipt or polling, neutralizes held control state; paired gamepad WebSocket denies invalid/rolled-back or >1000ms-late first frame at arrival even if watchdog callback is delayed. JS assertions ran on CI, and native fake-sink bridge coverage ran on Windows. These are not tests of a signed real virtual Xbox driver, physical gamepad input, USB tether, game control, crash-to-neutral or latency.
+
+**Owner accepted:** P2 *read-only* Windows x64 XInput scan PASS, Windows 10.0.26300.0 slots 0–3 all disconnected / connected_slots=0; observations `none`. Previous Windows Preview install/start and Android v25 installation/multitouch/existing WinDock regression PASS. Do not request any retest for those. New changes are not accessible as user-visible controls because production /gamepad still responds 503 without an approved physical backend. **No new owner physical testing is required for this increment.**
+
+**Next work:** Continue safe nonprivileged P2/VS1 driver-neutral code and fail-neutral tests; P2 signed/legal/distributable/offline virtual Xbox hardware requires a separate explicit approval before any driver installation, certificate trust, elevation or licensing. Spotify, running indicators, brightness deferred.
+
+---
+
 ## 2026-10-25 — Owner baseline accepted; driver-neutral Node WS timing safeguards
 
 **Owner physical evidence accepted:** Windows read-only XInput baseline **PASS**, `windows_version=10.0.26300.0`, x64, XInput slots 0–3 disconnected, `connected_slots=0`, other findings verbatim: `none`. Zero controllers visible is an expected pre-driver result, not evidence of a working virtual Xbox controller. Windows Gamepad Preview setup/start and Android v25 in-place upgrade, stick+A and original WinDock regression checks also previously PASS; do not rerun.

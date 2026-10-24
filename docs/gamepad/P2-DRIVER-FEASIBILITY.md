@@ -3,14 +3,14 @@
 **NEXT SESSION (2026-10-24):** [NEXT-SESSION.md](NEXT-SESSION.md) is the current frozen handoff, verified Preview [v20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083), P2 signed/offline Xbox driver blocked, P3/P4/P5 driver-neutral CI done, live PC gamepad NOT functional. **Spotify still fails from WinDock and user has deferred Spotify/DDC/dot issues**. Historical notes below may be older; do not mistake v5/v11/v16 for latest.
 
 **Status:** RESEARCH + READ-ONLY XINPUT DIAGNOSTIC ADDED; driver-neutral authenticated /gamepad WebSocket and independent native watchdog implemented/tested in CI. **No driver selected, installed, licensed, redistributed, or physically tested**. A built diagnostic and simulated state tests cannot prove XInput output.  
-**Last reviewed:** 2026-10-24.  
+**Last reviewed:** 2026-10-25.  
 **Owner fork:** [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock), branch `feature/universal-gamepad`.  
 
 ## Owner's Windows read-only XInput baseline — physical report 2026-10-25
 
 The owner reported a real scan on x64 Windows, `windows_version=10.0.26300.0`, `os_architecture=X64`, `process_architecture=X64`, slots 0–3 all disconnected, and `connected_slots=0`, followed by `Press Enter to close this read-only report...`. This is **technically a successful baseline**: the read-only tool read all four XInput slots and found zero connected controllers at the moment of scan. Zero is normal before a virtual controller is implemented; it neither proves installed physical/virtual drivers nor demonstrates gameplay. The owner submitted the scan as **NOT WORKING / NOT CHECKED**; preserve that acceptance gate until explicitly acknowledged (do not silently flip checked state). Hash and exit code not provided; do not claim them. No need to rerun the scan, change Windows security, or install drivers. Any subsequent virtual Xbox driver testing remains separately approval-gated.
 
-**Next step:** build and run [WinDock's read-only XInput diagnostic](../../native/gamepad-probe/README.md) to capture a Windows baseline, then run a separately approved, removable virtual-controller test and compare. No action here elevates or changes the user's Windows machine.
+**Current next step:** The owner has **completed and explicitly accepted** the [read-only Windows XInput baseline](../../native/gamepad-probe/README.md) on x64 Windows 10.0.26300.0 (all four slots disconnected, connected_slots=0). No repeat scan is necessary. Continue driver-neutral protocol/IPC/neutral-state tests, and only later consider any separately approved rollback-capable physical virtual-controller test after examining current driver signatures, licence redistribution and fully offline behavior. No approval to install drivers, request elevation, alter certificates or buy licences.
 
 ## Why P2 gates subsequent development
 
