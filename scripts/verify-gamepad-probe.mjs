@@ -37,6 +37,10 @@ for (const forbidden of ["XInputSetState", "Install-Module", "Install-Package", 
   t.ok(!sdkFree.includes(forbidden), `SDK-free probe excludes ${forbidden}`);
 }
 t.ok(code.includes("private static string Format("), "axis/trigger/button values can be observed");
+t.ok(code.includes("var directLaunch = args.Length == 0") && code.includes("bool baseline = args.Length == 0"), "Explorer double-click defaults to full read-only baseline");
+t.ok(code.includes("Press Enter to close this read-only report") && code.includes("Console.ReadLine()"), "Explorer view stays open until Enter");
+t.ok(code.includes("!Console.IsInputRedirected && !Console.IsOutputRedirected"), "redirected/CI probe never pauses");
+t.ok(instructions.includes("When double-clicking") && instructions.includes("v28") && instructions.includes("Press Enter"), "documentation explains prior short-lived console and new behavior");
 t.ok(code.includes("if (args.Length == 1 && args[0] == \"--help\")"), "help path is available without XInput hardware");
 t.ok(code.includes("if (!OperatingSystem.IsWindows())"), "non-Windows execution fails gracefully");
 for (const forbidden of ["XInputSetState", "InstallDriver(", "CreateController(", "Process.Start(", "runas", "DisableDriverSignature", "CertAddCertificateContext", "powershell.exe"]) {

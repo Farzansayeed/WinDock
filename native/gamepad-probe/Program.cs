@@ -39,12 +39,41 @@ internal static class Program
 
     private static int Main(string[] args)
     {
+        // Launching an EXE from Explorer supplies no arguments. Show a useful
+        // full baseline and keep its console readable instead of flashing away.
+        // Explicit --baseline/--scan/--watch remain non-interactive for CI.
+        var directLaunch = args.Length == 0;
+        try
+        {
+            return Run(args);
+        }
+        finally
+        {
+            // When stdout/stdin are redirected, never wait and never alter
+            // automation behavior. Normal Explorer consoles stay visible.
+            if (directLaunch && !Console.IsInputRedirected && !Console.IsOutputRedirected)
+            {
+                try
+                {
+                    Console.WriteLine();
+                    Console.Write("Press Enter to close this read-only report...");
+                    Console.ReadLine();
+                }
+                catch (IOException) { }
+                catch (InvalidOperationException) { }
+            }
+        }
+    }
+
+    private static int Run(string[] args)
+    {
         // --help is intentionally safe on non-Windows CI too: never load a driver.
         if (args.Length == 1 && args[0] == "--help")
         {
             Console.WriteLine("WinDock read-only XInput probe (no driver installation)");
             Console.WriteLine("Usage: dotnet run --project native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -- [--scan | --baseline | --watch SECONDS]");
-            Console.WriteLine("  --scan           List currently visible XInput slots (default).");
+            Console.WriteLine("  (double-click)   Display read-only baseline; press Enter to close.");
+            Console.WriteLine("  --scan           List currently visible XInput slots.");
             Console.WriteLine("  --baseline       Read OS version/architecture and XInput slots; NO identifiers, admin or driver changes.");
             Console.WriteLine("  --watch SECONDS  Observe button/axis changes for 1..60 seconds.");
             Console.WriteLine("This program cannot distinguish a physical pad from a virtual pad. Compare before/after.");
@@ -52,11 +81,11 @@ internal static class Program
         }
 
         bool watch = false;
-        bool baseline = args.Length == 1 && args[0] == "--baseline";
+        bool baseline = args.Length == 0 || (args.Length == 1 && args[0] == "--baseline");
         int watchSeconds = 0;
         if (baseline || args.Length == 0 || (args.Length == 1 && args[0] == "--scan"))
         {
-            // No options: one harmless snapshot.
+            // No options: readable baseline for the double-click path.
         }
         else if (args.Length == 2 && args[0] == "--watch" &&
                  int.TryParse(args[1], out watchSeconds) &&

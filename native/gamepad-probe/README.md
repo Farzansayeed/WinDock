@@ -4,6 +4,14 @@ This is a **safe-to-run, read-only** console tool. It uses Windows' built-in `XI
 
 It is **not a virtual controller implementation**. It cannot tell whether an Xbox-compatible controller is physical or virtual; compare a baseline before starting any separate device-emulation test application.
 
+## When double-clicking the downloaded EXE (Windows Explorer)
+
+**Owner observation, 2026-10-24:** After Windows displayed its normal downloaded-application prompt and the owner clicked Run, v28 flashed a command window briefly and exited. This is consistent with the existing **console-only** diagnostic completing a no-argument scan; it does **not** by itself show that XInput failed or that a virtual controller exists. The downloaded EXE runs a one-time report and does not leave a resident gamepad service.
+
+**From the next release containing the interactive fix:** after verifying the file checksum and if the executable is permitted by Windows security, double-click the matching `WinDockGamepadProbe-win-x64.exe` (or ARM64). With **no command-line arguments**, the app now prints Windows version, architecture, XInput slots 0–3 and the total slot count, then shows **"Press Enter to close this read-only report..."**. Leave the window open, read/copy the report, and only then press Enter. No admin or separate .NET SDK is needed. Empty slots (`connected_slots=0`) are normal.
+
+**If the EXE is blocked by security policy**, stop and report the exact message; don't disable SmartScreen, antivirus, execution policy or signing requirements. If you prefer a terminal that remains open even for older v28, launch the downloaded EXE from an already open non-admin PowerShell using `& "$env:USERPROFILE\Downloads\WinDockGamepadProbe-win-x64.exe" --baseline`. A no-args double-click in **v28** can appear to do nothing even when the probe actually executed; v28 does not pause.
+
 ## Recommended: script-free portable Windows XInput baseline
 
 The owner's unsigned PowerShell .ps1 file was blocked by Windows execution policy (PSSecurityException: file is not digitally signed). The previous dotnet run command also failed because no .NET SDK is installed. **Do not change PowerShell execution policy or Windows certificate trust to run this diagnostic.**

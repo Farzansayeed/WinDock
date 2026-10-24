@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-10-24 — Owner v28 EXE disappears after double-click; keep baseline visible
+
+**Branch/commit:** `feature/universal-gamepad`, this code commit updates BOTH PROGRESS.md and WORKLOG.md. Prior HEAD [49cc17b](https://github.com/Farzansayeed/WinDock/commit/49cc17bfbb82393dfdc8982f348a7f0f3f3bbee6) [CI #40119538409](https://github.com/Farzansayeed/WinDock/actions/runs/40119538409) PASSED; latest non-draft [v28](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.28-g0ad2b5f) released with unsigned x64/ARM64 read-only executables.
+
+**Owner report (verbatim gist, not a successful XInput test):** Owner clicked Run when the Windows dialog appeared; a command shell opened for a fraction of a second and closed with no captured output. The EXE is a console application that previously performed a quick --scan when run with no arguments. This experience is expected for a double-clicked console executable; no controller detection or security acceptance inferred. Previous unsigned .ps1 and no-SDK paths also failed. Owner Android v25 update and all four UI/feature regressions stay PASSED, no repetition.
+
+**Changes:** Read-only probe's no-argument path now prints full OS/version/architecture/XInput slot baseline and keeps its directly launched interactive console visible until user presses Enter. Explicit --baseline, --scan and CI/redirected process remain noninteractive. Added source static assertions, Windows release-workflow no-args smoke alongside --baseline, user-facing README / release notes. All normal WinDock host/Android/Touchpad behavior unchanged. No driver, .NET installation on user PC, certificates, UAC/elevation, security policy bypass or paid licence involved.
+
+**Tests:** Reviewed source and amended CI tests before committing; new GitHub CI, installer/release and owner physical test pending. Later release CI must prove no-argument output and clean exit; a redirected CI process cannot fully prove Explorer-created console pause (requires owner physical check). No P2 signed device or VS1 real PC gameplay tested.
+
+**Next:** Review GitHub multi-OS CI and newly numbered published Preview. Owner tries new checksum-verified read-only EXE with double-click, observes report and Enter pause, or submits exact security block. P2 virtual-controller backend remains behind informed consent and reversibility. Other WinDock issues deferred.
+
+---
+
 ## 2026-10-24 — Verified unsigned portable XInput baseline Preview v28 / owner check pending (documentation only)
 
 **Implementation source:** [0ad2b5f](https://github.com/Farzansayeed/WinDock/commit/0ad2b5f342355622b2d525ab9ec83b413ba5fc3e) on feature/universal-gamepad. [CI #40119186037](https://github.com/Farzansayeed/WinDock/actions/runs/40119186037) **PASSED** Linux, Windows, macOS and aggregate. [Preview workflow #40119186029](https://github.com/Farzansayeed/WinDock/actions/runs/40119186029) **PASSED** Windows installer smoke, .NET native checks, self-contained portable XInput x64 --help/--baseline test from System32 with all four XInput slots, Android unit/lint/stable-signer and GitHub publication. Published [Preview v28](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.28-g0ad2b5f) is non-draft and includes x64 and ARM64 portable read-only EXEs (with release SHA256SUMS.txt and BUILD-INFO.txt). ARM64 was cross-compiled only, not executed on ARM64 hardware.

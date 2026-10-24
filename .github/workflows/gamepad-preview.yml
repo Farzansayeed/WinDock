@@ -87,6 +87,13 @@ jobs:
           try {
             & $probe --help
             if ($LASTEXITCODE -ne 0) { throw 'Portable probe help failed' }
+            # Simulate a double-click/no-arguments run with redirected pipes.
+            # It MUST output the baseline and exit cleanly when captured by CI.
+            $noArgs = @(& $probe)
+            if ($LASTEXITCODE -ne 0 -or -not ($noArgs -match '^windows_version=') -or
+                -not ($noArgs -match '^connected_slots=[0-4]$')) {
+              throw 'No-arguments portable baseline failed'
+            }
             $report = @(& $probe --baseline)
             if ($LASTEXITCODE -ne 0) { throw 'Portable probe baseline failed' }
             $report | ForEach-Object { Write-Output $_ }
@@ -222,7 +229,7 @@ jobs:
 
           The first migration from an OLD CI debug signing key to this permanent key can require uninstalling ONLY the previous Preview APK once. Subsequent APKs signed with this same key and higher versionCodes should support in-place upgrades after normal Android installer consent.
 
-          Portable Windows XInput baseline: download WinDockGamepadProbe-win-x64.exe or WinDockGamepadProbe-win-arm64.exe (ARM64 Windows). Verify SHA256SUMS.txt and run from a non-admin console with --baseline. No PowerShell script, .NET SDK/runtime install, driver, certificate changes or WinDock installer required. Both EXEs are UNSIGNED; if SmartScreen, antivirus, AppLocker or system policy blocks them, report this without bypassing protection. x64 is tested on CI; ARM64 only cross-built.
+          Portable Windows XInput baseline: download WinDockGamepadProbe-win-x64.exe or WinDockGamepadProbe-win-arm64.exe (ARM64 Windows). Verify SHA256SUMS.txt and double-click to see the baseline; the window waits for Enter, or run from a non-admin console with --baseline. No PowerShell script, .NET SDK/runtime install, driver, certificate changes or WinDock installer required. Both EXEs are UNSIGNED; if SmartScreen, antivirus, AppLocker or system policy blocks them, report this without bypassing protection. x64 is tested on CI; ARM64 only cross-built.
 
           No gamepad driver is bundled. Windows installer and portable probes remain unsigned. Android Preview is signed with a private development key (not Play Store signing).
 
