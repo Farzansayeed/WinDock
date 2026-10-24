@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-10-24 — Kotlin sender Preview v23 automated verification completed (documentation only)
+
+**Branch:** `feature/universal-gamepad`; implementation source commit [`325bcb6`](https://github.com/Farzansayeed/WinDock/commit/325bcb6a9ed820bb7c4ec2fa95d0eb592b78afc7). [CI #40111015027](https://github.com/Farzansayeed/WinDock/actions/runs/40111015027) **PASSED** all three OS jobs plus aggregate. [Release workflow #40111014996](https://github.com/Farzansayeed/WinDock/actions/runs/40111014996) **PASSED** Android JVM tests, lint, Android signer check, Windows installer smoke and publication. [Published Gamepad Preview v23](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.23-g325bcb6) is non-draft and contains Android APK, Windows installer, SHA256SUMS.txt, BUILD-INFO.txt, and PUBLIC SIGNING-INFO.txt.
+
+**Scope:** No new executable code in this docs follow-up. Confirms prior code tests completed successfully; it remains a LOCAL UI with unused Kotlin GamepadInputSession and fake/native test receiver. Never infer a working controller, native Android WebSocket, signed physical XInput driver, phone data-preserving upgrade or game compatibility from CI.
+
+**Still NOT TESTED:** Owner Android UI navigation, preview in-place APK upgrade, full Touchpad/Signature regression, physical Windows virtual controller, native crash/driver rollback, actual gameplay. Require explicit informed approval for any privileged P2 backend investigation/install. Follow AGENTS.md end-session interactive owner checklist and optional findings box; unchecked items block next acceptance step.
+
+**Next:** Owner tests Preview v23 safe phone/PC UI regressions; on pass continue P2 legally redistributable signed offline backend feasibility/Android session ownership transport, while no real Xbox device selected.
+
+---
+
+
 ## 2026-10-24 — Transport-neutral Kotlin input session, staged VS1
 
 **Branch:** `feature/universal-gamepad`; source commit is the commit containing this entry. Prior baseline `3ba40cab60637a2d412d5f71af43b25c8207c1d1`, [CI #40110375230](https://github.com/Farzansayeed/WinDock/actions/runs/40110375230) passed. Highest published non-draft Preview [v22](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.22-g69ba9d7). Owner explicitly reported previous AGENTS/PROGRESS/WORKLOG acceptance checks PASSED with no findings, authorizing progress to next implementation work.

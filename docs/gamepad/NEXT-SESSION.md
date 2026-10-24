@@ -10,6 +10,12 @@ Owner fork: https://github.com/Farzansayeed/WinDock. Work ONLY on feature/univer
 
 **User explicitly paused Spotify, brightness/DDC and app-status troubleshooting to focus on unfinished Gamepad planning and implementation.** On owner's PC, WinDock Spotify tile STILL does not open Spotify after the v16 launcher fix. Direct Windows PowerShell Start-Process to the traditional roaming Spotify.exe does open it and creates multiple processes (one with visible window); Spotify is NOT Store-packaged. Running-dots and DDC problems also lack real-device resolution. Do NOT say these are fixed or divert to them unless user asks.
 
+## Fresh verification 2026-10-24 (supersedes historical v20 evidence below)
+
+- [`325bcb6`](https://github.com/Farzansayeed/WinDock/commit/325bcb6a9ed820bb7c4ec2fa95d0eb592b78afc7) Kotlin transport-neutral state pump + seven JVM tests and local-only touch observer; [CI #40111015027](https://github.com/Farzansayeed/WinDock/actions/runs/40111015027) PASSED all platforms; [release workflow #40111014996](https://github.com/Farzansayeed/WinDock/actions/runs/40111014996) PASSED Android unit/lint/signer, Windows installer smoke and publishing.
+- Highest published non-draft now [Preview v23](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.23-g325bcb6), with both platform packages and public hashes/signing data. Do not confuse source/CI success with Android device test or working XInput gameplay.
+- Owner has NOT yet accepted v23 hardware UI/navigation checks. New sessions finish with interactive checked-only acceptance, optional free-text findings box and a gated Proceed/Report issues action per AGENTS.md. P2 signed/redistributable/offline virtual Xbox driver remains BLOCKED, no approval for privileged install. Spotify/running dots/brightness deferred.
+
 ## Last checked GitHub evidence
 
 - Latest confirmed published experimental Preview is [v0.2.3-gamepad.20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083) from SOURCE commit c138083 (not the subsequent docs-only commits). It includes Windows EXE, Android APK, BUILD-INFO.txt, SHA256SUMS.txt and public SIGNING-INFO.txt. This is NOT a playable PC gamepad.
