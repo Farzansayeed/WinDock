@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-10-25 — Owner confirms Windows Preview restored; only P2 read-only baseline remains (documentation checkpoint)
+
+**Branch:** `feature/universal-gamepad`; this commit updates both PROGRESS.md and WORKLOG.md. Previous `fd82cfd` [multi-OS CI #40122957362](https://github.com/Farzansayeed/WinDock/actions/runs/40122957362) **PASSED** and [release workflow #40122957459](https://github.com/Farzansayeed/WinDock/actions/runs/40122957459) **PASSED**. Latest highest numbered non-draft [Preview v30](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.30-gfd82cfd) contains Windows setup, Android Preview, x64 and ARM64 read-only portable XInput probe EXEs, SHA256SUMS, SIGNING-INFO and BUILD-INFO.
+
+**Owner physical evidence (explicitly user-reported):** "PASS: Correct Windows installer completes"; "PASS: WinDock Gamepad Preview starts"; "Other findings / observations (verbatim): none". Accept both physical Windows **Preview restoration** checks; do not repeat them. Previously accepted v25 Android signed Preview upgrade + native two-pointer stick+A and original WinDock feature regressions remain PASS. This does NOT prove regular WinDock reinstallation, data backup restoration, real Xbox/XInput virtual output or gamepad-in-game controls.
+
+**P2 status:** Read-only owner Windows 10/11 XInput baseline is the **sole outstanding physical check**. Earlier failed `dotnet run` lacked SDK, downloaded unsigned .ps1 was blocked by PowerShell policy, old portable v28 double-click closed before the output could be read, and user mistakenly uninstalled WinDock to use a diagnostic. All are distinct from actual XInput device failures. The standalone v30 probe EXE is NOT an installer: verify its SHA256, run `--baseline` from a pre-opened non-admin terminal, observe Windows version/arch, four slot lines and connected_slots plus exit code; zero connected is a valid baseline. v30 x64 published sha256 `2bbf2b00a443d81d41d3573c7fff76f3c0ec308eeacc04d8cec059472f32bd6c`. Report if unsigned EXE blocked; never bypass Defender/SmartScreen/WDAC/AppLocker/ExecutionPolicy. No driver, administrator rights, certificate trust or licence changes.
+
+**Scope/tests:** Documentation-only update; no executable application changed. Existing source CI/Preview release verified, new documentation CI pending. No test on owner's actual Windows XInput slots; no virtual Xbox driver/rollback or gameplay proof. Do not advance to privileged P2 driver integration. Spotify/dots/DDC, Edge icon and P8 deferred.
+
+**Next:** Receive owner's single remaining physical `--baseline` output (or exact block) before proceeding; record the result objectively.
+
+---
+
 ## 2026-10-24 — Owner uninstalled WinDock after confusing Xbox probe with installer (docs only)
 
 **Owner evidence:** They deleted 'the windock app' to install it through an EXE; after clicking Run the console appeared for a fraction of a second and vanished, and nothing installed. The file was the XInput portable diagnostic, not Setup. No evidence whether original Windows WinDock or Windows Gamepad Preview was removed, whether saved settings remain, or whether Windows baseline was captured. Physical Android Preview v25 install and Gamepad/Touchpad regressions remain accepted PASS. **Do not claim software restored.**
