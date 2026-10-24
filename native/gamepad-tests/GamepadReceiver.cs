@@ -44,7 +44,14 @@ internal sealed class ControllerReceiver : IDisposable
         lease = new StateLease(elapsedMs, timeoutMs);
         // The native device MUST begin neutral, not inherit a held previous
         // button/axis state from another owner or helper process.
-        sink.Write(ControllerState.Neutral);
+        // If the backend rejects the initial neutral write, never leak a
+        // half-constructed virtual device. No timer is started until ready.
+        try { sink.Write(ControllerState.Neutral); }
+        catch
+        {
+            try { sink.Dispose(); } catch { }
+            throw;
+        }
         if (startTimer)
             timer = new Timer(_ => Tick(), null, pollMs, pollMs);
     }

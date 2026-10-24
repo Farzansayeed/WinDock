@@ -18,6 +18,13 @@ internal sealed class FakeController : IControllerReportSink
     public void Dispose() => Interlocked.Increment(ref DisposeCount);
 }
 
+internal sealed class RejectInitialNeutralSink : IControllerReportSink
+{
+    internal int DisposeCount;
+    public void Write(ControllerState state) => throw new IOException("fake initial neutral failure");
+    public void Dispose() => Interlocked.Increment(ref DisposeCount);
+}
+
 internal static class Program
 {
     private const string Valid =
@@ -94,6 +101,16 @@ internal static class Program
         clock = 99;
         Check.That(backwardsPoll.Poll() && backwardsPoll.Current == ControllerState.Neutral,
             "clock rollback on independent watchdog poll resets controls");
+
+        // Fail closed even if a future approved backend cannot accept its
+        // very first neutral report. Constructor failure must release device.
+        var rejectInitial = new RejectInitialNeutralSink();
+        bool rejected = false;
+        try { using var unused = new ControllerReceiver(rejectInitial, startTimer: false); }
+        catch (IOException) { rejected = true; }
+        Check.That(rejected, "initial native neutral-write failure propagates");
+        Check.That(rejectInitial.DisposeCount == 1,
+            "initial neutral-write failure disposes native device once");
 
         // Native-side device-independent report owner with an INDEPENDENT
         // timer and neutral output. No virtual Xbox driver is installed.

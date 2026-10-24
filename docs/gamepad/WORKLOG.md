@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-25 — Prevent half-constructed native controller sink leaks (fake sink only)
+
+**Existing baseline:** Branch `feature/universal-gamepad` HEAD `531ba77` [CI #40130940148](https://github.com/Farzansayeed/WinDock/actions/runs/40130940148) passed; [non-draft Preview v31](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.31-g559b10e) published. Owner explicitly accepted read-only XInput baseline `Windows 10.0.26300.0 X64`, four disconnected slots, `connected_slots=0`, findings none. Their Windows Preview installation/start and Android v25 update/local controls + WinDock original feature regressions remain accepted, no repeat.
+
+**Implementation:** In `native/gamepad-tests/GamepadReceiver.cs`, if the initial mandatory neutral `sink.Write` throws in the constructor, dispose the sink in a guarded catch and propagate the original error rather than leaking a partially initialized future controller. Timer still starts only after first successful neutral report. `native/gamepad-tests/Program.cs` now tests a fake sink that throws on initial neutral, asserting error propagation and exactly-once disposal. No real virtual controller backend is linked; production /gamepad remains disabled.
+
+**Evidence / limits:** Source consistency checked before commit; NEW Windows .NET assertions and multi-platform CI / Preview pipeline **PENDING at commit**. Real Windows driver, signed/legal/offline redistributability, physical Xbox recognition, crash-to-neutral and Android-to-PC gameplay are **NOT VERIFIED**. No driver installation, administrator elevation, certificate trust modifications, licensing purchases or new network/cloud data. Spotify/indicators/brightness deferred.
+
+**Next:** verify latest CI / preview on this source. Advance driver-neutral safety only; real P2 driver trials require separate informed explicit owner approval.
+
+---
+
 ## 2026-10-25 — Verified v31 Node gamepad clock-safety tests and Preview release (docs follow-up)
 
 **Code commit:** [559b10e](https://github.com/Farzansayeed/WinDock/commit/559b10ef931146836dc3344597e0c272b4db0453), `feature/universal-gamepad`. [CI #40130490213](https://github.com/Farzansayeed/WinDock/actions/runs/40130490213) **SUCCESS** (Windows/Linux/macOS/aggregate). [Preview release job #40130490212](https://github.com/Farzansayeed/WinDock/actions/runs/40130490212) **SUCCESS**, including Windows isolated Preview installer smoke and native fake-sink verification, Android unit/lint/stable preview signer and publish. Published [NON-DRAFT Preview v31](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.31-g559b10e) has WinDockGamepadPreviewSetup.exe, Android APK, standalone x64/ARM64 read-only XInput probes, hashes, build and public signer information.
