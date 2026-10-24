@@ -1,8 +1,8 @@
 # WinDock — binding instructions for future ChatGPT/Codex agents
 
-**NEXT CHAT (2026-10-24):** Read [docs/gamepad/NEXT-SESSION.md](docs/gamepad/NEXT-SESSION.md) first. Latest verified experimental signed v20 build + CI passed. Owner wants Gamepad P2/VS1 next and explicitly deferred Spotify/DDC/dot issues (Spotify still fails through WinDock). No production virtual Xbox controller. No privileged driver action or private signing secrets. Check live GitHub before acting.
+**NEXT CHAT (2026-10-26):** Current canonical notes at [docs/gamepad/HANDOFF-2026-10-26.md](docs/gamepad/HANDOFF-2026-10-26.md); [3d5bf3b](https://github.com/Farzansayeed/WinDock/commit/3d5bf3b90bf7579a809082b46f5021a5c5d05028), [CI #40131398154](https://github.com/Farzansayeed/WinDock/actions/runs/40131398154) SUCCESS, [Preview workflow #40131398148](https://github.com/Farzansayeed/WinDock/actions/runs/40131398148) SUCCESS, [Preview v32](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.32-g3d5bf3b) published. Owner already accepted Windows Preview restoration, zero-slot XInput read-only baseline, Android v25 input/regressions. Do not repeat; no real Xbox backend or gameplay. Continue safe P2/VS1 nonprivileged code; respect deferrals. Check live GitHub first.
 
-**READ FIRST:** docs/gamepad/SESSION-HANDOFF.md (complete current-context snapshot) → docs/gamepad/PROGRESS.md (live canonical task checklist) → docs/gamepad/WORKLOG.md (chronological test evidence). Then docs/gamepad/UPDATES.md, 00-START-HERE.md, AUDIT.md, P2-DRIVER-FEASIBILITY.md and REQUIREMENTS-v2.md as required. Old drafts and historical status snapshots are not current verification.
+**READ FIRST:** docs/gamepad/HANDOFF-2026-10-26.md → NEXT-SESSION.md → PROGRESS.md → WORKLOG.md → P2-DRIVER-FEASIBILITY.md. Older dated status entries are history. Don't invent an owner checklist for a docs-only or fake-sink-only increment with no user-testable change.
 
 ## Repo and scope
 

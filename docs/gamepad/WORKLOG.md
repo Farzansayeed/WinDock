@@ -6,6 +6,22 @@
 
 ---
 
+## 2026-10-25 — Clean session close, durable October 26 handoff (docs only)
+
+**User instruction:** Close work for today and continue tomorrow using repository docs; provide owner one copy-and-paste prompt and only truly unavoidable owner tasks. No unattended/background work is running.
+
+**Verified at handoff:** Branch `feature/universal-gamepad` last CODE SHA `3d5bf3b90bf7579a809082b46f5021a5c5d05028` (native fake-sink initial-neutral write failure cleanup and exactly-once sink disposal regression); [CI #40131398154](https://github.com/Farzansayeed/WinDock/actions/runs/40131398154) PASSED Windows/Linux/macOS, [Preview workflow #40131398148](https://github.com/Farzansayeed/WinDock/actions/runs/40131398148) PASSED Windows installer smoke + native fake sink + Android build/tests/lint/permanent signer and published [Preview v32](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.32-g3d5bf3b). No signed Xbox virtual driver / live Android-to-PC gameplay.
+
+**Previously accepted owner physical evidence, no retests:** Android v25 preview signed in-place update and local stick+A, neutral, original WinDock regressions PASS; Windows Preview correct Setup and launch PASS; read-only Windows x64 XInput slots 0–3 disconnected, `connected_slots=0` scan on `10.0.26300.0` PASS (valid pre-driver baseline), notes none. Never portray v32 as newly hardware tested.
+
+**Docs changed together:** New `HANDOFF-2026-10-26.md`; AGENTS, NEXT-SESSION, PROGRESS, WORKLOG, P2-DRIVER-FEASIBILITY, SESSION-HANDOFF and 00-START-HERE front-page authority markers updated to correct obsolete v20 notes. Documentation only: no executable code, no installation or hardware tests and no need to publish new Preview. Check the new docs-commit CI separately.
+
+**Next action:** New session rechecks HEAD, CI and latest numbered non-draft release; implements next small real driver-neutral P2/VS1 sidecar/IPC/fail-neutral safety gap, with automated tests and PROGRESS+WORKLOG together in every meaningful code commit. Preserve local-only gameplay, existing features and production /gamepad disabled until separate signed/licensed/offline/reversible physical backend approval. No privileged driver/trust/SDK/certificate/licence requests. Spotify/indicators/brightness/Edge deferred.
+
+**Owner action before tomorrow:** NONE; copy the prompt.
+
+---
+
 ## 2026-10-25 — Prevent half-constructed native controller sink leaks (fake sink only)
 
 **Existing baseline:** Branch `feature/universal-gamepad` HEAD `531ba77` [CI #40130940148](https://github.com/Farzansayeed/WinDock/actions/runs/40130940148) passed; [non-draft Preview v31](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.31-g559b10e) published. Owner explicitly accepted read-only XInput baseline `Windows 10.0.26300.0 X64`, four disconnected slots, `connected_slots=0`, findings none. Their Windows Preview installation/start and Android v25 update/local controls + WinDock original feature regressions remain accepted, no repeat.
