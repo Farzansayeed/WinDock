@@ -87,6 +87,25 @@ const sent = createGamepadStateGate({ timeoutMs: 180, now: () => 0 });
 t.ok(sent.accept(base()).accepted, "new connection initially connected");
 t.deepEqual(sent.close().state, neutralGamepadState(), "explicit close releases triggers, buttons, sticks");
 
+// Node lease must fail neutral on backwards time, matching native receiver.
+clock = 500;
+const backwardReceive = createGamepadStateGate({ timeoutMs: 180, now: () => clock });
+t.ok(backwardReceive.accept(base()).accepted, "rollback test begins with held buttons");
+clock = 499;
+t.equal(backwardReceive.accept({ ...base(), seq: 2 }).reason, "expired",
+  "clock rollback on report expires session");
+t.deepEqual(backwardReceive.poll().state, neutralGamepadState(),
+  "clock rollback on report neutralizes all controls");
+t.equal(backwardReceive.accept({ ...base(), seq: 3 }).reason, "closed",
+  "expired rollback lease cannot resume");
+clock = 500;
+const backwardPoll = createGamepadStateGate({ timeoutMs: 180, now: () => clock });
+t.ok(backwardPoll.accept(base()).accepted, "poll rollback test begins held");
+clock = 499;
+t.ok(backwardPoll.poll().closed, "clock rollback on independent poll closes lease");
+t.deepEqual(backwardPoll.poll().state, neutralGamepadState(),
+  "clock rollback watchdog neutralizes controls");
+
 t.throws(() => createGamepadStateGate({ timeoutMs: 0 }), "zero watchdog timeout not permitted");
 t.throws(() => createGamepadStateGate({ timeoutMs: 5000 }), "huge watchdog timeout not permitted");
 t.done("gamepad-protocol verification passed");

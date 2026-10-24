@@ -17,6 +17,12 @@ import {
 } from "./protocol.js";
 
 const REPLY_LIMIT = 256;
+
+// Enforce the first-frame deadline on arrival, not only on watchdog timers.
+export function gamepadStartupExpired(start, time) {
+  return !Number.isFinite(start) || !Number.isFinite(time) ||
+    time < start || time - start > 1000;
+}
 function deny(socket, code, message) {
   socket.end("HTTP/1.1 " + code + " " + message + "\r\nConnection: close\r\n\r\n");
 }
@@ -111,9 +117,10 @@ export function createGamepadHub({
     timer = setInterval(() => {
       if (disposed) return;
       // Authorization is NOT a once-only gate. Revoked cookies end ownership.
-      if (!isAuthorized(req) || !Number.isFinite(now()) ||
-          (gate.poll().closed) || (startedAt !== null && now() - startedAt > 1000
-            && count === 0)) {
+      const time = now();
+      if (!isAuthorized(req) || !Number.isFinite(time) ||
+          (startedAt !== null && gamepadStartupExpired(startedAt, time)) ||
+          gate.poll().closed) {
         cleanup(1008);
       }
     }, tickMs);
@@ -123,9 +130,13 @@ export function createGamepadHub({
     ws.on("message", (payload, isBinary) => {
       if (disposed) return;
       const time = now();
+      // A delayed timer callback must not admit an expired first input.
+      if (!isAuthorized(req) || !Number.isFinite(time) ||
+          (startedAt !== null && gamepadStartupExpired(startedAt, time))) {
+        cleanup(1008); return;
+      }
       if (time - rateStart >= 1000) { rateStart = time; count = 0; }
-      if (!isAuthorized(req) || isBinary || ++count > 180 ||
-          payload.length > GAMEPAD_MAX_BYTES) {
+      if (isBinary || ++count > 180 || payload.length > GAMEPAD_MAX_BYTES) {
         cleanup(1008); return;
       }
       const state = decodeGamepadState(payload);

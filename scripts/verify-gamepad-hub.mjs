@@ -9,10 +9,18 @@ import { WebSocket } from "ws";
 import { createChecker } from "./lib/assert.mjs";
 import { createApp } from "../server.js";
 import { createConfigStore } from "../src/config.js";
+import { gamepadStartupExpired } from "../src/gamepad/hub.js";
 import { GAMEPAD_BUTTON, neutralGamepadState } from "../src/gamepad/protocol.js";
 
 const t = createChecker("gamepad-hub");
 const PIN = "7351";
+// First-input deadline is checked on arrival, even if its watchdog stalls.
+t.ok(!gamepadStartupExpired(0, 0), "fresh owner permitted");
+t.ok(!gamepadStartupExpired(0, 1000), "1000ms boundary permitted");
+t.ok(gamepadStartupExpired(0, 1001), "late first input rejected");
+t.ok(gamepadStartupExpired(10, 9), "startup clock rollback rejected");
+t.ok(gamepadStartupExpired(0, Infinity), "nonfinite receipt time rejected");
+t.ok(gamepadStartupExpired(NaN, 0), "nonfinite start time rejected");
 const temp = await mkdtemp(join(tmpdir(), "windock-gamepad-hub-"));
 const snapshots = [];
 let closes = 0;

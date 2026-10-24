@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-10-25 — Owner baseline accepted; driver-neutral Node WS timing safeguards
+
+**Owner physical evidence accepted:** Windows read-only XInput baseline **PASS**, `windows_version=10.0.26300.0`, x64, XInput slots 0–3 disconnected, `connected_slots=0`, other findings verbatim: `none`. Zero controllers visible is an expected pre-driver result, not evidence of a working virtual Xbox controller. Windows Gamepad Preview setup/start and Android v25 in-place upgrade, stick+A and original WinDock regression checks also previously PASS; do not rerun.
+
+**Prior evidence:** `feature/universal-gamepad` HEAD [dec43d8](https://github.com/Farzansayeed/WinDock/commit/dec43d8e7cb9c8378d9687c9159a005744e878ab), [multi-platform CI #40129631518](https://github.com/Farzansayeed/WinDock/actions/runs/40129631518) passed. [Preview v30](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.30-gfd82cfd) is the latest non-draft at the beginning of this increment.
+
+**Implementation:** `src/gamepad/protocol.js` now expires and neutralizes held inputs on monotonic-clock rollback at frame receive or independent poll, matching native .NET `StateLease`. `src/gamepad/hub.js` now refuses first WebSocket input after >1000ms startup grace, clock rollback or non-finite time *on frame arrival*, not solely a delayed timer callback. `scripts/verify-gamepad-protocol.mjs` and `scripts/verify-gamepad-hub.mjs` add deterministic regression/boundary assertions. Production /gamepad remains 503 without an approved native real device backend. Nothing installs drivers or changes Windows trust, privileges, app launch, original Touchpad or Android gameplay routes.
+
+**Testing:** Source patch preflight reviewed; new Linux/macOS/Windows CI and Preview build triggered on push. At commit time both new workflows, local hardware output and any new published artifact are **PENDING**; the agent has no access to the owner's hardware. Tests are simulated/in-memory or fake native sink, NOT a physically recognized XInput virtual device. No game or latency tests, driver rollout/rollback proof, signed/legal/offline backend validation or Android-to-PC VS1 verified.
+
+**Next:** Verify actual CI and published release; only request physical acceptance for a feature truly changed in the app, not the user's already-passed baseline. Real virtual Xbox P2 driver needs separately explained risks and explicit authorization. Spotify, running indicators and brightness deferred.
+
+---
+
 ## 2026-10-25 — Successful owner hardware XInput scan (zero slots), acceptance still unchecked
 
 **Owner's report, verbatim:**

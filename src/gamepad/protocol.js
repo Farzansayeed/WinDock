@@ -85,7 +85,8 @@ export function createGamepadStateGate({ timeoutMs = 180, now = () => performanc
     accept(value) {
       if (closed) return { accepted: false, reason: "closed", state: { ...state } };
       const time = now();
-      if (!Number.isFinite(time) || (lastAt !== null && time - lastAt > timeoutMs)) {
+      if (!Number.isFinite(time) || (lastAt !== null &&
+          (time < lastAt || time - lastAt > timeoutMs))) {
         expire(); return { accepted: false, reason: "expired", state: { ...state } };
       }
       const next = validateGamepadState(value);
@@ -103,7 +104,8 @@ export function createGamepadStateGate({ timeoutMs = 180, now = () => performanc
     },
     poll() {
       const time = now();
-      if (!closed && lastAt !== null && (!Number.isFinite(time) || time - lastAt > timeoutMs)) expire();
+      if (!closed && lastAt !== null && (!Number.isFinite(time) ||
+        time < lastAt || time - lastAt > timeoutMs)) expire();
       return { closed, state: { ...state } };
     },
     close() { expire(); return { closed, state: { ...state } }; },
