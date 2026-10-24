@@ -4,9 +4,21 @@ This is a **safe-to-run, read-only** console tool. It uses Windows' built-in `XI
 
 It is **not a virtual controller implementation**. It cannot tell whether an Xbox-compatible controller is physical or virtual; compare a baseline before starting any separate device-emulation test application.
 
-## Prerequisites
+## Recommended: SDK-free PowerShell baseline (Windows 10/11)
 
-Windows 10 or Windows 11 with the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0). No Android phone or WinDock pairing is needed for this diagnostic.
+No .NET SDK, WinDock pairing, Android device, administrator permission, driver installation or certificate change is required for the baseline. Windows PowerShell 5.1 is included with Windows 10/11. [WinDock-XInputBaseline.ps1](WinDock-XInputBaseline.ps1) calls only the built-in Windows XInputGetState function to read four controller slots. It works from **any current PowerShell directory**, including C:\\WINDOWS\\system32, as long as you provide the correct script path.
+
+Download the standalone script from the linked repository file page (**Download raw file**) into your Downloads folder. Inspect its contents, then run it in normal Windows PowerShell:
+
+```powershell
+& "$env:USERPROFILE\\Downloads\\WinDock-XInputBaseline.ps1"
+```
+
+If your Windows script execution policy blocks this, report the error rather than changing a machine-wide policy. The diagnostic is a read-only PowerShell script; the original .NET SDK is optional. Expected lines are `windows_version=`, `os_architecture=`, slots `0` through `3`, and `connected_slots=N`. **Four disconnected slots (`connected_slots=0`) are a normal baseline**. Any connected slot could represent an already-installed physical or virtual controller; this tool cannot distinguish them.
+
+## Optional legacy .NET 8 SDK diagnostic (developers only)
+
+Only use this alternative if the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) is already installed. Commands below require a **repository checkout** and must be run from its **root**, not System32. You do not need to install the SDK just to complete this baseline.
 
 ## Commands (in a terminal at the repository root)
 
@@ -31,4 +43,4 @@ Do not install HIDMaestro, ViGEmBus or third-party certificates simply to try th
 
 ## Automated verification
 
-The Windows CI job builds this diagnostic with .NET 8 and runs its `--help` path. The Node test suite also checks its read-only source and explicit no-installer boundaries. Neither test can establish that a real XInput controller works, so hardware gate remains outstanding.
+Windows CI tests the SDK-free PowerShell baseline from System32, then separately builds the optional .NET 8 diagnostic and runs its help/baseline paths. Node also checks both sources for read-only safety boundaries. Neither test can establish that a real XInput controller works, so hardware gate remains outstanding.

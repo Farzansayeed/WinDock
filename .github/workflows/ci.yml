@@ -54,6 +54,25 @@ jobs:
           dotnet-version: '8.0.x'
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm test
+      - name: Verify SDK-free Windows XInput baseline from System32 (no driver/admin)
+        shell: powershell
+        run: |
+          $probe = Join-Path $env:GITHUB_WORKSPACE 'native\gamepad-probe\WinDock-XInputBaseline.ps1'
+          Push-Location "$env:WINDIR\System32"
+          try {
+            $report = @(& $probe)
+            $report | ForEach-Object { Write-Output $_ }
+            if (-not ($report -match '^windows_version=') -or
+                -not ($report -match '^os_architecture=') -or
+                -not ($report -match '^connected_slots=[0-4]$')) {
+              throw 'SDK-free XInput baseline report incomplete'
+            }
+            foreach ($slot in 0..3) {
+              if (-not ($report -match ("^slot={0} " -f $slot))) {
+                throw "Missing read-only XInput slot $slot"
+              }
+            }
+          } finally { Pop-Location }
       - name: Build read-only XInput diagnostic (no driver install)
         run: dotnet build native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release
       - name: Verify XInput diagnostic help (no device access)

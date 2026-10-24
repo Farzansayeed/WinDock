@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-10-24 — Recover owner failed Windows baseline without installing an SDK
+
+**Branch/commit:** `feature/universal-gamepad`; code and BOTH PROGRESS.md/WORKLOG.md in this commit. Previous [2c05bbd](https://github.com/Farzansayeed/WinDock/commit/2c05bbdda5da4a7eb856cce975bfb363a2db6513) [CI #40115473486](https://github.com/Farzansayeed/WinDock/actions/runs/40115473486) and [preview packaging #40115473511](https://github.com/Farzansayeed/WinDock/actions/runs/40115473511) passed; [v25](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.25-g2c05bbd) published.
+
+**Owner physical report:** Android Preview v25 upgrade **PASS** and native touch Gamepad / existing WinDock regression **PASS**. Preserve acceptance; do NOT ask owner to redo. Windows XInput baseline **NOT WORKING/UNVERIFIED**: from `PS C:\\WINDOWS\\system32>` the owner ran repo-relative `dotnet run --project native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -- --baseline`; terminal returned `No .NET SDKs were found` and `The application 'run' does not exist`. No Xbox/XInput hardware detection was tested.
+
+**Fix:** Added `native/gamepad-probe/WinDock-XInputBaseline.ps1`, a standalone SDK-free Windows PowerShell 5.1 four-slot baseline using built-in `Add-Type` and `xinput1_4.dll!XInputGetState`; works by absolute path from any CWD, no credentials or machine identifiers. Expanded `scripts/verify-gamepad-probe.mjs` static no-writes contract, documented no-SDK recommended command/zero slots in README, added Windows Actions execution from System32. No driver, device creation, admin, trust-store or normal app changes.
+
+**Verification:** Prior commit CI passed, source checks prepared; NEW Windows CI and owner Windows physical baseline **not yet run at commit time**. No real signed/offline Xbox backend selected, installed or confirmed in a game.
+
+**Next:** Confirm new Actions before presenting only SDK-free baseline owner test; keep driver approval gate and VS1 physics pending. Spotify/dots/DDC/Edge logo deferred.
+
+---
+
 ## 2026-10-24 — Native clock-rollback and startup-deadline fail-neutral tests (fake sink only)
 
 **Branch:** `feature/universal-gamepad`; this code commit includes BOTH PROGRESS and WORKLOG. **Verified prior HEAD:** [a2603b9](https://github.com/Farzansayeed/WinDock/commit/a2603b93ebe77a978b8a304ed522cf8850a8c1c2) [CI #40114291891](https://github.com/Farzansayeed/WinDock/actions/runs/40114291891) passed. Latest published non-draft Preview is [v24](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.24-ga98eef2).

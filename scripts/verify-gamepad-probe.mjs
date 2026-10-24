@@ -8,6 +8,7 @@ const dir = join(import.meta.dirname, "../native/gamepad-probe");
 const code = readFileSync(join(dir, "Program.cs"), "utf8");
 const proj = readFileSync(join(dir, "WinDock.GamepadProbe.csproj"), "utf8");
 const instructions = readFileSync(join(dir, "README.md"), "utf8");
+const sdkFree = readFileSync(join(dir, "WinDock-XInputBaseline.ps1"), "utf8");
 
 t.ok(proj.includes("<TargetFramework>net8.0-windows</TargetFramework>"), "diagnostic stays compatible with current Windows .NET 8 runtime");
 t.ok(proj.includes("<OutputType>Exe</OutputType>"), "diagnostic is standalone and not loaded into the WinDock host");
@@ -19,6 +20,14 @@ t.ok(code.includes('args[0] == "--baseline"'), "read-only Windows P2 baseline mo
 t.ok(code.includes("RuntimeInformation.OSArchitecture"), "baseline reports architecture without personal device ID");
 t.ok(code.includes("Environment.OSVersion.Version"), "baseline records Windows version for feasibility");
 t.ok(instructions.includes("--baseline"), "safe owner baseline command documented");
+t.ok(instructions.includes("SDK-free") && instructions.includes("WinDock-XInputBaseline.ps1"), "owner has SDK-free baseline instructions");
+t.ok(sdkFree.includes('DllImport("xinput1_4.dll"') && sdkFree.includes("XInputGetState"), "PowerShell probe reads only the Windows XInput system DLL");
+t.ok(sdkFree.includes("connected_slots=") && sdkFree.includes("slot={0} disconnected"), "SDK-free probe enumerates and reports XInput slots");
+t.ok(sdkFree.includes("os_architecture=") && sdkFree.includes("windows_version="), "SDK-free probe reports architecture and Windows build");
+t.ok(sdkFree.includes("Add-Type") && !sdkFree.includes("dotnet run"), "SDK-free probe uses Windows PowerShell Add-Type without the .NET SDK");
+for (const forbidden of ["XInputSetState", "Install-Module", "Install-Package", "Set-ExecutionPolicy", "Invoke-WebRequest", "Start-Process", "New-ItemProperty", "Set-ItemProperty", "Cert:\\"]) {
+  t.ok(!sdkFree.includes(forbidden), `SDK-free probe excludes ${forbidden}`);
+}
 t.ok(code.includes("private static string Format("), "axis/trigger/button values can be observed");
 t.ok(code.includes("if (args.Length == 1 && args[0] == \"--help\")"), "help path is available without XInput hardware");
 t.ok(code.includes("if (!OperatingSystem.IsWindows())"), "non-Windows execution fails gracefully");
