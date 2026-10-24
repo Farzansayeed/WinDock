@@ -6,6 +6,17 @@
 
 ---
 
+## 2026-10-24 — Owner uninstalled WinDock after confusing Xbox probe with installer (docs only)
+
+**Owner evidence:** They deleted 'the windock app' to install it through an EXE; after clicking Run the console appeared for a fraction of a second and vanished, and nothing installed. The file was the XInput portable diagnostic, not Setup. No evidence whether original Windows WinDock or Windows Gamepad Preview was removed, whether saved settings remain, or whether Windows baseline was captured. Physical Android Preview v25 install and Gamepad/Touchpad regressions remain accepted PASS. **Do not claim software restored.**
+
+**Verification:** Latest non-draft [Preview v29](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.29-gbf54e9b) contains both `WinDockGamepadPreviewSetup.exe` and `WinDockGamepadProbe-win-x64.exe`; [release #40120421204](https://github.com/Farzansayeed/WinDock/actions/runs/40120421204) passed Windows setup smoke, Android and portable probe. Prior [CI #40120809334](https://github.com/Farzansayeed/WinDock/actions/runs/40120809334) passed. Updated INSTALL-PREVIEW and gamepad-probe README to distinguish installer vs diagnostic and avoid unnecessary uninstall; refreshed PROGRESS and NEXT-SESSION. Documentation-only change: no runtime/hardware tests, privileged setup, driver or certificate changes.
+
+**Next:** Owner reinstalls the appropriate Windows edition using its true verified installer, if Windows allows normal safe setup, and confirms the WinDock host launches. Windows owner XInput slots remain UNVERIFIED; gather separate safe read-only terminal report later if needed. Do not repeat already passed Android checks, or work on deferred Spotify/DDC/running dots.
+
+---
+
+
 ## 2026-10-24 — Verified Preview v29 double-click baseline and automated checks
 
 **Feature implementation:** [bf54e9b](https://github.com/Farzansayeed/WinDock/commit/bf54e9b0651a3ddab39433c8214f6070889f9a1f) on `feature/universal-gamepad`. [Multi-platform CI #40120421196](https://github.com/Farzansayeed/WinDock/actions/runs/40120421196) **PASSED on retry (attempt 2)**; on attempt 1 Windows npm test failed *only* unrelated `verify-linux.mjs` recorder errors (other test oracles including Gamepad Probe PASS), no gamepad code involved in that failure. Failed jobs re-run via GitHub; Windows, Linux, macOS, aggregate all succeeded. [Preview build/publish #40120421204](https://github.com/Farzansayeed/WinDock/actions/runs/40120421204) **PASSED** Android tests/lint/permanent signing, Windows installer smoke, portable XInput executable x64 `--help`, no-arguments and `--baseline` from System32, and release publishing. [Non-draft Preview v29](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.29-gbf54e9b) ships portable win-x64 and win-arm64 read-only unsigned probes with SHA256SUMS.txt, BUILD-INFO, Windows installer and Android APK. x64 public asset SHA256: `0dd57d8d1f859910b63d1bdc805beacf556b8284a78f689692ef25fd7a28c0d3`.

@@ -1,5 +1,10 @@
 # WinDock P2 — read-only Windows XInput diagnostic
 
+## Diagnostic, NOT setup
+
+The `WinDockGamepadProbe-win-x64.exe` and `WinDockGamepadProbe-win-arm64.exe` files **only inspect XInput slots**; they do not install or start WinDock. Never delete/uninstall WinDock to run this diagnostic. For Windows Gamepad Preview installation use the **different** `WinDockGamepadPreviewSetup.exe` from the same verified [release](https://github.com/Farzansayeed/WinDock/releases), after checking SHA256SUMS. That installs a separate Preview, not the regular WinDock edition. [Full installer guidance](../../docs/gamepad/INSTALL-PREVIEW.md).
+
+
 This is a **safe-to-run, read-only** console tool. It uses Windows' built-in `XInputGetState` to show the four available XInput slots and input values. It **never** creates a controller, installs a driver, asks for elevation, changes certificate trust, opens a firewall port, sends gamepad input, or modifies WinDock's existing PC host.
 
 It is **not a virtual controller implementation**. It cannot tell whether an Xbox-compatible controller is physical or virtual; compare a baseline before starting any separate device-emulation test application.

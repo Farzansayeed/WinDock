@@ -1,5 +1,17 @@
 # Install WinDock Gamepad development builds
 
+## Which Windows EXE should you use?
+
+| Release file | Purpose |
+|---|---|
+| `WinDockGamepadPreviewSetup.exe` | **INSTALLS or reinstalls Windows Gamepad Preview**, with a setup wizard |
+| `WinDockGamepadProbe-win-x64.exe` or `WinDockGamepadProbe-win-arm64.exe` | **READ-ONLY Xbox/XInput diagnostic**; opens a console, prints controller slots and exits; **NOT an installer** |
+
+**Do not uninstall WinDock to run the probe.** The probe cannot install, launch or repair WinDock. If you have already removed the Windows Preview, restore it with the Setup installer from the latest successful numbered [owner-fork Preview release](https://github.com/Farzansayeed/WinDock/releases). If you removed **regular** WinDock, the Preview installer will not restore it: the regular edition and Preview have separate installation and configuration. Reinstall regular WinDock from its own trusted installer if desired. Previously stored configuration may or may not remain after uninstall; check rather than assuming it was restored.
+
+The Windows installer and probe are unsigned. Verify the release and SHA256SUMS before running either. Don't bypass SmartScreen, antivirus, WDAC/AppLocker or organization policy, and don't approve unexpected elevation or driver/certificate changes. The diagnostic needs no administrator rights. The Preview contains no virtual Xbox driver.
+
+
 **NEXT SESSION (2026-10-24):** [NEXT-SESSION.md](NEXT-SESSION.md) is the current frozen handoff, verified Preview [v20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083), P2 signed/offline Xbox driver blocked, P3/P4/P5 driver-neutral CI done, live PC gamepad NOT functional. **Spotify still fails from WinDock and user has deferred Spotify/DDC/dot issues**. Historical notes below may be older; do not mistake v5/v11/v16 for latest.
 
 **Current state:** The fork has a Touch & sign Gamepad UI preview, but NO playable virtual Xbox controller yet. These files are experimental test builds.
