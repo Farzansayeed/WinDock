@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-24 — Verified Preview v29 double-click baseline and automated checks
+
+**Feature implementation:** [bf54e9b](https://github.com/Farzansayeed/WinDock/commit/bf54e9b0651a3ddab39433c8214f6070889f9a1f) on `feature/universal-gamepad`. [Multi-platform CI #40120421196](https://github.com/Farzansayeed/WinDock/actions/runs/40120421196) **PASSED on retry (attempt 2)**; on attempt 1 Windows npm test failed *only* unrelated `verify-linux.mjs` recorder errors (other test oracles including Gamepad Probe PASS), no gamepad code involved in that failure. Failed jobs re-run via GitHub; Windows, Linux, macOS, aggregate all succeeded. [Preview build/publish #40120421204](https://github.com/Farzansayeed/WinDock/actions/runs/40120421204) **PASSED** Android tests/lint/permanent signing, Windows installer smoke, portable XInput executable x64 `--help`, no-arguments and `--baseline` from System32, and release publishing. [Non-draft Preview v29](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.29-gbf54e9b) ships portable win-x64 and win-arm64 read-only unsigned probes with SHA256SUMS.txt, BUILD-INFO, Windows installer and Android APK. x64 public asset SHA256: `0dd57d8d1f859910b63d1bdc805beacf556b8284a78f689692ef25fd7a28c0d3`.
+
+**Actual owner status:** Android v25 upgrade PASS; gamepad local stick+A and existing features PASS; do not repeat. Windows physical XInput baseline **NOT WORKING/UNCHECKED** because earlier no .NET SDK, unsigned PowerShell blocked, then v28 console double-click flashed away without captured text. The source now displays a baseline with no args and waits for Enter when connected to an interactive console. CI checks no-args output and exit under redirected runner; does NOT test a real Explorer console pause or owner XInput slot counts. User has not yet tried v29. A flash in v28 is not proof of no XInput device. ARM64 binary cross-published but not physically executed.
+
+**Safety:** Do not request Windows admin, security bypass, cert changes, private keys, licences or driver install. EXE remains unsigned; if Windows blocks execution under Defender/SmartScreen/WDAC/AppLocker, report exact message rather than bypass. No signed virtual Xbox driver or PC gamepad test exists.
+
+**Only next owner check:** Download v29 WinDockGamepadProbe-win-x64.exe (or ARM64 by OS architecture), verify SHA256 against release, double-click if allowed by Windows policy and confirm Windows version, 4 slots, connected_slots, press Enter only after reading. Provide output/error via optional findings textbox. Spotify, app running indicators, brightness, Edge icon and P8 deferred.
+
+---
+
 ## 2026-10-24 — Owner v28 EXE disappears after double-click; keep baseline visible
 
 **Branch/commit:** `feature/universal-gamepad`, this code commit updates BOTH PROGRESS.md and WORKLOG.md. Prior HEAD [49cc17b](https://github.com/Farzansayeed/WinDock/commit/49cc17bfbb82393dfdc8982f348a7f0f3f3bbee6) [CI #40119538409](https://github.com/Farzansayeed/WinDock/actions/runs/40119538409) PASSED; latest non-draft [v28](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.28-g0ad2b5f) released with unsigned x64/ARM64 read-only executables.
