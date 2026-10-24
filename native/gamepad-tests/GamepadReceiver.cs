@@ -54,6 +54,17 @@ internal sealed class ControllerReceiver : IDisposable
         lock (mutex)
         {
             if (closed) return "closed";
+            // A first frame arriving after the setup grace period must not
+            // resurrect a session that the periodic timer has not yet reaped.
+            if (!received)
+            {
+                var now = elapsedMs();
+                if (now < startedAt || now - startedAt > 1000)
+                {
+                    StopCore();
+                    return "expired";
+                }
+            }
             var result = lease.Accept(raw);
             if (result == "ok")
             {
@@ -77,7 +88,8 @@ internal sealed class ControllerReceiver : IDisposable
             if (closed) return;
             // No first frame after handshake must also expire. The lower
             // transport can have a longer auth setup, this native sink cannot.
-            if ((!received && elapsedMs() - startedAt > 1000) || lease.Poll())
+            var now = elapsedMs();
+            if ((!received && (now < startedAt || now - startedAt > 1000)) || lease.Poll())
                 StopCore();
         }
     }

@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-24 — Native clock-rollback and startup-deadline fail-neutral tests (fake sink only)
+
+**Branch:** `feature/universal-gamepad`; this code commit includes BOTH PROGRESS and WORKLOG. **Verified prior HEAD:** [a2603b9](https://github.com/Farzansayeed/WinDock/commit/a2603b93ebe77a978b8a304ed522cf8850a8c1c2) [CI #40114291891](https://github.com/Farzansayeed/WinDock/actions/runs/40114291891) passed. Latest published non-draft Preview is [v24](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.24-ga98eef2).
+
+**Changed:** `native/gamepad-tests/GamepadState.cs` expires and neutralizes an active lease if its injected monotonic clock decreases on Receive or Poll. `GamepadReceiver.cs` also refuses a delayed first state after its 1,000-ms first-frame deadline (without relying on next timer tick), and closes/neutralizes on pre-first-frame clock rollback. `native/gamepad-tests/Program.cs` adds deterministic rollback, timer poll, late-first-frame and fake-sink disposal regression assertions. No device driver, network adapter or privileged behavior added.
+
+**Tests/evidence:** Reviewed and statically checked all targeted source replacements before commit. Actual `dotnet` test execution unavailable in this execution environment; new Windows GitHub CI pending and must be checked after push. No physical Windows Xbox slot, user Windows baseline, signed/reversible driver, Android-to-PC gamepad, game compatibility, crash-to-neutral or latency was physically verified. Passing fake-sink assertions never establishes real driver behavior.
+
+**Next:** Check new Windows/multi-OS CI and Preview applicability. Gather owner non-admin v24 / XInput baseline acceptance; advance P2 on approved disposable Windows with signed/offline/legal/rollback evidence before connecting production VS1. Spotify/dots/DDC and Edge logo remain deferred.
+
+---
+
 ## 2026-10-24 — P2 baseline / Kotlin handshake v24 released and CI passed (documentation update)
 
 **Branch:** `feature/universal-gamepad`; source [`a98eef2`](https://github.com/Farzansayeed/WinDock/commit/a98eef26a74ddba11e97397aae3930ccd29b4997). [CI #40113968394](https://github.com/Farzansayeed/WinDock/actions/runs/40113968394) **PASSED** Linux/macOS/Windows and aggregate, including Windows read-only XInput baseline command and Node static checks. [Release workflow #40113968453](https://github.com/Farzansayeed/WinDock/actions/runs/40113968453) **PASSED** Android Preview JVM tests/lint/signing, Windows installer smoke and publishing. [Published Preview v24](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.24-ga98eef2) verified non-draft with Windows installer, signed Android Preview APK, SHA256SUMS.txt, BUILD-INFO.txt, public SIGNING-INFO.txt.

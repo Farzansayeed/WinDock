@@ -88,7 +88,8 @@ internal sealed class StateLease(Func<long> nowMilliseconds, long timeoutMillise
     {
         if (Closed) return "closed";
         long tick = nowMilliseconds();
-        if (lastAt.HasValue && tick - lastAt.Value > timeoutMilliseconds)
+        // A rolled-back clock must never prolong a held virtual-controller state.
+        if (lastAt.HasValue && (tick < lastAt.Value || tick - lastAt.Value > timeoutMilliseconds))
         {
             Close(); return "expired";
         }
@@ -105,8 +106,12 @@ internal sealed class StateLease(Func<long> nowMilliseconds, long timeoutMillise
 
     internal bool Poll()
     {
-        if (!Closed && lastAt.HasValue &&
-            nowMilliseconds() - lastAt.Value > timeoutMilliseconds) Close();
+        if (!Closed && lastAt.HasValue)
+        {
+            var tick = nowMilliseconds();
+            if (tick < lastAt.Value || tick - lastAt.Value > timeoutMilliseconds)
+                Close();
+        }
         return Closed;
     }
 

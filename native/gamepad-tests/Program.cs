@@ -78,6 +78,23 @@ internal static class Program
         closed.Close();
         Check.That(closed.Current == ControllerState.Neutral, "explicit stop releases controls");
 
+        // Monotonic freshness is a safety invariant independent of the OS
+        // driver: replay and clock rollback must never extend a held button.
+        clock = 100;
+        var backwardsAccept = new StateLease(() => clock);
+        Check.That(backwardsAccept.Accept(Valid) == "ok", "rollback test holds initial frame");
+        clock = 99;
+        Check.That(backwardsAccept.Accept(Valid.Replace("\"seq\":1", "\"seq\":2")) == "expired",
+            "clock rollback on receive closes the lease");
+        Check.That(backwardsAccept.Current == ControllerState.Neutral,
+            "clock rollback on receive resets all controls");
+        clock = 100;
+        var backwardsPoll = new StateLease(() => clock);
+        Check.That(backwardsPoll.Accept(Valid) == "ok", "poll rollback test holds initial frame");
+        clock = 99;
+        Check.That(backwardsPoll.Poll() && backwardsPoll.Current == ControllerState.Neutral,
+            "clock rollback on independent watchdog poll resets controls");
+
         // Native-side device-independent report owner with an INDEPENDENT
         // timer and neutral output. No virtual Xbox driver is installed.
         long receiverClock = 0;
@@ -120,6 +137,30 @@ internal static class Program
             receiver.Tick();
             Check.That(receiver.Closed, "session that never sent a first frame expires");
             Check.That(abandoned.DisposeCount == 1, "idle session disposes sink");
+        }
+        var late = new FakeController();
+        receiverClock = 0;
+        using (var receiver = new ControllerReceiver(late, () => receiverClock,
+            timeoutMs: 180, startTimer: false))
+        {
+            receiverClock = 1001;
+            Check.That(receiver.Receive(Valid) == "expired",
+                "late first report cannot beat a delayed watchdog tick");
+            Check.That(receiver.Closed && late.Reports[^1] == ControllerState.Neutral,
+                "late first report closes and neutralizes the native sink");
+            Check.That(late.DisposeCount == 1, "late first report disposes sink once");
+        }
+        var regressedBeforeFirst = new FakeController();
+        receiverClock = 100;
+        using (var receiver = new ControllerReceiver(regressedBeforeFirst,
+            () => receiverClock, timeoutMs: 180, startTimer: false))
+        {
+            receiverClock = 99;
+            receiver.Tick();
+            Check.That(receiver.Closed && regressedBeforeFirst.Reports[^1] == ControllerState.Neutral,
+                "native watchdog stops a backwards clock before the first frame");
+            Check.That(regressedBeforeFirst.DisposeCount == 1,
+                "pre-first-frame clock rollback disposes fake sink");
         }
 
         // Live timer proof: expiry occurs WITHOUT a Tick call or additional
