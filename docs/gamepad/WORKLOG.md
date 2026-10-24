@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-10-24 — Additional findings text box for every owner acceptance checklist (docs only)
+
+**Branch:** `feature/universal-gamepad`; new policy commit is the commit containing this entry. Baseline [`7439033`](https://github.com/Farzansayeed/WinDock/commit/7439033f68b7eb816a9b4b114cd46a8b87d4e8bf) passed [CI #40110167483](https://github.com/Farzansayeed/WinDock/actions/runs/40110167483). Latest published numbered [Preview v22](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.22-g69ba9d7) remains simulation-only.
+
+**Changed:** Extended AGENTS.md end-of-session acceptance contract: every checklist must have a user-editable, optional multiline **Other findings / observations** box immediately under its checks. Store notes alongside checkbox state and include the exact entered text in both Proceed and Report issues user actions; leave blank notes optional. All unchecked items still count as NOT WORKING and block progression; any noted failure should keep its corresponding item unchecked. Do not invite passwords/PINs/private signing material. Added Markdown fallback requiring free-text findings alongside manual check replies.
+
+**Verification:** GitHub file-policy readback only. No executable code, runtime test, Android/Windows hardware test, new gamepad/XInput driver, privileged changes, or actual gameplay. Previous baseline CI succeeded; new documentation commit CI not yet available at commit time.
+
+**Next:** Request owner's checkbox verification of the new policy and optional notes field; then continue unfinished P2/VS1 implementation behind safety gate. Deferred WinDock issues remain untouched.
+
+---
+
+
 ## 2026-10-24 — Required owner checklist with gated Proceed action (policy only)
 
 **Branch:** `feature/universal-gamepad`; this policy commit is the one adding the mandatory AGENTS.md section. Baseline [`69ba9d7`](https://github.com/Farzansayeed/WinDock/commit/69ba9d71997a9ff3913235c72b5d4f22f4897347), [CI #40109440668](https://github.com/Farzansayeed/WinDock/actions/runs/40109440668) and [Preview workflow #40109440597](https://github.com/Farzansayeed/WinDock/actions/runs/40109440597) have passed.
