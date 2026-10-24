@@ -60,6 +60,10 @@ jobs:
         run: dotnet run --no-build --project native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -- --help
       - name: Verify Windows gamepad protocol and fail-neutral model (no driver)
         run: dotnet run --project native/gamepad-tests/WinDock.GamepadTests.csproj -c Release
+      - name: Build isolated native gamepad pipe receiver (fake sink only)
+        run: dotnet build native/gamepad-sidecar/WinDock.GamepadSidecar.csproj -c Release
+      - name: Exercise native gamepad process neutral/EOF/timeout (no driver)
+        run: node scripts/test-gamepad-sidecar.mjs
       - name: Verify native touchpad protocol and transparent signature rendering
         run: dotnet run --project native/input-tests/WinDockInputTests.csproj -c Release
       - name: Verify update checks and startup notification policy

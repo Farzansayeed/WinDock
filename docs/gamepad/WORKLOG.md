@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-10-24 — Native sidecar with private bounded IPC and fake output only
+
+**Branch/commit:** `feature/universal-gamepad`, the implementation commit containing this entry (look up HEAD SHA); baseline `d719b826a38113c49f81836f9aa50883aac6f3fa`. Previous [CI #40017943222](https://github.com/Farzansayeed/WinDock/actions/runs/40017943222) succeeded; latest published numbered [Preview v20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083).
+
+**Code:** Added `native/gamepad-sidecar` .NET 8 persistent isolated stdin/stdout child with 256-byte byte-bounded protocol parsing and strict `ControllerReceiver` native watchdog/neutral lifecycle. It can run ONLY in explicit `--fake-sink-test` mode; normal invocation rejects without attaching any device. Added `scripts/test-gamepad-sidecar.mjs` subprocess checks and Windows CI build/test steps. No network listener, elevation, root certificate, licence, driver, production sink or phone networking.
+
+**Exact test evidence at commit time:** previous-HEAD CI passed; new CI pending at [workflow](https://github.com/Farzansayeed/WinDock/actions/workflows/ci.yml). New Windows CI invokes `dotnet build native/gamepad-sidecar/WinDock.GamepadSidecar.csproj -c Release` and `node scripts/test-gamepad-sidecar.mjs`. Local .NET SDK unavailable, so these were **NOT RUN LOCALLY**. Actual Windows/Android hardware, virtual XInput/game support and true parent-crash/device-loss tests **NOT RUN**. Fake sink tests cannot certify hardware safety.
+
+**Next:** review CI, add supervised owner-only Node launch lifecycle without enabling the production driverless /gamepad route. P2 legal/signed/offline/reversible hardware candidate remains unselected; seek explicit owner approval before privileged disposable Windows lab. Spotify, running dots, brightness and Touchpad P8 deferred.
+
+---
+
+
 ## 2026-10-24 — End-of-session handoff, source status frozen
 
 **Owner priority:** User asked to close, prepare next chat and preserve all information. Spotify remains BROKEN from WinDock on user's PC despite v16, although direct Spotify.exe works; owner explicitly deferred Spotify, brightness/DDC and running-dot issues to focus Gamepad P2/VS1.

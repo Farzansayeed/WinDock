@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Pure .NET 8 diagnostic; no device driver, admin rights or trust changes. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../gamepad-tests/GamepadState.cs" Link="GamepadState.cs" />
+    <Compile Include="../gamepad-tests/GamepadReceiver.cs" Link="GamepadReceiver.cs" />
+  </ItemGroup>
+</Project>
