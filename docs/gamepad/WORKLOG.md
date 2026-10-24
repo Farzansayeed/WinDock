@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-10-24 — Required owner checklist with gated Proceed action (policy only)
+
+**Branch:** `feature/universal-gamepad`; this policy commit is the one adding the mandatory AGENTS.md section. Baseline [`69ba9d7`](https://github.com/Farzansayeed/WinDock/commit/69ba9d71997a9ff3913235c72b5d4f22f4897347), [CI #40109440668](https://github.com/Farzansayeed/WinDock/actions/runs/40109440668) and [Preview workflow #40109440597](https://github.com/Farzansayeed/WinDock/actions/runs/40109440597) have passed.
+
+**Changed:** AGENTS.md now explicitly requires each session to finish with realistic, initially unchecked user testing criteria, what to look for, and an interactive **Proceed** button enabled only after all required checks are confirmed by the owner. An unchecked/not-performed item counts as not working for user acceptance and blocks progression. Include a **Report issues** action to submit unchecked items for fixes. If controls unavailable, use Markdown checkbox fallback and explicit pass/fail replies. Do not claim real XInput from fake CI or require impossible hardware testing for a documentation-only change.
+
+**Tests:** Documentation policy inspection/readback requested from owner via the checklist; no code modified, no local hardware or emulator tests, no driver/admin/certificate changes. Previous CI and preview succeeded; **this commit's CI not run at commit time**. The physical Xbox/XInput Windows device and Android-to-PC gameplay remain unverified.
+
+**Next:** Owner review of new checklist instructions, then continue safe P2 signed/offline driver feasibility and VS1 engineering according to already agreed roadmap. Keep other WinDock issues deferred.
+
+---
+
+
 ## 2026-10-24 — Paired WebSocket to isolated fake native receiver and child lifecycle
 
 **Branch:** `feature/universal-gamepad`; commit is the implementation commit containing this entry. **Verified predecessor:** [`ef657a5`](https://github.com/Farzansayeed/WinDock/commit/ef657a5afa5265994fd3b2b832be6cacad5398ce), [multi-OS CI #40108234730](https://github.com/Farzansayeed/WinDock/actions/runs/40108234730) and [preview packaging #40108234505](https://github.com/Farzansayeed/WinDock/actions/runs/40108234505) succeeded; [non-draft Preview v21](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.21-gef657a5) has signed Android preview, Windows installer, hashes and public certificate info.
