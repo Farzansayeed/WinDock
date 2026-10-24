@@ -21,6 +21,14 @@ t.ok(code.includes("RuntimeInformation.OSArchitecture"), "baseline reports archi
 t.ok(code.includes("Environment.OSVersion.Version"), "baseline records Windows version for feasibility");
 t.ok(instructions.includes("--baseline"), "safe owner baseline command documented");
 t.ok(instructions.includes("SDK-free") && instructions.includes("WinDock-XInputBaseline.ps1"), "owner has SDK-free baseline instructions");
+t.ok(instructions.includes("WinDockGamepadProbe-win-x64.exe") && instructions.includes("WinDockGamepadProbe-win-arm64.exe"), "document script-free x64 and ARM64 baselines");
+t.ok(instructions.includes("PSSecurityException") && instructions.includes("do not bypass or disable"), "owner execution policy blocker has safe guidance");
+const preview = readFileSync(join(dir, "../../.github/workflows/gamepad-preview.yml"), "utf8");
+t.ok(preview.includes("--self-contained true") && preview.includes("-p:PublishSingleFile=true"), "portable probe includes bundled runtime");
+t.ok(preview.includes("WinDockGamepadProbe-win-x64.exe") && preview.includes("WinDockGamepadProbe-win-arm64.exe"), "both architectures are packaged");
+t.ok(preview.includes("$probe --baseline") && preview.includes("Missing XInput slot"), "x64 binary is executed in Windows CI");
+t.ok(preview.includes("sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe"), "release hashes new assets");
+t.ok(preview.includes("UNSIGNED") && preview.includes("SmartScreen"), "unsigned policy restrictions are disclosed");
 t.ok(sdkFree.includes('DllImport("xinput1_4.dll"') && sdkFree.includes("XInputGetState"), "PowerShell probe reads only the Windows XInput system DLL");
 t.ok(sdkFree.includes("connected_slots=") && sdkFree.includes("slot={0} disconnected"), "SDK-free probe enumerates and reports XInput slots");
 t.ok(sdkFree.includes("os_architecture=") && sdkFree.includes("windows_version="), "SDK-free probe reports architecture and Windows build");

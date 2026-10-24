@@ -69,10 +69,44 @@ jobs:
       - name: Test install, launch, upgrade and uninstall
         shell: pwsh
         run: ./scripts/test-installer.ps1 -GamepadPreview
+      - name: Package SDK-free read-only XInput EXEs (no script, unsigned)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          foreach ($rid in @('win-x64', 'win-arm64')) {
+            $folder = Join-Path $env:RUNNER_TEMP "windock-probe-$rid"
+            dotnet publish native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -r $rid --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -p:DebugSymbols=false -o $folder
+            if ($LASTEXITCODE -ne 0) { throw "Publish failed for $rid" }
+            $source = Join-Path $folder 'WinDockGamepadProbe.exe'
+            if (-not (Test-Path -LiteralPath $source)) { throw "Missing probe for $rid" }
+            if ((Get-Item -LiteralPath $source).Length -lt 1000000) { throw "Missing bundled runtime for $rid" }
+            Copy-Item -LiteralPath $source -Destination "artifacts/installer/WinDockGamepadProbe-$rid.exe"
+          }
+          $probe = (Resolve-Path 'artifacts/installer/WinDockGamepadProbe-win-x64.exe').Path
+          Push-Location "$env:WINDIR\System32"
+          try {
+            & $probe --help
+            if ($LASTEXITCODE -ne 0) { throw 'Portable probe help failed' }
+            $report = @(& $probe --baseline)
+            if ($LASTEXITCODE -ne 0) { throw 'Portable probe baseline failed' }
+            $report | ForEach-Object { Write-Output $_ }
+            if (-not ($report -match '^windows_version=') -or
+                -not ($report -match '^os_architecture=') -or
+                -not ($report -match '^connected_slots=[0-4]$')) {
+              throw 'Incomplete portable XInput baseline'
+            }
+            foreach ($slot in 0..3) {
+              if (-not ($report -match ("^slot={0} " -f $slot))) { throw "Missing XInput slot $slot" }
+            }
+          } finally { Pop-Location }
+          # ARM64 is cross-published; only x64 is run on the CI runner.
       - uses: actions/upload-artifact@v4
         with:
           name: gamepad-windows-preview
-          path: artifacts/installer/WinDockGamepadPreviewSetup.exe
+          path: |
+            artifacts/installer/WinDockGamepadPreviewSetup.exe
+            artifacts/installer/WinDockGamepadProbe-win-x64.exe
+            artifacts/installer/WinDockGamepadProbe-win-arm64.exe
           if-no-files-found: error
 
   android:
@@ -172,7 +206,7 @@ jobs:
           cd dist
           test -s SIGNING-INFO.txt
           grep -q 'Signing channel: stable-gamepad-preview' SIGNING-INFO.txt
-          sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk > SHA256SUMS.txt
+          sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe > SHA256SUMS.txt
           printf 'Version: %s\nCommit: %s\nRun: %s\nChannel: gamepad-preview\n' \
             "$PREVIEW_VERSION" "$GITHUB_SHA" "$GITHUB_RUN_NUMBER" > BUILD-INFO.txt
           cat > RELEASE-NOTES.md <<EOF
@@ -188,13 +222,15 @@ jobs:
 
           The first migration from an OLD CI debug signing key to this permanent key can require uninstalling ONLY the previous Preview APK once. Subsequent APKs signed with this same key and higher versionCodes should support in-place upgrades after normal Android installer consent.
 
-          No gamepad driver is bundled. Windows installer remains unsigned. Android Preview is signed with a private development key (not Play Store signing).
+          Portable Windows XInput baseline: download WinDockGamepadProbe-win-x64.exe or WinDockGamepadProbe-win-arm64.exe (ARM64 Windows). Verify SHA256SUMS.txt and run from a non-admin console with --baseline. No PowerShell script, .NET SDK/runtime install, driver, certificate changes or WinDock installer required. Both EXEs are UNSIGNED; if SmartScreen, antivirus, AppLocker or system policy blocks them, report this without bypassing protection. x64 is tested on CI; ARM64 only cross-built.
+
+          No gamepad driver is bundled. Windows installer and portable probes remain unsigned. Android Preview is signed with a private development key (not Play Store signing).
 
           Progress: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/PROGRESS.md
           How to install: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/INSTALL-PREVIEW.md
           Check SHA256SUMS.txt, BUILD-INFO.txt and SIGNING-INFO.txt for verifiable source, version, assets and public certificate fingerprint.
           EOF
           gh release create "$TAG" \
-            WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk SHA256SUMS.txt BUILD-INFO.txt SIGNING-INFO.txt \
+            WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe SHA256SUMS.txt BUILD-INFO.txt SIGNING-INFO.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
             --title "WinDock Gamepad Preview $PREVIEW_VERSION" --notes-file RELEASE-NOTES.md

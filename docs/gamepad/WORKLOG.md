@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-10-24 — Owner signed-script policy blocks XInput baseline: ship portable executable
+
+**Branch / commit:** feature/universal-gamepad; this code commit includes both PROGRESS.md and WORKLOG.md. Prior [d58c31f](https://github.com/Farzansayeed/WinDock/commit/d58c31f0f2096341cd4882383f63cd44ededf1e4), [CI #40117938713](https://github.com/Farzansayeed/WinDock/actions/runs/40117938713) and Preview v27 verified.
+
+**Owner evidence:** Android Preview v25 update PASS, native stick+A and Touchpad/Signature/keyboard/dock regressions PASS (carry forward). Windows XInput baseline NOT WORKING: owner first had no dotnet SDK, then downloaded script WinDock-XInputBaseline.ps1 which Windows refused due unsigned script (PSSecurityException, UnauthorizedAccess). No actual XInput slot scan executed. Respect execution-policy restrictions.
+
+**Implementation:** Publish read-only, self-contained portable Windows XInput executable for x64 and ARM64 from existing C# probe on Windows CI; execute x64 --help and --baseline from System32 with output checks; add both binaries to GitHub release and SHA256SUMS. ARM64 cross-built, not physically tested. README and static verification now offer this path without requiring .ps1 or SDK. Binaries are UNSIGNED; users must not bypass SmartScreen, AppLocker, WDAC, antivirus or company policy. No driver, elevation, certificate changes, WinDock runtime modification or cloud dependency.
+
+**Tests at commit:** Workflow/source static assertions inspected; new CI/release not yet run. Owner PC baseline/physical XInput device and Android-to-PC game output NOT VERIFIED.
+
+**Next:** Verify all GitHub Actions and published preview with portable assets. Request only owner Windows baseline using security-policy-permitted checksum-confirmed executable; no new Android testing needed. P2 backend proof still blocked pending separate explicit approval. Spotify, indicators and brightness deferred.
+
+---
+
 ## 2026-10-24 — Verified SDK-free Windows baseline CI + Preview v26 publication (documentation follow-up)
 
 **Source:** [5a21ea5](https://github.com/Farzansayeed/WinDock/commit/5a21ea59d2755745b98e4c260086d07ef8ee5e21) on `feature/universal-gamepad`. [CI #40117635358](https://github.com/Farzansayeed/WinDock/actions/runs/40117635358) **SUCCESS** Linux/macOS/Windows and aggregate. The Windows job executed new SDK-free PowerShell diagnostic from System32 and checked OS/version, all four XInput slot lines and connected count, in addition to existing .NET/Node test suites. [Gamepad Preview build #40117635340](https://github.com/Farzansayeed/WinDock/actions/runs/40117635340) **SUCCESS** Windows installer, Android JVM/lint/signature and GitHub publish. [Preview v26](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.26-g5a21ea5) **PUBLISHED/NON-DRAFT** with Windows Preview installer, signed Android Preview APK, BUILD-INFO, SHA256SUMS and public SIGNING-INFO.
