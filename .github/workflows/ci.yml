@@ -58,6 +58,8 @@ jobs:
         run: dotnet build native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release
       - name: Verify XInput diagnostic help (no device access)
         run: dotnet run --no-build --project native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -- --help
+      - name: Record read-only Windows CI runner XInput baseline (no driver)
+        run: dotnet run --no-build --project native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -- --baseline
       - name: Verify Windows gamepad protocol and fail-neutral model (no driver)
         run: dotnet run --project native/gamepad-tests/WinDock.GamepadTests.csproj -c Release
       - name: Build isolated native gamepad pipe receiver (fake sink only)

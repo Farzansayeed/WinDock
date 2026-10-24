@@ -43,16 +43,18 @@ internal static class Program
         if (args.Length == 1 && args[0] == "--help")
         {
             Console.WriteLine("WinDock read-only XInput probe (no driver installation)");
-            Console.WriteLine("Usage: dotnet run --project native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -- [--scan | --watch SECONDS]");
+            Console.WriteLine("Usage: dotnet run --project native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -- [--scan | --baseline | --watch SECONDS]");
             Console.WriteLine("  --scan           List currently visible XInput slots (default).");
+            Console.WriteLine("  --baseline       Read OS version/architecture and XInput slots; NO identifiers, admin or driver changes.");
             Console.WriteLine("  --watch SECONDS  Observe button/axis changes for 1..60 seconds.");
             Console.WriteLine("This program cannot distinguish a physical pad from a virtual pad. Compare before/after.");
             return 0;
         }
 
         bool watch = false;
+        bool baseline = args.Length == 1 && args[0] == "--baseline";
         int watchSeconds = 0;
-        if (args.Length == 0 || (args.Length == 1 && args[0] == "--scan"))
+        if (baseline || args.Length == 0 || (args.Length == 1 && args[0] == "--scan"))
         {
             // No options: one harmless snapshot.
         }
@@ -78,6 +80,16 @@ internal static class Program
         {
             if (!watch)
             {
+                if (baseline)
+                {
+                    // Intentionally no hostname, user, serial, hardware ID,
+                    // installed certificate or other machine identifier.
+                    Console.WriteLine("WinDock P2 BASELINE: read-only, no admin and no driver changes.");
+                    Console.WriteLine($"windows_version={Environment.OSVersion.Version}");
+                    Console.WriteLine($"os_architecture={RuntimeInformation.OSArchitecture}");
+                    Console.WriteLine($"process_architecture={RuntimeInformation.ProcessArchitecture}");
+                    Console.WriteLine("Physical and virtual XInput controllers cannot be distinguished here.");
+                }
                 Console.WriteLine("XInput slot scan (read only).");
                 int connected = 0;
                 for (uint index = 0; index < MaxSlots; index++)

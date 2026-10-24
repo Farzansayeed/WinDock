@@ -13,10 +13,12 @@ Windows 10 or Windows 11 with the [.NET 8 SDK](https://dotnet.microsoft.com/down
 ```powershell
 dotnet run --project native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -- --help
 dotnet run --project native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -- --scan
+dotnet run --project native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -- --baseline
 dotnet run --project native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -- --watch 10
 ```
 
 - `--scan` prints slot 0–3 availability and the current state.
+- `--baseline` additionally prints Windows version and OS/process architecture. It does not print device identifiers, user profile details, tokens or certificates. Run without administrator privileges. A zero-slot result is a valid baseline and does **not** block progress.
 - `--watch 10` samples for 10 seconds and prints only state changes (buttons, axes and triggers; no synthetic input). Accepts 1–60 seconds.
 - `A=True` represents the Xbox A-button bit; `LX/LY/RX/RY` are signed axes; `LT/RT` are 0–255. If all slots are disconnected, that is a **normal pre-driver baseline**, not a failed build.
 - Use the same commands before and after starting a **separately vetted** virtual-controller demonstration and with physical controllers unplugged. A newly appearing XInput slot is **supporting evidence**, not proof of safe installation or game compatibility.

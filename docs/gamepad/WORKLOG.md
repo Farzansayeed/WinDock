@@ -6,6 +6,21 @@
 
 ---
 
+## 2026-10-24 — Owner v23 acceptance + P2 read-only baseline and VS1 native handshake model
+
+**Branch:** `feature/universal-gamepad`; this implementation commit. Baseline `ab23f133ceb98c7c54c6a2e089005dc7bcc3a87f`, [CI #40111404640](https://github.com/Farzansayeed/WinDock/actions/runs/40111404640) passed. Latest published numbered [Preview v23](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.23-g325bcb6), release CI/build previously passed.
+
+**OWNER'S PHYSICAL REPORT (NOT AGENT HARDWARE OBSERVATION):** All four Preview v23 checks PASSED: Android preview install/update, same-LAN paired Touch & sign ↔ Gamepad, multitouch native stick/A with neutral on exit, Touchpad/Signature/keyboard/dock regression. **Other finding (deferred):** Microsoft Edge's logo rendered as **M**. Record as pending icon fidelity issue, do not work on it while owner requests Gamepad priority. No proof of XInput/PC gameplay or Windows signed driver.
+
+**Code:** New `GamepadSocketTarget.kt` ensures the only socket endpoint candidate is /gamepad on exact trusted local WinDock origin. `GamepadOwnerChannel.kt` is transport-injected: waits for strict v1 ready ACK, never sends pre-ready touch states, handles first neutral/whole-state heartbeat through prior `GamepadInputSession`, aborts and sends best-effort neutral on failures, and closes socket exactly once. No Android actual websocket, credential handling, or native virtual controller; normal Android UI remains local-only. Six JVM fake transport/policy tests cover handshake, forbidden ready, deadlines, clock rollback, reconnect, stick+A state, and wrong-origin URL. Separately `native/gamepad-probe --baseline` emits Windows version/architecture and read-only 0-3 slot state; no identifiers, elevation or installs. Updated probe Node static contract, README, and Windows CI baseline.
+
+**Tests:** Prior HEAD CI success. This code added Android JVM tests and CI Windows --baseline; at commit time **new CI NOT YET CHECKED**. No local Android Gradle/.NET SDK or Windows physical machine used. Tests of fake sockets are not real Android network sessions. Owner does not need to install drivers or certificate roots for P2 baseline.
+
+**Next:** Review CI, request owner read-only Windows baseline. Research legally redistributable signed offline-friendly device on disposable Windows host; any privileged installation requires explicit owner approval and rollback. Keep Spotify, running dots, DDC and Edge icon deferred.
+
+---
+
+
 ## 2026-10-24 — Kotlin sender Preview v23 automated verification completed (documentation only)
 
 **Branch:** `feature/universal-gamepad`; implementation source commit [`325bcb6`](https://github.com/Farzansayeed/WinDock/commit/325bcb6a9ed820bb7c4ec2fa95d0eb592b78afc7). [CI #40111015027](https://github.com/Farzansayeed/WinDock/actions/runs/40111015027) **PASSED** all three OS jobs plus aggregate. [Release workflow #40111014996](https://github.com/Farzansayeed/WinDock/actions/runs/40111014996) **PASSED** Android JVM tests, lint, Android signer check, Windows installer smoke and publication. [Published Gamepad Preview v23](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.23-g325bcb6) is non-draft and contains Android APK, Windows installer, SHA256SUMS.txt, BUILD-INFO.txt, and PUBLIC SIGNING-INFO.txt.

@@ -15,6 +15,10 @@ t.ok(!proj.includes("<PackageReference "), "diagnostic has no third-party driver
 t.ok(code.includes('DllImport("xinput1_4.dll"'), "only Windows system XInput DLL is used");
 t.ok(code.includes("XInputGetState("), "diagnostic reads XInput state");
 t.ok(code.includes("ErrorDeviceNotConnected"), "empty XInput slots are handled as normal");
+t.ok(code.includes('args[0] == "--baseline"'), "read-only Windows P2 baseline mode exists");
+t.ok(code.includes("RuntimeInformation.OSArchitecture"), "baseline reports architecture without personal device ID");
+t.ok(code.includes("Environment.OSVersion.Version"), "baseline records Windows version for feasibility");
+t.ok(instructions.includes("--baseline"), "safe owner baseline command documented");
 t.ok(code.includes("private static string Format("), "axis/trigger/button values can be observed");
 t.ok(code.includes("if (args.Length == 1 && args[0] == \"--help\")"), "help path is available without XInput hardware");
 t.ok(code.includes("if (!OperatingSystem.IsWindows())"), "non-Windows execution fails gracefully");
