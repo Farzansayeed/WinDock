@@ -6,6 +6,33 @@
 
 ---
 
+## 2026-10-25 — Successful owner hardware XInput scan (zero slots), acceptance still unchecked
+
+**Owner's report, verbatim:**
+```text
+WinDock P2 BASELINE: read-only, no admin and no driver changes.
+windows_version=10.0.26300.0
+os_architecture=X64
+process_architecture=X64
+Physical and virtual XInput controllers cannot be distinguished here.
+XInput slot scan (read only).
+slot=0 disconnected
+slot=1 disconnected
+slot=2 disconnected
+slot=3 disconnected
+connected_slots=0
+
+Press Enter to close this read-only report...
+```
+
+**Technical assessment:** On the owner's actual x64 Windows machine, the portable Preview v30 read-only XInput probe read **all four** XInput slots and displayed the expected interactive completion prompt. `connected_slots=0` is an expected, valid pre-driver **success**: it means no active XInput controller was visible at that instant, not a faulty probe. It does NOT demonstrate any virtual Xbox controller, driver installation, or game compatibility. The submitted checkbox said **NOT WORKING / NOT CHECKED**; per AGENTS.md, keep owner acceptance **unchecked** pending acknowledgement of the correct criterion, without asking the owner to rerun the probe. No owner-provided SHA256 or exit code.
+
+**Carry-forward:** Previously accepted Windows Preview installer and launch PASS, Android v25 signed Preview upgrade, local two-finger stick+A and Touchpad/Signature/keyboard/dock regressions PASS. Do not reinstall or repeat tests. Prior baseline source [c4ca40f](https://github.com/Farzansayeed/WinDock/commit/c4ca40fee8d15b5e160d4a87f617e35d0806d1e6) [CI #40123958744](https://github.com/Farzansayeed/WinDock/actions/runs/40123958744) PASSED and [Preview v30](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.30-gfd82cfd) published.
+
+**Change/test:** This commit changes only PROGRESS, WORKLOG, NEXT-SESSION and P2 feasibility documentation; no executable changes, and no additional physical test conducted by agent. Post-commit CI pending. No Windows security changes or driver/admin/certificate/license actions allowed. Next: user confirms the already-observed read-only four-slot zero-connected output is acceptable; separate future P2 driver proof still gated behind explicit permission. Spotify/indicators/brightness/Edge icon deferred.
+
+---
+
 ## 2026-10-25 — Owner confirms Windows Preview restored; only P2 read-only baseline remains (documentation checkpoint)
 
 **Branch:** `feature/universal-gamepad`; this commit updates both PROGRESS.md and WORKLOG.md. Previous `fd82cfd` [multi-OS CI #40122957362](https://github.com/Farzansayeed/WinDock/actions/runs/40122957362) **PASSED** and [release workflow #40122957459](https://github.com/Farzansayeed/WinDock/actions/runs/40122957459) **PASSED**. Latest highest numbered non-draft [Preview v30](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.30-gfd82cfd) contains Windows setup, Android Preview, x64 and ARM64 read-only portable XInput probe EXEs, SHA256SUMS, SIGNING-INFO and BUILD-INFO.

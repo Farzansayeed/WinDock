@@ -5,6 +5,11 @@
 **Status:** RESEARCH + READ-ONLY XINPUT DIAGNOSTIC ADDED; driver-neutral authenticated /gamepad WebSocket and independent native watchdog implemented/tested in CI. **No driver selected, installed, licensed, redistributed, or physically tested**. A built diagnostic and simulated state tests cannot prove XInput output.  
 **Last reviewed:** 2026-10-24.  
 **Owner fork:** [Farzansayeed/WinDock](https://github.com/Farzansayeed/WinDock), branch `feature/universal-gamepad`.  
+
+## Owner's Windows read-only XInput baseline — physical report 2026-10-25
+
+The owner reported a real scan on x64 Windows, `windows_version=10.0.26300.0`, `os_architecture=X64`, `process_architecture=X64`, slots 0–3 all disconnected, and `connected_slots=0`, followed by `Press Enter to close this read-only report...`. This is **technically a successful baseline**: the read-only tool read all four XInput slots and found zero connected controllers at the moment of scan. Zero is normal before a virtual controller is implemented; it neither proves installed physical/virtual drivers nor demonstrates gameplay. The owner submitted the scan as **NOT WORKING / NOT CHECKED**; preserve that acceptance gate until explicitly acknowledged (do not silently flip checked state). Hash and exit code not provided; do not claim them. No need to rerun the scan, change Windows security, or install drivers. Any subsequent virtual Xbox driver testing remains separately approval-gated.
+
 **Next step:** build and run [WinDock's read-only XInput diagnostic](../../native/gamepad-probe/README.md) to capture a Windows baseline, then run a separately approved, removable virtual-controller test and compare. No action here elevates or changes the user's Windows machine.
 
 ## Why P2 gates subsequent development
