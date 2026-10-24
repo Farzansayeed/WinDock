@@ -64,6 +64,8 @@ jobs:
         run: dotnet build native/gamepad-sidecar/WinDock.GamepadSidecar.csproj -c Release
       - name: Exercise native gamepad process neutral/EOF/timeout (no driver)
         run: node scripts/test-gamepad-sidecar.mjs
+      - name: Verify paired WebSocket to supervised native fake receiver (no driver)
+        run: node scripts/test-gamepad-bridge.mjs
       - name: Verify native touchpad protocol and transparent signature rendering
         run: dotnet run --project native/input-tests/WinDockInputTests.csproj -c Release
       - name: Verify update checks and startup notification policy

@@ -24,3 +24,14 @@ paired/same-origin single-owner `/gamepad` gate, with a fixed executable,
 Do not expose fake mode via production networking. A real signed, legally
 redistributable, offline-friendly Xbox backend requires owner approval for
 privileged install and separate real-Windows XInput/game/rollback tests.
+
+## Lab-only authenticated bridge
+
+`scripts/lib/native-gamepad-fake-bridge.mjs` provides a factory **used only by**
+`scripts/test-gamepad-bridge.mjs`, not the production server. That Windows CI
+integration test pairs via the existing PIN and same-Origin rules, enforces
+single ownership, forwards small whole-state frames into a child process,
+and checks native independent expiration, WS disconnect, and child-crash
+cleanup. It never turns `/gamepad` on in ordinary WinDock execution.
+The Node hub now supports an optional `onFault` hook for any future safe
+sink, immediately closing a session when the sink dies.

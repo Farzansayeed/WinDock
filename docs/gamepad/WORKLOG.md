@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-10-24 — Paired WebSocket to isolated fake native receiver and child lifecycle
+
+**Branch:** `feature/universal-gamepad`; commit is the implementation commit containing this entry. **Verified predecessor:** [`ef657a5`](https://github.com/Farzansayeed/WinDock/commit/ef657a5afa5265994fd3b2b832be6cacad5398ce), [multi-OS CI #40108234730](https://github.com/Farzansayeed/WinDock/actions/runs/40108234730) and [preview packaging #40108234505](https://github.com/Farzansayeed/WinDock/actions/runs/40108234505) succeeded; [non-draft Preview v21](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.21-gef657a5) has signed Android preview, Windows installer, hashes and public certificate info.
+
+**Implementation:** Added lab-only native sink factory at `scripts/lib/native-gamepad-fake-bridge.mjs` with single child per authenticated owner, inherited private stdio, bounded report encoding, native-sequence remapping, fail-closed backpressure, process-error/exit monitor, and EOF/forced-kill cleanup. `src/gamepad/hub.js` accepts optional `onFault` so a dead native sink immediately ends the WebSocket owner (no effect on established in-memory sink contract). Added Windows-only `scripts/test-gamepad-bridge.mjs` with real local HTTP PIN auth and WebSocket; denied unauthorized/cross-origin/busy requests must not spawn a child; native independent 180-ms neutral expiry, socket-drop EOF cleanup and synthetic child termination must release owner. This lab bridge is NOT injected into production `server.js`.
+
+**Tests recorded at commit:** Previously verified predecessor Windows/Linux/macOS CI passed. New command `node scripts/test-gamepad-bridge.mjs` added to Windows CI after .NET sidecar build. **New-commit CI PENDING** at commit, local .NET SDK unavailable. Physical XInput, Windows gamepad output, Android network input, native driver crash, installed hardware rollback, latency measurements **NOT TESTED**. A simulated killed fake-sink process cannot prove real device release; avoid calling gamepad functional.
+
+**Next:** Review CI errors, keep virtual driver gate closed pending informed P2 approval/test on disposable Windows host. Continue Kotlin sender only behind verified owned paired channel, no visible misleading connected status. Spotify/dots/DDC/P8 deferred.
+
+---
+
+
 ## 2026-10-24 — Native sidecar with private bounded IPC and fake output only
 
 **Branch/commit:** `feature/universal-gamepad`, the implementation commit containing this entry (look up HEAD SHA); baseline `d719b826a38113c49f81836f9aa50883aac6f3fa`. Previous [CI #40017943222](https://github.com/Farzansayeed/WinDock/actions/runs/40017943222) succeeded; latest published numbered [Preview v20](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.20-gc138083).

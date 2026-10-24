@@ -96,6 +96,14 @@ export function createGamepadHub({
         throw new TypeError("missing native gamepad report sink");
       gate = createGamepadStateGate({ timeoutMs, now });
       sink.write({ ...neutralGamepadState() });
+      // Optional native child-liveness hook. A crashed/stopped native sink
+      // cannot keep ownership of /gamepad even if Node's socket stays open.
+      // Existing synchronous in-memory test sinks remain valid.
+      if (sink.onFault !== undefined) {
+        if (typeof sink.onFault !== "function")
+          throw new TypeError("invalid native sink failure hook");
+        sink.onFault(() => cleanup(1011));
+      }
     } catch {
       cleanup(1011); return;
     }
