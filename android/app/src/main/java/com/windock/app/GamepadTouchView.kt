@@ -14,6 +14,9 @@ import kotlin.math.min
  */
 internal class GamepadTouchView(context: Context) : View(context) {
     private val model = GamepadTouchModel()
+    // Future VS1 sender can observe native input without letting WebView
+    // synthesize controller reports. Currently null: this UI remains local only.
+    internal var onStateChanged: ((GamepadTouchModel.State) -> Unit)? = null
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val background = Color.rgb(10, 16, 27)
     private val outline = Color.rgb(82, 121, 174)
@@ -82,12 +85,14 @@ internal class GamepadTouchView(context: Context) : View(context) {
             MotionEvent.ACTION_CANCEL -> model.clear()
             else -> return true
         }
+        onStateChanged?.invoke(model.state())
         invalidate()
         return true
     }
 
     fun neutralize() {
         model.clear()
+        onStateChanged?.invoke(model.state())
         invalidate()
     }
 

@@ -6,6 +6,19 @@
 
 ---
 
+## 2026-10-24 — Transport-neutral Kotlin input session, staged VS1
+
+**Branch:** `feature/universal-gamepad`; source commit is the commit containing this entry. Prior baseline `3ba40cab60637a2d412d5f71af43b25c8207c1d1`, [CI #40110375230](https://github.com/Farzansayeed/WinDock/actions/runs/40110375230) passed. Highest published non-draft Preview [v22](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.22-g69ba9d7). Owner explicitly reported previous AGENTS/PROGRESS/WORKLOG acceptance checks PASSED with no findings, authorizing progress to next implementation work.
+
+**Code changes:** New Android Kotlin `GamepadInputSession.kt` with injected text-sink, no hardcoded socket, fresh sequence per authenticated-ready session, initial neutral, immediate A press/release edges, coalesced axis-only input, periodic 40-ms whole-state heartbeats (caller must schedule timer), fail-neutral close, terminal state on clock rollback or failed transport. New optional `GamepadTouchView.onStateChanged` observer exposes real native pointer model after moves/releases/cancel, but it is **NOT CONNECTED to any network/driver**. Existing Touchpad, Signature, keyboard/pairing and WinDock host unchanged. New `GamepadInputSessionTest.kt` Android JVM fake-sink tests.
+
+**Tests:** Standalone `kotlinc` + `java -jar` smoke on a matching codec/touch model source shape PASSED (initial neutral, coalescing, immediate A edges, heartbeat, terminal neutral and failed sink); this is NOT a real Android Gradle test. Android Gradle `testDebugUnitTest`, lint, Windows/Linux/macOS CI and preview APK rebuild will be checked via GitHub Actions after push; **not run at commit time**. Real Android UI/device, pairing session socket, actual XInput slot/driver, game movement and hardware neutral watchdog **NOT TESTED**.
+
+**Blocker/next:** Physical P2 signed legally redistributable offline-compatible Xbox device remains unselected; don't install/elevate/change root trust without approval. Next add lifecycle-bound authenticated Kotlin transport with a fake Windows sink and actual owner tests before attaching hardware. Spotify/dots/DDC and P8 deferred.
+
+---
+
+
 ## 2026-10-24 — Additional findings text box for every owner acceptance checklist (docs only)
 
 **Branch:** `feature/universal-gamepad`; new policy commit is the commit containing this entry. Baseline [`7439033`](https://github.com/Farzansayeed/WinDock/commit/7439033f68b7eb816a9b4b114cd46a8b87d4e8bf) passed [CI #40110167483](https://github.com/Farzansayeed/WinDock/actions/runs/40110167483). Latest published numbered [Preview v22](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.22-g69ba9d7) remains simulation-only.

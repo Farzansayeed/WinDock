@@ -1,5 +1,7 @@
 # WinDock Universal Gamepad — NEXT SESSION HANDOFF
 
+**2026-10-24 continuation after accepted user checklist:** Prior docs acceptance PASSED (no findings). On branch `feature/universal-gamepad`, verified `3ba40ca` [CI #40110375230](https://github.com/Farzansayeed/WinDock/actions/runs/40110375230) passed; [Preview v22](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.22-g69ba9d7) is latest published non-draft at start of new Kotlin work. New `GamepadInputSession.kt` transport-neutral frame pump and fake-sink JVM tests staged; GamepadTouchView optional state observer remains unconnected, so no Android-to-PC gameplay. Re-check branch CI and numeric release after every change. **Always finish with mandatory owner checklist, optional findings text box, and gated Proceed / Report issues action per AGENTS.md.** P2 still blocked on approved signed/offline XInput proof, no machine-trust/drivers/privileged changes without explicit consent. Spotify/dots/DDC deferred.
+
 **Frozen checkpoint: 2026-10-24.** Read this file FIRST in a future chat. Re-fetch GitHub HEAD, Actions and highest numeric published non-draft Gamepad Preview before treating any historical version as current.
 
 ## Owner's project and priorities
