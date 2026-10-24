@@ -6,12 +6,12 @@ It is **not a virtual controller implementation**. It cannot tell whether an Xbo
 
 ## Recommended: SDK-free PowerShell baseline (Windows 10/11)
 
-No .NET SDK, WinDock pairing, Android device, administrator permission, driver installation or certificate change is required for the baseline. Windows PowerShell 5.1 is included with Windows 10/11. [WinDock-XInputBaseline.ps1](WinDock-XInputBaseline.ps1) calls only the built-in Windows XInputGetState function to read four controller slots. It works from **any current PowerShell directory**, including C:\\WINDOWS\\system32, as long as you provide the correct script path.
+No .NET SDK, WinDock pairing, Android device, administrator permission, driver installation or certificate change is required for the baseline. Windows PowerShell 5.1 is included with Windows 10/11. [WinDock-XInputBaseline.ps1](WinDock-XInputBaseline.ps1) calls only the built-in Windows XInputGetState function to read four controller slots. It works from **any current PowerShell directory**, including C:\WINDOWS\system32, as long as you provide the correct script path.
 
 Download the standalone script from the linked repository file page (**Download raw file**) into your Downloads folder. Inspect its contents, then run it in normal Windows PowerShell:
 
 ```powershell
-& "$env:USERPROFILE\\Downloads\\WinDock-XInputBaseline.ps1"
+& "$env:USERPROFILE\Downloads\WinDock-XInputBaseline.ps1"
 ```
 
 If your Windows script execution policy blocks this, report the error rather than changing a machine-wide policy. The diagnostic is a read-only PowerShell script; the original .NET SDK is optional. Expected lines are `windows_version=`, `os_architecture=`, slots `0` through `3`, and `connected_slots=N`. **Four disconnected slots (`connected_slots=0`) are a normal baseline**. Any connected slot could represent an already-installed physical or virtual controller; this tool cannot distinguish them.

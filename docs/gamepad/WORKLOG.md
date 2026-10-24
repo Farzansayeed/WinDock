@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-24 — Verified SDK-free Windows baseline CI + Preview v26 publication (documentation follow-up)
+
+**Source:** [5a21ea5](https://github.com/Farzansayeed/WinDock/commit/5a21ea59d2755745b98e4c260086d07ef8ee5e21) on `feature/universal-gamepad`. [CI #40117635358](https://github.com/Farzansayeed/WinDock/actions/runs/40117635358) **SUCCESS** Linux/macOS/Windows and aggregate. The Windows job executed new SDK-free PowerShell diagnostic from System32 and checked OS/version, all four XInput slot lines and connected count, in addition to existing .NET/Node test suites. [Gamepad Preview build #40117635340](https://github.com/Farzansayeed/WinDock/actions/runs/40117635340) **SUCCESS** Windows installer, Android JVM/lint/signature and GitHub publish. [Preview v26](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.26-g5a21ea5) **PUBLISHED/NON-DRAFT** with Windows Preview installer, signed Android Preview APK, BUILD-INFO, SHA256SUMS and public SIGNING-INFO.
+
+**Documentation correction:** Fixed unnecessary double backslashes in copyable Windows PowerShell paths in `native/gamepad-probe/README.md` (a docs-only change, no behavior changed).
+
+**Owner acceptance carried forward:** v25 Preview Android upgrade PASS, native Gamepad controls/original features PASS. No need to retest those. Owner PC P2 baseline remains NOT WORKING/UNVERIFIED until the replacement read-only script is executed there; previous SDK command never reached XInput. No real XInput device installed or detected on owner's computer, no gamepad-in-game proof; CI virtual runner cannot replace physical evidence.
+
+**Next owner step:** Download/open reviewed `WinDock-XInputBaseline.ps1` from GitHub and run by its full file path using normal non-admin Windows PowerShell 5.1. Return non-secret version and slot output, or exact error. No .NET SDK, admin, driver, certificate, licence or Android retest requested.
+
+---
+
 ## 2026-10-24 — Recover owner failed Windows baseline without installing an SDK
 
 **Branch/commit:** `feature/universal-gamepad`; code and BOTH PROGRESS.md/WORKLOG.md in this commit. Previous [2c05bbd](https://github.com/Farzansayeed/WinDock/commit/2c05bbdda5da4a7eb856cce975bfb363a2db6513) [CI #40115473486](https://github.com/Farzansayeed/WinDock/actions/runs/40115473486) and [preview packaging #40115473511](https://github.com/Farzansayeed/WinDock/actions/runs/40115473511) passed; [v25](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.25-g2c05bbd) published.
