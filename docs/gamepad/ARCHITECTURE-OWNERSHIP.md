@@ -90,3 +90,6 @@
 
 ## M0 physical lab failure — Android sender scheduling (2026-10-25)
 Android GamepadPairedWebSocket.kt now owns 10ms tick executor for the 40ms resend, instead of Android MainActivity.kt using View.postDelayed. Stops executor when socket closes. Native independent 180ms watchdog and startup 1s unchanged; no production backend, real Xbox, or driver. Old g2c3fa3a APK does not include source repair; field re-test pending.
+
+## M0 private fake-only session termination metadata
+src/gamepad/hub.js accepts optional onLifecycle with fixed reason and capped accepted/active frame counts; server.js plumbs it and scripts/gamepad-fake-lab-server.mjs alone enables text notices. Normal production does not enable logging. Test uses actual Node/auth/WebSocket/C# test sidecar, no native timer/driver/pairing changes. Field proof pending.

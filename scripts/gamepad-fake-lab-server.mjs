@@ -34,6 +34,12 @@ if(!existsSync(dll)){
 const tmp=await mkdtemp(join(tmpdir(),"windock-gamepad-m0-lab-"));
 const timings=createGamepadTimingWindow(256);
 const observer=createGamepadLabObserver({announce:message=>console.log("LAB: "+message)});
+let lifecycleNoticeCount=0;
+function lifecycle(event) {
+  if(lifecycleNoticeCount++>=24)return;
+  console.log("LAB SESSION: reason="+event.reason+" ready="+event.ready+
+    " accepted="+event.acceptedFrames+" active="+event.activeFrames);
+}
 let app;
 try{
   app=await createApp({
@@ -43,6 +49,7 @@ try{
       listInstalledApps:async()=>[],listRunningApps:async()=>[]},
     gamepadSinkFactory:createFakeNativeSinkFactory({onEvent:event=>observer.observe(event)}),
     gamepadHubTiming:sample=>timings.record(sample),
+    gamepadHubLifecycle:lifecycle,
   });
   await new Promise((resolve,reject)=>{
     app.server.once("error",reject);

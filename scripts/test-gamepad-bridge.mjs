@@ -44,6 +44,7 @@ function frame(seq, buttons = 0x1000) {
 const temp = await mkdtemp(join(tmpdir(), "windock-native-gamepad-"));
 const records = [];
 const children = [];
+const lifecycle = [];
 const sessions = () => records.filter(x => x.event === "ready").length;
 const provider = {
   id: "fake", displayName: "Test", input: null, capture: null,
@@ -60,6 +61,7 @@ try {
     }),
     // Node timeout is deliberately longer than independent native timeout.
     gamepadTimeoutMs: 700, gamepadTickMs: 20,
+    gamepadHubLifecycle: event => lifecycle.push(event),
   });
   await new Promise(resolve => app.server.listen(0, "127.0.0.1", resolve));
   const origin = "http://127.0.0.1:" + app.server.address().port;
@@ -135,6 +137,13 @@ try {
   // A killed process cannot emit a final report; real driver cleanup remains
   // completely UNVERIFIED and needs independent hardware fail-neutral proof.
   ok(children.length === 3, "only authorized sequential owners spawned native children");
+  await until(() => lifecycle.length === 3, "each native lab session logged one termination");
+  ok(lifecycle.every(e => typeof e.reason === "string" &&
+    typeof e.ready === "boolean" && Number.isInteger(e.acceptedFrames) &&
+    Number.isInteger(e.activeFrames) && e.acceptedFrames >= e.activeFrames &&
+    e.activeFrames >= 0 && Object.keys(e).sort().join(",") ===
+      "acceptedFrames,activeFrames,ready,reason"),
+    "terminal receives only fixed reason plus bounded counts");
 } finally {
   if (app) {
     await app.gamepadHub.close();

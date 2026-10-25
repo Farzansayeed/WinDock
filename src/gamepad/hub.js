@@ -30,12 +30,14 @@ function deny(socket, code, message) {
 export function createGamepadHub({
   server, isAuthorized, sinkFactory = null, timeoutMs = 180,
   tickMs = 30, now = () => performance.now(), onTiming = null,
+  onLifecycle = null,
 } = {}) {
   if (!server || typeof isAuthorized !== "function" ||
       !Number.isInteger(tickMs) || tickMs < 10 || tickMs > 100 ||
       !Number.isInteger(timeoutMs) || timeoutMs < 50 || timeoutMs > 1000 ||
       typeof now !== "function" ||
-      (onTiming !== null && typeof onTiming !== "function"))
+      (onTiming !== null && typeof onTiming !== "function") ||
+      (onLifecycle !== null && typeof onLifecycle !== "function"))
     throw new TypeError("invalid gamepad channel configuration");
 
   const wss = new WebSocketServer({
@@ -77,6 +79,8 @@ export function createGamepadHub({
     let sinkReady = false;
     let rateStart = startedAt;
     let count = 0;
+    let acceptedFrames = 0;
+    let activeFrames = 0;
     let timer;
     const send = (value) => {
       if (ws.readyState === ws.OPEN) {
@@ -84,9 +88,14 @@ export function createGamepadHub({
         if (Buffer.byteLength(json) <= REPLY_LIMIT) ws.send(json);
       }
     };
-    function cleanup(code = 1000) {
+    function cleanup(code = 1000, reason = "session-ended") {
       if (disposed) return;
       disposed = true;
+      // Optional lab-only event. No authentication, network or raw frame data.
+      if (onLifecycle) {
+        try { onLifecycle({ reason, ready: sinkReady, acceptedFrames, activeFrames }); }
+        catch { /* diagnostics must never affect the native cleanup */ }
+      }
       clearInterval(timer);
       gate?.close();
       // In real backend the sink MUST submit a neutral state synchronously
@@ -133,12 +142,12 @@ export function createGamepadHub({
       if (sink.onFault !== undefined) {
         if (typeof sink.onFault !== "function")
           throw new TypeError("invalid native sink failure hook");
-        sink.onFault(() => cleanup(1011));
+        sink.onFault(() => cleanup(1011, "native-receiver-stopped"));
       }
       // An optional readiness promise must reflect the CHILD receiver's own
       // startup ACK; process.spawn and an open stdin pipe are not device readiness.
     } catch {
-      cleanup(1011); return;
+      cleanup(1011, "native-start-failure"); return;
     }
     // A synchronous onFault callback may already have closed this owner.
     if (disposed) return;
@@ -147,29 +156,30 @@ export function createGamepadHub({
       if (disposed) return;
       // Authorization is NOT a once-only gate. Revoked cookies end ownership.
       const time = now();
-      if (!isAuthorized(req) || !Number.isFinite(time) ||
-          (startedAt !== null && gamepadStartupExpired(startedAt, time)) ||
-          gate.poll().closed) {
-        cleanup(1008);
-      }
+      if (!isAuthorized(req)) cleanup(1008, "pairing-invalid");
+      else if (!Number.isFinite(time) ||
+          (startedAt !== null && gamepadStartupExpired(startedAt, time)))
+        cleanup(1008, "first-frame-timeout");
+      else if (gate.poll().closed) cleanup(1008, "heartbeat-timeout");
     }, tickMs);
     timer.unref?.();
-    ws.on("close", () => cleanup());
-    ws.on("error", () => cleanup(1011));
+    ws.on("close", () => cleanup(1000, "phone-disconnected"));
+    ws.on("error", () => cleanup(1011, "phone-socket-error"));
     ws.on("message", (payload, isBinary) => {
       if (disposed) return;
       // No input can be delivered to a not-yet-initialized native receiver.
       // The client must wait for the WS ready ACK after native readiness.
-      if (!sinkReady) { cleanup(1008); return; }
+      if (!sinkReady) { cleanup(1008, "client-before-native-ready"); return; }
       const time = now();
       // A delayed timer callback must not admit an expired first input.
-      if (!isAuthorized(req) || !Number.isFinite(time) ||
+      if (!isAuthorized(req)) { cleanup(1008, "pairing-invalid"); return; }
+      if (!Number.isFinite(time) ||
           (startedAt !== null && gamepadStartupExpired(startedAt, time))) {
-        cleanup(1008); return;
+        cleanup(1008, "first-frame-timeout"); return;
       }
       if (time - rateStart >= 1000) { rateStart = time; count = 0; }
       if (isBinary || ++count > 180 || payload.length > GAMEPAD_MAX_BYTES) {
-        cleanup(1008); return;
+        cleanup(1008, "frame-rate-or-size"); return;
       }
       // Optional local-only, monotonic host software processing metric.
       // It cannot reveal client frames/cookies or assert one-way Wi-Fi delay.
@@ -177,8 +187,12 @@ export function createGamepadHub({
       const state = decodeGamepadState(payload);
       const verdict = gate.accept(state);
       if (verdict.reason === "replay") return; // replay NEVER extends lease
-      if (!verdict.accepted) { cleanup(1008); return; }
+      if (!verdict.accepted) { cleanup(1008, "invalid-or-expired-frame"); return; }
       startedAt = null;
+      acceptedFrames = Math.min(acceptedFrames + 1, 1000000);
+      if (verdict.state.buttons || verdict.state.lx || verdict.state.ly ||
+          verdict.state.rx || verdict.state.ry || verdict.state.lt || verdict.state.rt)
+        activeFrames = Math.min(activeFrames + 1, 1000000);
       try {
         sink.write(verdict.state);
         if (timingStart !== null) {
@@ -188,20 +202,21 @@ export function createGamepadHub({
             catch { /* diagnostics must never change controller safety */ }
           }
         }
-      } catch { cleanup(1011); }
+       } catch { cleanup(1011, "native-write-failed"); }
     });
     const announceReady = () => {
       if (disposed) return; // late readiness after disconnect/fault is inert
       // Check the deadline here too: a stalled event loop cannot resurrect
       // an expired native-startup lease via a late promise resolution.
-      if (!isAuthorized(req) || gamepadStartupExpired(startedAt, now())) {
-        cleanup(1008); return;
+      if (!isAuthorized(req)) { cleanup(1008, "pairing-invalid"); return; }
+      if (gamepadStartupExpired(startedAt, now())) {
+        cleanup(1008, "native-ready-after-deadline"); return;
       }
       sinkReady = true;
       send({ type: "ready", v: 1 });
     };
     if (nativeReady === undefined) announceReady();
-    else Promise.resolve(nativeReady).then(announceReady, () => cleanup(1011));
+    else Promise.resolve(nativeReady).then(announceReady, () => cleanup(1011, "native-ready-rejected"));
   });
 
   return {

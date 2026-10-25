@@ -1,6 +1,10 @@
 <!-- 2026-10-23: signing security update — owner reports four GitHub Actions secrets provisioned; requires a new successful release proving signer consistency. -->
 # WinDock Universal Gamepad — LIVE PROGRESS TRACKER
 
+**2026-10-25 M0 fake-only lifecycle diagnostic: user observed C# READY then DISPOSED soon after paired LAB. Added optional onLifecycle callback to hub/server, wired only in manually started fake lab, with bounded reason, ready flag, accepted/active report counts but no PIN/IP/cookie/raw input. Tested with genuine paired Node WebSocket -> C# fake receiver and lifecycle record assertions. Fault callback never interrupts native cleanup. Actual cause not confirmed until owner runs new build. Release g2c3fa3a remains unchanged; 180ms native watchdog, 1s setup deadlines, production 503, security/no drivers unchanged. CI pending.**
+
+
+
 **2026-10-25 M0 field troubleshooting:** Owner real-device issue: Windows fake receiver ready then disposed repeatedly about 1s after successful Android pairing; A/stick and Ctrl+C tests not passed. Android sender scheduled 10ms ticks via MainActivity GamepadTouchView.postDelayed on UI thread, which can starve under UI load. Switched to socket-owned single-thread daemon scheduler tick every 10ms; still 40ms whole-state heartbeats, canceled on owner close. Android real WS test now requires three neutral reports even without View. Native 180ms independent timer, Android/Node 1s startup/auth, production 503 unchanged. Hypothesis needs new Android field test; no evidence of real Xbox gameplay. Existing released fake LAB g2c3fa3a is unmodified, no additional release authorized, no driver/privileges. Exact-head CI pending.
 
 

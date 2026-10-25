@@ -130,6 +130,7 @@ export async function createApp({
   gamepadTimeoutMs = 180,
   gamepadTickMs = 30,
   gamepadHubTiming = null,
+  gamepadHubLifecycle = null,
 } = {}) {
   const state = { pin };
   const appIcon = createIconCache(provider);
@@ -361,6 +362,7 @@ export async function createApp({
     timeoutMs: gamepadTimeoutMs,
     tickMs: gamepadTickMs,
     onTiming: gamepadHubTiming,
+    onLifecycle: gamepadHubLifecycle,
   });
 
   const inputHub = createInputHub({ server, input: provider.input, isAuthorized: (req) =>
