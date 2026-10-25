@@ -61,7 +61,7 @@ check(noAutoConsent.blockers.length===1&&
   "even ideal manifest cannot approve privileged or nonprivileged install");
 check(!noAutoConsent.installAuthorized, "no manifest can ever grant permission");
 const text=readFileSync(fileURLToPath(new URL("./lib/p2-backend-policy.mjs",import.meta.url)),"utf8");
-for(const forbidden of ["child_process","http:","https:","Process.Start","spawn(","exec(","XInputSetState","InstallDriver","Start-Process","Set-ExecutionPolicy","certutil","pnputil"]){
+for(const forbidden of ["child_process",'from "node:http"','from "node:https"',"Process.Start","spawn(","exec(","XInputSetState","InstallDriver","Start-Process","Set-ExecutionPolicy","certutil","pnputil"]){
   check(!text.includes(forbidden),"pure P2 policy excludes side effects: "+forbidden);
 }
 console.log(assertions+" assertions");

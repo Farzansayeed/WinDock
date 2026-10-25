@@ -6,6 +6,12 @@
 
 ---
 
+## 2026-10-25 — Correct the pure P2 policy oracle static safety check
+
+**Bug prevention:** The first P2 oracle banned any literal `https:` in policy code, but the validator necessarily validates `https://` source references. Correct the oracle to block Node networking imports rather than legitimate HTTPS address syntax. No IO, installer or approval path added. GitHub CI/Preview PENDING until checked; both trackers updated in the same code commit.
+
+---
+
 ## 2026-10-25 — Owner explicitly proceeds with next driver-neutral P2 candidate screen
 
 **Consent boundary:** Owner marked the prior v40 read-only project record review PASS, observations `none`, and explicitly submitted Proceed with the next **driver-neutral** P2 feasibility/development item; expressly forbids drivers, elevation, machine trust/security changes and licence purchases. The old confusion from a prior Report issues message is resolved for this read-only roadmap step ONLY. This is not approval of a driver candidate.
