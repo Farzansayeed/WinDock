@@ -31,3 +31,7 @@ Vendor claims do not establish independently verified Windows device visibility,
 - **Next review-only step:** assess exact vendor release version/checksum, published licence/redistribution and uninstall impact, and independently confirm accepted signing and unconditional offline requirements. Prepare a transparent rollback and failure-test plan for a separately consented lab trial. No WinDock production route changes until physical game output is verified.
 
 **The user's already accepted Windows XInput 0/4 baseline, Preview install/start, Android v25 tests and v40 backend audit remain PASS and do not need repeating.**
+
+## 2026-10-25 pinned vendor releases
+
+See [P2-RELEASE-ASSESSMENT.md](P2-RELEASE-ASSESSMENT.md) for exact release channels, GitHub asset digest metadata, USB-hub restart and rollback hazards; see [JSON evidence](P2-RELEASE-EVIDENCE.json). Nothing has been downloaded, verified locally or approved for installation.

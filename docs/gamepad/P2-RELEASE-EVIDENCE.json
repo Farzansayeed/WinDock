@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "reviewedOn": "2026-10-25",
+  "authorization": "NONE; CATALOG CANNOT AUTHORIZE INSTALLATION",
+  "evidenceScope": "GITHUB_RELEASE_METADATA_ONLY; NO BINARY DOWNLOADED_OR_VERIFIED",
+  "packages": [
+    {
+      "id": "hidmaestro-stable",
+      "vendor": "hidmaestro",
+      "repo": "hifihedgehog/HIDMaestro",
+      "tag": "v2.0.3",
+      "channel": "stable",
+      "published": "2026-10-22",
+      "asset": "HIDMaestro-v2.0.3.zip",
+      "sha256": "b1578a391971f4296026b692844292dfc55ddbddbeabc2bcada8cc36c6e34cd2",
+      "hazards": [
+        "self-signed-machine-cert-and-admin",
+        "include-usbip-can-restart-usb3-root-hubs",
+        "shared-usbip-win2-ownership-unknown",
+        "driver-removal-can-require-reboot"
+      ],
+      "releaseUrl": "https://github.com/hifihedgehog/HIDMaestro/releases/tag/v2.0.3",
+      "digestSource": "github-release-api",
+      "signatureIndependentlyVerified": false,
+      "rollbackOnOwnerVerified": false,
+      "localFileHashVerified": false
+    },
+    {
+      "id": "libvirtualhid-stable",
+      "vendor": "libvirtualhid",
+      "repo": "LizardByte/libvirtualhid",
+      "tag": "v2026.914.1218.10",
+      "channel": "stable",
+      "published": "2026-09-14",
+      "asset": "libvirtualhid-Windows-AMD64-driver-installer.msi",
+      "sha256": "bc31539a41f71939c13decb171ccbd4306fae1fed63273434a4f5ceccaf3e71c",
+      "hazards": [
+        "paid-machine-license-required",
+        "conditional-offline-broker-limit",
+        "driver-and-service-rollback-unverified",
+        "windows-10-best-effort"
+      ],
+      "releaseUrl": "https://github.com/LizardByte/libvirtualhid/releases/tag/v2026.914.1218.10",
+      "digestSource": "github-release-api",
+      "signatureIndependentlyVerified": false,
+      "rollbackOnOwnerVerified": false,
+      "localFileHashVerified": false
+    },
+    {
+      "id": "libvirtualhid-prerelease",
+      "vendor": "libvirtualhid",
+      "repo": "LizardByte/libvirtualhid",
+      "tag": "v2026.1022.2339.24",
+      "channel": "prerelease",
+      "published": "2026-10-23",
+      "asset": "libvirtualhid-Windows-AMD64-driver-installer.msi",
+      "sha256": "b667470b32e3f6e0d66893235693de008ab80863291053dbf89a7532d321ef18",
+      "hazards": [
+        "pre-release-not-stable",
+        "paid-machine-license-required",
+        "conditional-offline-broker-limit",
+        "driver-and-service-rollback-unverified"
+      ],
+      "releaseUrl": "https://github.com/LizardByte/libvirtualhid/releases/tag/v2026.1022.2339.24",
+      "digestSource": "github-release-api",
+      "signatureIndependentlyVerified": false,
+      "rollbackOnOwnerVerified": false,
+      "localFileHashVerified": false
+    },
+    {
+      "id": "vigembus-retired",
+      "vendor": "vigembus",
+      "repo": "nefarius/ViGEmBus",
+      "tag": "v1.22.0",
+      "channel": "retired",
+      "published": "2023-11-02",
+      "asset": "ViGEmBus_1.22.0_x64_x86_arm64.exe",
+      "sha256": null,
+      "hazards": [
+        "archived-not-maintained",
+        "in-place-upgrade-unreliable",
+        "no-published-github-asset-digest"
+      ],
+      "releaseUrl": "https://github.com/nefarius/ViGEmBus/releases/tag/v1.22.0",
+      "digestSource": "not-provided",
+      "signatureIndependentlyVerified": false,
+      "rollbackOnOwnerVerified": false,
+      "localFileHashVerified": false
+    }
+  ]
+}
