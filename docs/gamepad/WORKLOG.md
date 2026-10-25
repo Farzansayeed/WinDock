@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-10-25 — M0b Android JVM timing correction
+
+**2026-10-25 M0b Android CI failure diagnosed and fixed:** First new Android job [run #40189027942](https://github.com/Farzansayeed/WinDock/actions/runs/40189027942) FAILED 1/38 JVM Kotlin tests at GamepadPairedWebSocketTest.kt:52, while Windows/Linux/macOS PASSED. Root cause: construction called Android-only `SystemClock.elapsedRealtime()` from local JVM test. Switched to `System.nanoTime()/1_000_000` monotonic source, available on Android and JVM, without loosening any handshake/lease/neutral deadline. Made test readiness-status synchronization explicit to avoid cross-thread flaky assertion. **No phone or physical controller has been tested.** CI pending.
+
+Do not advance to phone hardware acceptance until all four CI jobs are green. Prior failure kept visible; the change is a testable runtime-clock compatibility fix, not a claim of measured latency.
+
+---
+
 ## 2026-10-25 — M0b native paired WebSocket client and Android CI
 
 **2026-10-25 M0b KOTLIN PAIRED NATIVE WS TRANSPORT FOUNDATION (NO PUB/DRIVER):** Added `GamepadPairedWebSocket.kt`: one native OkHttp socket/owner per client, exact session cookie extraction (no other cookies forwarded), Origin from trusted `GamepadSocketTarget`, server v1 `ready` gate, no pre-ready replay, bounded 4096-byte WS queue, local 10ms clock polling interface and fail-neutral on close. Real loopback MockWebServer test checks trusted Cookie/Origin, neutral→A→neutral, invalid tokens; Android Kotlin Gradle tests+lint required by new Android job in four-platform branch CI. No MainActivity UI wiring yet (next M0c), no real XInput, multiplayer or phone hardware testing. Preview workflow push disabled and publish gated `if:false` in prior M0a, last release v46. Starting M0a [`8384bad`](https://github.com/Farzansayeed/WinDock/commit/8384baddc799ef4abc95d2afca01a974046e8f89) CI #40188492185 PASS. Owner says `start the plan` and restricts privilege/trust/driver/vendor binaries/licence, publication/main merge. New CI pending.

@@ -1,6 +1,5 @@
 package com.windock.app
 
-import android.os.SystemClock
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -53,7 +52,7 @@ internal class GamepadPairedWebSocket private constructor(
         }
     }
 
-    private val owner = GamepadOwnerChannel(this, { SystemClock.elapsedRealtime() })
+    private val owner = GamepadOwnerChannel(this, { System.nanoTime() / 1_000_000L })
     private var wire: WebSocket? = null
     @Volatile private var stopped = false
 
