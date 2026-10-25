@@ -29,12 +29,13 @@ function deny(socket, code, message) {
 
 export function createGamepadHub({
   server, isAuthorized, sinkFactory = null, timeoutMs = 180,
-  tickMs = 30, now = () => performance.now(),
+  tickMs = 30, now = () => performance.now(), onTiming = null,
 } = {}) {
   if (!server || typeof isAuthorized !== "function" ||
       !Number.isInteger(tickMs) || tickMs < 10 || tickMs > 100 ||
       !Number.isInteger(timeoutMs) || timeoutMs < 50 || timeoutMs > 1000 ||
-      typeof now !== "function")
+      typeof now !== "function" ||
+      (onTiming !== null && typeof onTiming !== "function"))
     throw new TypeError("invalid gamepad channel configuration");
 
   const wss = new WebSocketServer({
@@ -170,13 +171,24 @@ export function createGamepadHub({
       if (isBinary || ++count > 180 || payload.length > GAMEPAD_MAX_BYTES) {
         cleanup(1008); return;
       }
+      // Optional local-only, monotonic host software processing metric.
+      // It cannot reveal client frames/cookies or assert one-way Wi-Fi delay.
+      const timingStart = onTiming ? now() : null;
       const state = decodeGamepadState(payload);
       const verdict = gate.accept(state);
       if (verdict.reason === "replay") return; // replay NEVER extends lease
       if (!verdict.accepted) { cleanup(1008); return; }
       startedAt = null;
-      try { sink.write(verdict.state); }
-      catch { cleanup(1011); }
+      try {
+        sink.write(verdict.state);
+        if (timingStart !== null) {
+          const elapsed = now() - timingStart;
+          if (Number.isFinite(elapsed) && elapsed >= 0 && elapsed <= 10000) {
+            try { onTiming({ metric: "host-decode-validate-sink-call", ms: elapsed }); }
+            catch { /* diagnostics must never change controller safety */ }
+          }
+        }
+      } catch { cleanup(1011); }
     });
     const announceReady = () => {
       if (disposed) return; // late readiness after disconnect/fault is inert

@@ -1,21 +1,9 @@
 name: Gamepad fork preview downloads
 
-# Builds only this owner's feature branch. A GitHub prerelease is published only
-# when BOTH independent Windows and Android jobs succeed.
+# PERSONAL DEVELOPMENT MODE: no automatic Preview workflow on pushes.
+# Manual invocation can package private CI artifacts but MUST NOT publish a
+# GitHub release until the owner separately authorizes publication.
 on:
-  push:
-    branches: [feature/universal-gamepad]
-    paths:
-      - '.github/workflows/gamepad-preview.yml'
-      - 'public/**'
-      - 'native/**'
-      - 'src/**'
-      - 'android/**'
-      - 'scripts/**'
-      - 'test/**'
-      - 'server.js'
-      - 'package.json'
-      - 'package-lock.json'
   workflow_dispatch:
 
 permissions:
@@ -202,7 +190,8 @@ jobs:
 
   publish:
     name: Publish versioned GitHub prerelease
-    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    # Explicit owner restriction: NEVER publish on personal/friends branch.
+    if: false
     needs: [windows, android]
     runs-on: ubuntu-latest
     timeout-minutes: 10

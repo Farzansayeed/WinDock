@@ -56,3 +56,9 @@
 - For backend approval: P2-SIGNING-ROLLBACK-PLAN.md, P2-PHASE-A-DECISION.md; review exact vendor security/rollback terms separately.
 
 **Code hygiene rule:** Keep this file aligned with source locations. When moving/renaming a file, update links and search for its references and obsolete tests. Do not delete historically used verification or relax safety assertions just to make CI pass.
+
+## M0a telemetry and release workflow, 2026-10-25
+
+- `src/gamepad/timing.js`: bounded opt-in host-only monotonic software timing; `src/gamepad/hub.js` emits samples to injectable `onTiming` after validated snapshots; `server.js` exposes only a programmatic `gamepadHubTiming` dependency for lab tests (normal production default null).
+- `scripts/verify-gamepad-timing.mjs`: paired socket + in-memory sink and bounded stats gate. Do not interpret software output timings as Wi-Fi RTT, actual XInput, or in-game input responsiveness.
+- `.github/workflows/gamepad-preview.yml`: manually triggered only and publish job explicitly disabled to respect personal prototype **no publication**. `.github/workflows/ci.yml` remains branch-push verification.
