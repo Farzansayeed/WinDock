@@ -1,0 +1,58 @@
+# WinDock gamepad architecture and file ownership
+
+**Verified snapshot: 2026-10-25 source branch feature/universal-gamepad.** This is a navigation guide for developers; it does NOT assert that physical Xbox/XInput gameplay, multiplayer or Android socket wiring exists. For current priorities, see [PRIVATE-MULTIPLAYER-ROADMAP.md](PRIVATE-MULTIPLAYER-ROADMAP.md).
+
+| Subsystem / source | Responsibility today | Boundary / next planned step |
+|---|---|---|
+| android/app/src/main/java/com/windock/app/GamepadTouchView.kt and GamepadTouchModel.kt | Native phone touch control and state modeling | UI does not decide Windows controller ownership |
+| Android GamepadFrameEncoder.kt | Versioned whole-state encoder | Maintain exact field parity with src/gamepad/protocol.js and C# state parser |
+| Android GamepadInputSession.kt | Sender heartbeat, immediate A edge, bounded analog cadence and neutral on close | No arbitrary socket or credentials inside input model; expand edge coverage only when actual controls are added |
+| Android GamepadOwnerChannel.kt and GamepadSocketTarget.kt | Session handshake, origin/host validation modeling; socket must be supplied | **Does not itself open a live socket**; M0/M1 create a native adapter using existing authenticated pairing |
+| android/app/src/main/java/com/windock/app/MainActivity.kt | Existing app/WebView lifecycle | Connect gamepad mode without forcing Touchpad/Signature regressions |
+| server.js and existing authentication/sync utilities | PIN pairing, HTTP/WebSocket host and origin/cookie checks | Keep auth server-side; never rely on phone-provided slot or identity claim alone |
+| src/gamepad/protocol.js | Validate strict versioned v1 256-byte max reports and neutral/watchdog lease | No network or hardware code in protocol; version any multi-slot envelope separately |
+| src/gamepad/hub.js | **One** authenticated owner, timer and sink lifecycle, quarantine on uncertain native close | M0 defines seat-manager interface without enabling multiple owners prematurely |
+| scripts/lib/native-gamepad-fake-bridge.mjs | CI-only persistent .NET child IPC, no driver | Do not import into production code or confuse fake report with Xbox |
+| native/gamepad-sidecar/Program.cs | Fake sink and bounded stdin input, independent safety timer | Add approved backend interface behind separate opt-in exact-version adapter later |
+| native/gamepad-tests/GamepadReceiver.cs / GamepadState.cs | .NET lease/parser and neutral-on-dispose ownership | Future per-player receiver must remain isolated, not global |
+| scripts/test-gamepad-sidecar.mjs and test-gamepad-bridge.mjs | Windows fake-child tests, paired WS and EOF/watchdog cases | Existing v45 timeout-sensitive assertion: diagnose via deterministic barriers, not by weakening timeout |
+| scripts/verify-gamepad-cleanup-containment.mjs; verify-gamepad-hub.mjs; verify-gamepad-readiness.mjs | Fail-closed and owner lifecycle regression | New multiplayer tests must retain current one-owner tests as legacy compatibility checks |
+| docs/gamepad/PROGRESS.md; WORKLOG.md | Evidence of status and chronological changes | Update with every meaningful code commit; never invent field results |
+| docs/gamepad/PRIVATE-MULTIPLAYER-ROADMAP.md | Scope, priorities, performance and concurrency acceptance | Update when a target is revised, distinguish targets from measured results |
+
+## Existing transport / target integration
+
+**TODAY — validated only in test harness:**
+
+    Android Kotlin input/session models (not wired to live WS)
+    Node paired WebSocket /gamepad single owner (production 503)
+    C# fake sidecar with native watchdog (lab only)
+    No driver / no playable Xbox controller
+
+**TARGET — not yet built:**
+
+    Native Kotlin sensor/touch -> paired socket ->
+      ControllerSessionManager -> per-player session epoch and bounded queue ->
+      persistent per-player Windows receiver and native safety watchdog ->
+      optional approved Xbox-compatible driver adapter ->
+      actual Windows game
+
+## Error and ownership contract
+
+- One client holds one assigned seat; no shared mutable state between seats.
+- Per-seat frame schema, sequence, epoch, heartbeat, timeout and final-neutral must be isolated and independently testable.
+- Native process termination, authentication revocation, socket loss and invalid/replayed payload cannot revive old held input; do not acknowledge readiness before underlying receiver is ready.
+- A teardown failure currently **quarantines the entire hub**, refusing new sessions. Do not narrow this in multiplayer until driver ownership and shared failure modes are proven.
+- A stalled or malicious client may never block other players once multiplayer is implemented; reject per-seat queue/rate overflow.
+- Current implementation cannot create an Xbox/XInput device; never label in-memory or C# fake sink "playing in game".
+
+## Where to look first
+
+- For UI/control changes: Android touch model/view, existing Input Session and its Android unit tests.
+- For network connection: GamepadOwnerChannel, GamepadSocketTarget, paired server.js and src/gamepad/hub.js.
+- For wire compatibility: Android FrameEncoder, src/gamepad/protocol.js, C# GamepadState.cs.
+- For safety: Android InputSession/OwnerChannel, JS hub, .NET GamepadReceiver and native-sidecar tests.
+- For multiplayer: start with ControllerSessionManager design and independent fake sessions; never mutate the global owner into a shared array without isolation tests.
+- For backend approval: P2-SIGNING-ROLLBACK-PLAN.md, P2-PHASE-A-DECISION.md; review exact vendor security/rollback terms separately.
+
+**Code hygiene rule:** Keep this file aligned with source locations. When moving/renaming a file, update links and search for its references and obsolete tests. Do not delete historically used verification or relax safety assertions just to make CI pass.

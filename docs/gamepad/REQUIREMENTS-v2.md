@@ -1,5 +1,7 @@
 # WinDock — Modular Low-Latency Gamepad Mode (Revised implementation handoff v2)
 
+**Owner requirements update — 2026-10-25:** This v2 document is retained as detailed original one-player functional requirements. New binding nonfunctional requirements (personal/friends scope; maintainable readable code; no stale paths; low-end/high-end measured latency parity goal; future two- to four-player independently authenticated local sessions) and ordered M0–M8 milestones are now in [PRIVATE-MULTIPLAYER-ROADMAP.md](PRIVATE-MULTIPLAYER-ROADMAP.md). [ARCHITECTURE-OWNERSHIP.md](ARCHITECTURE-OWNERSHIP.md) maps actual code. There is no authorized driver installation, no measured XInput gameplay and no merge/public release request.
+
 **Fork:** https://github.com/Farzansayeed/WinDock (branch `feature/universal-gamepad`)  
 **Original upstream:** https://github.com/aliihsaad/WinDock  
 **Prepared:** 23 October 2026  
