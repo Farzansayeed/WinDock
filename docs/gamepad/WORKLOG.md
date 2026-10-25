@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-10-25 — M0e private fake lab visibility and bounded software latency
+
+**Branch/base:** `feature/universal-gamepad` at `d090a1c`; prior [CI #40189737866](https://github.com/Farzansayeed/WinDock/actions/runs/40189737866) PASS. New SHA and CI to verify after commit.
+
+**Changed:** Added `scripts/lib/gamepad-lab-observer.mjs` with fixed, bounded fake C# A/stick output notices and counts. Manual `scripts/gamepad-fake-lab-server.mjs` injects it plus opt-in `createGamepadTimingWindow(256)`, printing host-only p50/p95/p99 on explicit Ctrl+C. New `scripts/verify-gamepad-lab-observer.mjs` wired into `npm test`. No raw controller values, credentials, device data, IPs or unbounded telemetry retained.
+
+**Actually executed:** Standalone Node.js 22 observer test 14/14 assertions PASS on agent container. Full GitHub cross-OS CI and Android Kotlin/Windows .NET build tests PENDING. Real Windows fake lab with physical Android NOT TESTED.
+
+**Safety:** Existing 180-ms native watchdog and pairing authorization unchanged. Production /gamepad HTTP 503, no real Xbox, no HIDMaestro files/install, elevation, root trust, release, merge or payments.
+
+**Next:** Verify GitHub CI exact SHA and resolve CI failures without relaxing safety limits. Then optional Windows private-lab Android DEBUG field proof with safe build-install logistics (do NOT uninstall existing signed Preview); later phone/PC RTT and disconnect/neutral tests. See M0-LAB-TESTING.md. Previous owner Windows Preview/XInput/v40 audit and Android v25 PASS preserved, no repeat.
+
+---
+
 ## 2026-10-25 — M0 failing-regression test diagnosis and strict pairing correction
 
 **2026-10-25 M0 DRIVER-NEUTRAL REGRESSION TRIAGE:** [CI #40189419789](https://github.com/Farzansayeed/WinDock/actions/runs/40189419789) failed Node `verify-android` on all three desktop OS runners because old policy forbade **all** native CookieManager references; this was an overbroad keyboard invariant now conflicting with authorized debug-only Gamepad session-cookie forwarding. Replaced it with strict `KeyboardBridge` no-cookie/no-API-pair assertion PLUS explicit DEBUG-only GamepadSocketTarget/fromTrustedPage and exactly scoped `windock_session`/Origin source checks. Android JVM MockWebServer test failure in `finally { server.shutdown() }` after WS test could not complete clean close; added standard server-side WebSocket close reply and wait-for-closed assertion before shutdown, no swallowed failure. First Android source-state failure remains visible in prior runs; no driver/XInput/physical acceptance and no automatic Preview publication. New CI pending.

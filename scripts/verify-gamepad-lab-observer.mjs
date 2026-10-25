@@ -1,0 +1,40 @@
+import assert from "node:assert/strict";
+import { createGamepadLabObserver } from "./lib/gamepad-lab-observer.mjs";
+let assertions = 0;
+const ok = (predicate, message) => { assertions++; assert.ok(predicate, message); };
+const messages = [];
+const observer = createGamepadLabObserver({ announce: s => messages.push(s), noticeLimit: 5 });
+observer.observe(null);
+observer.observe({event:"ready",v:1,sink:"fake",cookie:"secret"});
+observer.observe({event:"report",buttons:0,lx:0,ly:0,privateIp:"192.168.1.9"});
+observer.observe({event:"report",buttons:4096,lx:1,ly:0});
+observer.observe({event:"report",buttons:4096,lx:5,ly:0});
+observer.observe({event:"report",buttons:0,lx:0,ly:0});
+observer.observe({event:"frame",result:"replay"});
+observer.observe({event:"frame",result:"invalid"});
+observer.observe({event:"frame",result:"expired"});
+observer.observe({event:"sink-disposed"});
+observer.observe({event:"stopped"});
+const s=observer.snapshot();
+ok(s.ready===1 && s.reports===4, "counts accepted fake receiver events");
+ok(s.aPresses===1 && s.aReleases===1,"counts A edges, not repeated held frames");
+ok(s.stickMoves===1 && s.stickCenters===1,"counts stick edges, not analog frame spam");
+ok(s.replays===1 && s.invalid===1 && s.expired===1,"summarizes rejected frames");
+ok(s.sinkDisposed===1 && s.stopped===1,"records native shutdown");
+ok(s.messages===5 && messages.length===5,"bounds diagnostic messages");
+ok(!messages.join(" ").includes("secret") && !messages.join(" ").includes("192.168"),"no credentials or IP in output");
+ok(!JSON.stringify(s).includes("buttons") && !JSON.stringify(s).includes("lx"),"no controller payload in snapshot");
+for (let i=0;i<10000;i++) observer.observe({event:"report",buttons:i%2?4096:0,lx:0,ly:0});
+ok(messages.length===5,"high-frequency events cannot spam output");
+observer.observe({event:"report",buttons:0,lx:Infinity,ly:0});
+ok(observer.snapshot().reports===10004,"reject malformed native report");
+let called=0;
+const faulty=createGamepadLabObserver({announce:()=>{called++;throw Error("broken logger")}});
+faulty.observe({event:"ready",v:1,sink:"fake"});
+ok(called===1&&faulty.snapshot().ready===1,"diagnostic callback exceptions cannot alter observer");
+for (const options of [{noticeLimit:-1},{noticeLimit:65},{announce:null}]) {
+  let rejected=false;try {createGamepadLabObserver(options)} catch(TypeError){rejected=true}
+  ok(rejected,"reject invalid options");
+}
+console.log(`${assertions} assertions`);
+console.log("gamepad-lab-observer verification passed (fake diagnostics only)");
