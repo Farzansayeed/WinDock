@@ -33,8 +33,11 @@ const factory = () => {
     write(state) { reports.push({ id, state: { ...state } }); },
     close() { closures.push(id); },
   };
-  if (id === "pending") {
+  if (id === "pending" || id === "early") {
     sink.ready = new Promise(resolve => { permit = resolve; });
+  } else if (id === "write-error") {
+    sink.ready = Promise.reject(new Error("simulated native startup rejection"));
+    sink.write = () => { throw new Error("simulated first neutral write failure"); };
   } else if (id === "rejected") {
     sink.ready = Promise.reject(new Error("simulated native startup failure"));
   } else if (id === "fault") {
@@ -89,6 +92,34 @@ try {
     "disconnect neutralizes and disposes pending startup sink exactly once");
   ok(reports.filter(x => x.id === "pending").at(-1).state.buttons === 0,
     "disconnect after readiness ends neutral");
+
+  mode = "early";
+  const tooSoon = await connect(url, origin, cookie);
+  ok(tooSoon.ws.readyState === WebSocket.OPEN, "pending second owner accepted");
+  tooSoon.ws.send(frame); // Must NEVER reach a receiver that is not ready.
+  await until(() => tooSoon.ws.readyState === WebSocket.CLOSED &&
+    app.gamepadHub.ownerCount === 0 && closures.filter(x => x === "early").length === 1,
+    "early client input fails closed and disposes fake sink");
+  ok(!reports.some(x => x.id === "early" && x.state.buttons !== 0),
+    "pre-readiness button did not reach native sink");
+  permit(); // Late child ACK must never resurrect closed ownership.
+  await sleep(35);
+  ok(!tooSoon.messages.some(x => x.type === "ready"), "late native ACK is ignored");
+
+  mode = "write-error";
+  let unhandled = 0;
+  const trackUnhandled = () => { unhandled++; };
+  process.on("unhandledRejection", trackUnhandled);
+  try {
+    const writeFault = await connect(url, origin, cookie);
+    await until(() => writeFault.ws.readyState === WebSocket.CLOSED &&
+      app.gamepadHub.ownerCount === 0 && closures.filter(x => x === "write-error").length === 1,
+      "failed initial neutral write disposes native sink and clears owner");
+    await sleep(35);
+    ok(unhandled === 0, "failed startup promise is observed even if neutral write threw");
+  } finally {
+    process.off("unhandledRejection", trackUnhandled);
+  }
 
   mode = "rejected";
   const refused = await connect(url, origin, cookie);

@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-25 — Observe readiness before first native write; deny early/late input (fake sink only)
+
+**Branch:** `feature/universal-gamepad`; second atomic source+both-tracker commit building on [`dbd0030`](https://github.com/Farzansayeed/WinDock/commit/dbd0030528a0032edfbcbfd028551c23d6ff644e). Its [CI #40170547492](https://github.com/Farzansayeed/WinDock/actions/runs/40170547492) PASSED Linux/macOS/Windows. New commit Actions and Preview not yet verified at commit. The previous Preview packaging workflow was still in progress when this commit was prepared.
+
+**Code:** `src/gamepad/hub.js` now attaches an immediate rejection observer to an optional native readiness promise before writing the initial neutral state or invoking the liveness hook. An early initial-write exception can no longer strand an unhandled rejected startup promise in Node. Deferred readiness still gates WebSocket ACK and frame forwarding. No driver/API activation or ordinary WinDock behavior changes.
+
+**Tests:** `scripts/verify-gamepad-readiness.mjs` adds premature client input rejection (no pressed controls passed to native), late native ACK after session closure, and simultaneous startup rejection + initial neutral write error without unhandled rejection; keeps existing healthy delayed ready/reconnect, rejected child, synchronous fault and exactly-once neutral close tests. Registered in Node suite from previous commit. New source CI/Preview still pending. No physical Windows/Android or game compatibility evidence, and no local dotnet SDK in agent runtime. Previously accepted Windows Preview, owner XInput 0/4 baseline and Android Preview local controls remain PASS without repeat.
+
+**Next:** Verify GitHub multi-OS CI and preview workflow on this source; continue nonprivileged driver-neutral lifecycle work. Any real virtual Xbox driver/install/rollback requires separately explained explicit user approval. Spotify/indicators/DDC/Edge deferred.
+
+---
+
 ## 2026-10-25 — P2/VS1 native process readiness and ownership safety (fake sink only)
 
 **Branch / code commit:** `feature/universal-gamepad`, this atomic code+tracker commit following docs-only `d859b12`. Confirmed starting HEAD `d859b124bceea9e87b6e62b540f8e3865b8e4a16`; [handoff CI #40132376572](https://github.com/Farzansayeed/WinDock/actions/runs/40132376572) PASSED and highest non-draft [Preview v32](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.32-g3d5bf3b) published. New commit's CI and any Preview release **NOT YET RUN/VERIFIED at commit time**.

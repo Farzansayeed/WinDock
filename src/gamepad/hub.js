@@ -102,6 +102,16 @@ export function createGamepadHub({
       sink = sinkFactory();
       if (!sink || typeof sink.write !== "function" || typeof sink.close !== "function")
         throw new TypeError("missing native gamepad report sink");
+      // Observe any ready-promise rejection BEFORE invoking a sink write or
+      // hook that may synchronously fail. Otherwise cleanup could abandon a
+      // rejected native startup promise and crash Node via unhandledRejection.
+      nativeReady = sink.ready;
+      if (nativeReady !== undefined) {
+        if (!nativeReady || typeof nativeReady.then !== "function")
+          throw new TypeError("invalid native sink readiness promise");
+        nativeReady = Promise.resolve(nativeReady);
+        void nativeReady.catch(() => {}); // retains rejection for .then below
+      }
       gate = createGamepadStateGate({ timeoutMs, now });
       sink.write({ ...neutralGamepadState() });
       // Optional native child-liveness hook. A crashed/stopped native sink
@@ -114,10 +124,6 @@ export function createGamepadHub({
       }
       // An optional readiness promise must reflect the CHILD receiver's own
       // startup ACK; process.spawn and an open stdin pipe are not device readiness.
-      nativeReady = sink.ready;
-      if (nativeReady !== undefined &&
-          (!nativeReady || typeof nativeReady.then !== "function"))
-        throw new TypeError("invalid native sink readiness promise");
     } catch {
       cleanup(1011); return;
     }
