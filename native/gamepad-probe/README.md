@@ -70,3 +70,40 @@ Do not install HIDMaestro, ViGEmBus or third-party certificates simply to try th
 ## Automated verification
 
 Windows CI tests the PowerShell baseline from System32 and separately builds the .NET diagnostic. Preview release CI packages portable x64/ARM64 binaries and runs the self-contained x64 EXE --help/--baseline from System32. ARM64 execution requires separate hardware. Node also checks both sources for read-only safety boundaries. Neither test can establish that a real XInput controller works, so hardware gate remains outstanding.
+
+
+## New P2 backend readiness audit (read-only, no repeat of XInput baseline)
+
+The portable diagnostic bundled in the first published Preview after this
+change also supports a **different** read-only mode:
+
+```powershell
+& "$env:USERPROFILE\Downloads\WinDockGamepadProbe-win-x64.exe" --backend-audit
+```
+
+Run in an **ordinary, non-administrator** PowerShell window if Windows
+normally permits the executable. Compare its SHA256 to the release
+\`SHA256SUMS.txt\` before running; no .NET SDK, PowerShell script execution,
+extra runtime, pairing, driver, certificate installation, licence, or network
+access is required. **Do not run as administrator, disable SmartScreen,
+alter execution policy or change trust** if security blocks the EXE.
+This audit is NOT a Windows Preview installer and changes no WinDock data.
+
+The audit reports OS/process architecture, whether an x64 .NET 10 shared
+runtime is *registered* (a self-contained runtime may not be), and only
+\`present\` / \`not_detected\` / \`unavailable\` for a matching
+\`CN=HIDMaestroTestCert\` public certificate in the three machine stores:
+Root, TrustedPublisher and My. It reports **no identities, subjects,
+fingerprints, private keys, network destinations or controller state**. A
+matching name does not authenticate a certificate's publisher; neither its
+presence nor absence proves driver installation or clean rollback. If a
+store is inaccessible, \`unavailable\` is a valid non-destructive result.
+
+**Expected success:** \`backend_audit_version=1\`, Windows version and
+architecture, one runtime indicator, three certificate-store indicators, then
+\`device_or_driver_installation_performed=no\`,
+\`certificate_trust_changed=no\`, and \`controller_created=no\`. All
+three possible store-indicator values are acceptable *read-only audit
+outcomes*. The already accepted four-slot XInput baseline need not be
+rerun. This new read-only physical report informs P2 readiness only; **do
+not install a driver or accept an elevation prompt** in response to it.

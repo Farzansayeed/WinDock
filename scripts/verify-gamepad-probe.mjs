@@ -16,6 +16,14 @@ t.ok(!proj.includes("<PackageReference "), "diagnostic has no third-party driver
 t.ok(code.includes('DllImport("xinput1_4.dll"'), "only Windows system XInput DLL is used");
 t.ok(code.includes("XInputGetState("), "diagnostic reads XInput state");
 t.ok(code.includes("ErrorDeviceNotConnected"), "empty XInput slots are handled as normal");
+const audit = readFileSync(join(dir, "BackendAudit.cs"), "utf8");
+t.ok(code.includes('args[0] == "--backend-audit"'), "standalone audit mode wired without changing baseline");
+t.ok(audit.includes("OpenFlags.ReadOnly") && audit.includes("OpenFlags.OpenExistingOnly"), "audit reads only existing Windows certificate stores");
+t.ok(audit.includes("RegistryView.Registry64") && audit.includes("writable: false"), "runtime registry inspection is strictly read-only");
+t.ok(audit.includes("GetNameInfo") && !audit.includes("PrivateKey") && !audit.includes("Export("), "no secrets or certificate details accessed");
+t.ok(audit.includes("certificate_trust_changed=no") && audit.includes("controller_created=no"), "audit explicitly records zero side effects");
+for (const forbiddenAudit of ["InstallDriver(", "CreateController(", "Process.Start(", "SetValue(", "DeleteSubKey(", "XInputSetState", "OpenFlags.ReadWrite", "RegistryKey.Create", "DownloadFile(", "HttpClient("])
+  t.ok(!audit.includes(forbiddenAudit), "read-only backend audit excludes " + forbiddenAudit);
 t.ok(code.includes('args[0] == "--baseline"'), "read-only Windows P2 baseline mode exists");
 t.ok(code.includes("RuntimeInformation.OSArchitecture"), "baseline reports architecture without personal device ID");
 t.ok(code.includes("Environment.OSVersion.Version"), "baseline records Windows version for feasibility");

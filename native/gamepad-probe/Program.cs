@@ -75,10 +75,15 @@ internal static class Program
             Console.WriteLine("  (double-click)   Display read-only baseline; press Enter to close.");
             Console.WriteLine("  --scan           List currently visible XInput slots.");
             Console.WriteLine("  --baseline       Read OS version/architecture and XInput slots; NO identifiers, admin or driver changes.");
+            Console.WriteLine("  --backend-audit  Inspect runtime/certificate presence (booleans only); NO driver, trust or input changes.");
             Console.WriteLine("  --watch SECONDS  Observe button/axis changes for 1..60 seconds.");
             Console.WriteLine("This program cannot distinguish a physical pad from a virtual pad. Compare before/after.");
             return 0;
         }
+
+        // New P2 safety audit does not call XInput or perform a baseline again.
+        if (args.Length == 1 && args[0] == "--backend-audit")
+            return BackendAudit.Run();
 
         bool watch = false;
         bool baseline = args.Length == 0 || (args.Length == 1 && args[0] == "--baseline");

@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-10-25 — Read-only P2 machine audit and current virtual Xbox driver evaluation
+
+**Branch / commit:** \`feature/universal-gamepad\`; atomic code+both trackers after \`40b82301\`, verified baseline multi-platform [CI #40174183156](https://github.com/Farzansayeed/WinDock/actions/runs/40174183156) and [Preview #40174183214](https://github.com/Farzansayeed/WinDock/actions/runs/40174183214) SUCCESS, non-draft [v36](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.36-g40b8230) published.
+
+**Code:** Add \`--backend-audit\` to already packaged portable read-only P2 diagnostic: reports OS/process architecture, presence of .NET 10 x64 shared runtime via read-only HKLM Registry64, and three boolean \`CN=HIDMaestroTestCert\` machine certificate-store matches (no certificate fingerprint/private key or identifiers). Does not install/load a driver, change trust/registry, escalate, query licence, create device or send network traffic. Existing no-args and \`--baseline\` remain untouched, so owner x64 XInput scan does not need repeat. \`--help\`, standalone README and safety oracle updated. Windows .NET probe CI and self-contained x64 artifact Preview smoke now exercise audit contract.
+
+**P2 vendor evidence:** Verified current HIDMaestro 2.x signing/admin/.NET 10 and certificate Root/TrustedPublisher/My requirements and vendor uninstaller impact; only a conditional standalone/rollback lab candidate, NOT approved. libvirtualhid production-signed XUSB needs paid licence and periodic online validation, so blocked for fully offline/no-purchase deployment. Archived ViGEmBus not selected. Documented official sources, constraints, next owner-evidence gate in P2-DRIVER-FEASIBILITY.md.
+
+**Tests:** New commit Actions CI/Preview PENDING at commit time. Baseline workflows above PASSED. No local .NET SDK/physical Windows hardware, no fresh Android or real Xbox/game test; only CI Windows runners can validate source and probe execution. A **new read-only audit** on owner's x64 PC is testable using a matching portable release EXE, not an installation; do not request XInput rerun. No driver/admin/cert/purchase approval requested or implied.
+
+**Next:** Verify exact new GitHub CI/release and report new portable audit command/hash. Review audit results before preparing explicit, separately approved signed/reversible standalone driver trial. Keep production route disabled and existing WinDock features intact.
+
+---
+
 ## 2026-10-25 — Supervise fake native stdout lifecycle and readiness ownership
 
 **Branch / commit:** `feature/universal-gamepad`; this code + both tracker commit after `cdea63c7`, [CI #40172171992](https://github.com/Farzansayeed/WinDock/actions/runs/40172171992) and [Preview pipeline #40172172000](https://github.com/Farzansayeed/WinDock/actions/runs/40172172000) verified SUCCESS; [Preview v35](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.35-gcdea63c) published.

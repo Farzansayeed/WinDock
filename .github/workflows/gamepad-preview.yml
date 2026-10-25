@@ -94,6 +94,1188 @@ jobs:
                 -not ($noArgs -match '^connected_slots=[0-4]$')) {
               throw 'No-arguments portable baseline failed'
             }
+            $audit = @(& $probe --backend-audit)
+            if ($LASTEXITCODE -ne 0) { throw 'Portable backend audit failed' }
+            $audit | ForEach-Object { Write-Output $_ }
+            foreach ($pattern in @('^backend_audit_version=1
+            if ($LASTEXITCODE -ne 0) { throw 'Portable probe baseline failed' }
+            $report | ForEach-Object { Write-Output $_ }
+            if (-not ($report -match '^windows_version=') -or
+                -not ($report -match '^os_architecture=') -or
+                -not ($report -match '^connected_slots=[0-4]$')) {
+              throw 'Incomplete portable XInput baseline'
+            }
+            foreach ($slot in 0..3) {
+              if (-not ($report -match ("^slot={0} " -f $slot))) { throw "Missing XInput slot $slot" }
+            }
+          } finally { Pop-Location }
+          # ARM64 is cross-published; only x64 is run on the CI runner.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: |
+            artifacts/installer/WinDockGamepadPreviewSetup.exe
+            artifacts/installer/WinDockGamepadProbe-win-x64.exe
+            artifacts/installer/WinDockGamepadProbe-win-arm64.exe
+          if-no-files-found: error
+
+  android:
+    name: Android APK (separate preview app)
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Android SDK platform and tools
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
+      - name: Require and load dedicated stable Android preview signing key
+        env:
+          PREVIEW_KEYSTORE_BASE64: ${{ secrets.WINDOCK_PREVIEW_KEYSTORE_BASE64 }}
+          PREVIEW_STORE_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_STORE_PASSWORD }}
+          PREVIEW_KEY_ALIAS: ${{ secrets.WINDOCK_PREVIEW_KEY_ALIAS }}
+          PREVIEW_KEY_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_KEY_PASSWORD }}
+        run: |
+          if [ -n "$PREVIEW_KEYSTORE_BASE64" ] && [ -n "$PREVIEW_STORE_PASSWORD" ] && [ -n "$PREVIEW_KEY_ALIAS" ] && [ -n "$PREVIEW_KEY_PASSWORD" ]; then
+            umask 077
+            printf '%s' "$PREVIEW_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/windock-gamepad-preview.jks"
+            echo "WINDOCK_PREVIEW_KEYSTORE_PATH=$RUNNER_TEMP/windock-gamepad-preview.jks" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_STORE_PASSWORD=$PREVIEW_STORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_ALIAS=$PREVIEW_KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_PASSWORD=$PREVIEW_KEY_PASSWORD" >> "$GITHUB_ENV"
+            echo "Stable preview signing enabled (key stored only in Actions secrets)."
+          else
+            echo "::error::Missing one or more WINDOCK_PREVIEW signing secrets. Refusing to publish an APK with an accidental ephemeral signing key."
+            exit 1
+          fi
+      - name: Build numbered APK, unit tests and lint
+        working-directory: android
+        run: |
+          BASE_VERSION=$(node -p "require('../package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          PREVIEW_CODE=$((100000 + GITHUB_RUN_NUMBER))
+          bash ./gradlew assembleDebug testDebugUnitTest lintDebug \
+            "-PwindockPreviewVersionName=$PREVIEW_VERSION" \
+            "-PwindockPreviewVersionCode=$PREVIEW_CODE" \
+            --no-daemon --console=plain
+      - name: Confirm APK was signed by the permanent preview key
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose "$APK"
+          APK_CERT=$("$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n1)
+          KEY_CERT=$(keytool -exportcert -rfc -keystore "$WINDOCK_PREVIEW_KEYSTORE_PATH"             -alias "$WINDOCK_PREVIEW_KEY_ALIAS"             -storepass:env WINDOCK_PREVIEW_STORE_PASSWORD             | openssl x509 -inform PEM -outform DER | sha256sum | awk '{print $1}')
+          if [ -z "$APK_CERT" ] || [ -z "$KEY_CERT" ] || [ "$APK_CERT" != "$KEY_CERT" ]; then
+            echo "::error::APK signing identity differs from the stable preview keystore; refusing publication."
+            exit 1
+          fi
+          mkdir -p artifacts
+          cp "$APK" artifacts/WinDockGamepadPreview-Android.apk
+          printf 'Android APK signing certificate SHA-256: %s\nSigning channel: stable-gamepad-preview\n'             "$APK_CERT" > artifacts/SIGNING-INFO.txt
+          echo "APK signature matches the private preview keystore; public certificate SHA-256: $APK_CERT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: |
+            artifacts/WinDockGamepadPreview-Android.apk
+            artifacts/SIGNING-INFO.txt
+          if-no-files-found: error
+
+  publish:
+    name: Publish versioned GitHub prerelease
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: dist
+      - name: Create checksums and prerelease from tested artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          TAG="gamepad-v$PREVIEW_VERSION-g$SHORT_SHA"
+          cd dist
+          test -s SIGNING-INFO.txt
+          grep -q 'Signing channel: stable-gamepad-preview' SIGNING-INFO.txt
+          sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe > SHA256SUMS.txt
+          printf 'Version: %s\nCommit: %s\nRun: %s\nChannel: gamepad-preview\n' \
+            "$PREVIEW_VERSION" "$GITHUB_SHA" "$GITHUB_RUN_NUMBER" > BUILD-INFO.txt
+          cat > RELEASE-NOTES.md <<EOF
+          ## WinDock Gamepad Preview $PREVIEW_VERSION
+
+          EXPERIMENTAL BUILD - THE GAMEPAD IS ONLY A UI PREVIEW, NOT A PLAYABLE XBOX CONTROLLER.
+
+          Source: https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA
+          Workflow run: $GITHUB_RUN_NUMBER
+
+          Windows: WinDockGamepadPreviewSetup.exe - separate installation and configuration. Quit regular WinDock first (both use port 8620).
+          Android: WinDockGamepadPreview-Android.apk - separate app ID. This APK is signed using the dedicated persistent Preview keystore configured via private GitHub Actions secrets. Compare its public signing certificate fingerprint in SIGNING-INFO.txt with later releases.
+
+          The first migration from an OLD CI debug signing key to this permanent key can require uninstalling ONLY the previous Preview APK once. Subsequent APKs signed with this same key and higher versionCodes should support in-place upgrades after normal Android installer consent.
+
+          Portable Windows XInput baseline: download WinDockGamepadProbe-win-x64.exe or WinDockGamepadProbe-win-arm64.exe (ARM64 Windows). Verify SHA256SUMS.txt and double-click to see the baseline; the window waits for Enter, or run from a non-admin console with --baseline. No PowerShell script, .NET SDK/runtime install, driver, certificate changes or WinDock installer required. Both EXEs are UNSIGNED; if SmartScreen, antivirus, AppLocker or system policy blocks them, report this without bypassing protection. x64 is tested on CI; ARM64 only cross-built.
+
+          No gamepad driver is bundled. Windows installer and portable probes remain unsigned. Android Preview is signed with a private development key (not Play Store signing).
+
+          Progress: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/PROGRESS.md
+          How to install: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/INSTALL-PREVIEW.md
+          Check SHA256SUMS.txt, BUILD-INFO.txt and SIGNING-INFO.txt for verifiable source, version, assets and public certificate fingerprint.
+          EOF
+          gh release create "$TAG" \
+            WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe SHA256SUMS.txt BUILD-INFO.txt SIGNING-INFO.txt \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "WinDock Gamepad Preview $PREVIEW_VERSION" --notes-file RELEASE-NOTES.md
+, '^dotnet10_x64_runtime_registry=(detected|not_detected|unavailable)
+            if ($LASTEXITCODE -ne 0) { throw 'Portable probe baseline failed' }
+            $report | ForEach-Object { Write-Output $_ }
+            if (-not ($report -match '^windows_version=') -or
+                -not ($report -match '^os_architecture=') -or
+                -not ($report -match '^connected_slots=[0-4]$')) {
+              throw 'Incomplete portable XInput baseline'
+            }
+            foreach ($slot in 0..3) {
+              if (-not ($report -match ("^slot={0} " -f $slot))) { throw "Missing XInput slot $slot" }
+            }
+          } finally { Pop-Location }
+          # ARM64 is cross-published; only x64 is run on the CI runner.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: |
+            artifacts/installer/WinDockGamepadPreviewSetup.exe
+            artifacts/installer/WinDockGamepadProbe-win-x64.exe
+            artifacts/installer/WinDockGamepadProbe-win-arm64.exe
+          if-no-files-found: error
+
+  android:
+    name: Android APK (separate preview app)
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Android SDK platform and tools
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
+      - name: Require and load dedicated stable Android preview signing key
+        env:
+          PREVIEW_KEYSTORE_BASE64: ${{ secrets.WINDOCK_PREVIEW_KEYSTORE_BASE64 }}
+          PREVIEW_STORE_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_STORE_PASSWORD }}
+          PREVIEW_KEY_ALIAS: ${{ secrets.WINDOCK_PREVIEW_KEY_ALIAS }}
+          PREVIEW_KEY_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_KEY_PASSWORD }}
+        run: |
+          if [ -n "$PREVIEW_KEYSTORE_BASE64" ] && [ -n "$PREVIEW_STORE_PASSWORD" ] && [ -n "$PREVIEW_KEY_ALIAS" ] && [ -n "$PREVIEW_KEY_PASSWORD" ]; then
+            umask 077
+            printf '%s' "$PREVIEW_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/windock-gamepad-preview.jks"
+            echo "WINDOCK_PREVIEW_KEYSTORE_PATH=$RUNNER_TEMP/windock-gamepad-preview.jks" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_STORE_PASSWORD=$PREVIEW_STORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_ALIAS=$PREVIEW_KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_PASSWORD=$PREVIEW_KEY_PASSWORD" >> "$GITHUB_ENV"
+            echo "Stable preview signing enabled (key stored only in Actions secrets)."
+          else
+            echo "::error::Missing one or more WINDOCK_PREVIEW signing secrets. Refusing to publish an APK with an accidental ephemeral signing key."
+            exit 1
+          fi
+      - name: Build numbered APK, unit tests and lint
+        working-directory: android
+        run: |
+          BASE_VERSION=$(node -p "require('../package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          PREVIEW_CODE=$((100000 + GITHUB_RUN_NUMBER))
+          bash ./gradlew assembleDebug testDebugUnitTest lintDebug \
+            "-PwindockPreviewVersionName=$PREVIEW_VERSION" \
+            "-PwindockPreviewVersionCode=$PREVIEW_CODE" \
+            --no-daemon --console=plain
+      - name: Confirm APK was signed by the permanent preview key
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose "$APK"
+          APK_CERT=$("$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n1)
+          KEY_CERT=$(keytool -exportcert -rfc -keystore "$WINDOCK_PREVIEW_KEYSTORE_PATH"             -alias "$WINDOCK_PREVIEW_KEY_ALIAS"             -storepass:env WINDOCK_PREVIEW_STORE_PASSWORD             | openssl x509 -inform PEM -outform DER | sha256sum | awk '{print $1}')
+          if [ -z "$APK_CERT" ] || [ -z "$KEY_CERT" ] || [ "$APK_CERT" != "$KEY_CERT" ]; then
+            echo "::error::APK signing identity differs from the stable preview keystore; refusing publication."
+            exit 1
+          fi
+          mkdir -p artifacts
+          cp "$APK" artifacts/WinDockGamepadPreview-Android.apk
+          printf 'Android APK signing certificate SHA-256: %s\nSigning channel: stable-gamepad-preview\n'             "$APK_CERT" > artifacts/SIGNING-INFO.txt
+          echo "APK signature matches the private preview keystore; public certificate SHA-256: $APK_CERT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: |
+            artifacts/WinDockGamepadPreview-Android.apk
+            artifacts/SIGNING-INFO.txt
+          if-no-files-found: error
+
+  publish:
+    name: Publish versioned GitHub prerelease
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: dist
+      - name: Create checksums and prerelease from tested artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          TAG="gamepad-v$PREVIEW_VERSION-g$SHORT_SHA"
+          cd dist
+          test -s SIGNING-INFO.txt
+          grep -q 'Signing channel: stable-gamepad-preview' SIGNING-INFO.txt
+          sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe > SHA256SUMS.txt
+          printf 'Version: %s\nCommit: %s\nRun: %s\nChannel: gamepad-preview\n' \
+            "$PREVIEW_VERSION" "$GITHUB_SHA" "$GITHUB_RUN_NUMBER" > BUILD-INFO.txt
+          cat > RELEASE-NOTES.md <<EOF
+          ## WinDock Gamepad Preview $PREVIEW_VERSION
+
+          EXPERIMENTAL BUILD - THE GAMEPAD IS ONLY A UI PREVIEW, NOT A PLAYABLE XBOX CONTROLLER.
+
+          Source: https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA
+          Workflow run: $GITHUB_RUN_NUMBER
+
+          Windows: WinDockGamepadPreviewSetup.exe - separate installation and configuration. Quit regular WinDock first (both use port 8620).
+          Android: WinDockGamepadPreview-Android.apk - separate app ID. This APK is signed using the dedicated persistent Preview keystore configured via private GitHub Actions secrets. Compare its public signing certificate fingerprint in SIGNING-INFO.txt with later releases.
+
+          The first migration from an OLD CI debug signing key to this permanent key can require uninstalling ONLY the previous Preview APK once. Subsequent APKs signed with this same key and higher versionCodes should support in-place upgrades after normal Android installer consent.
+
+          Portable Windows XInput baseline: download WinDockGamepadProbe-win-x64.exe or WinDockGamepadProbe-win-arm64.exe (ARM64 Windows). Verify SHA256SUMS.txt and double-click to see the baseline; the window waits for Enter, or run from a non-admin console with --baseline. No PowerShell script, .NET SDK/runtime install, driver, certificate changes or WinDock installer required. Both EXEs are UNSIGNED; if SmartScreen, antivirus, AppLocker or system policy blocks them, report this without bypassing protection. x64 is tested on CI; ARM64 only cross-built.
+
+          No gamepad driver is bundled. Windows installer and portable probes remain unsigned. Android Preview is signed with a private development key (not Play Store signing).
+
+          Progress: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/PROGRESS.md
+          How to install: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/INSTALL-PREVIEW.md
+          Check SHA256SUMS.txt, BUILD-INFO.txt and SIGNING-INFO.txt for verifiable source, version, assets and public certificate fingerprint.
+          EOF
+          gh release create "$TAG" \
+            WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe SHA256SUMS.txt BUILD-INFO.txt SIGNING-INFO.txt \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "WinDock Gamepad Preview $PREVIEW_VERSION" --notes-file RELEASE-NOTES.md
+, '^hidmaestro_test_cert_machine_root=(present|not_detected|unavailable)
+            if ($LASTEXITCODE -ne 0) { throw 'Portable probe baseline failed' }
+            $report | ForEach-Object { Write-Output $_ }
+            if (-not ($report -match '^windows_version=') -or
+                -not ($report -match '^os_architecture=') -or
+                -not ($report -match '^connected_slots=[0-4]$')) {
+              throw 'Incomplete portable XInput baseline'
+            }
+            foreach ($slot in 0..3) {
+              if (-not ($report -match ("^slot={0} " -f $slot))) { throw "Missing XInput slot $slot" }
+            }
+          } finally { Pop-Location }
+          # ARM64 is cross-published; only x64 is run on the CI runner.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: |
+            artifacts/installer/WinDockGamepadPreviewSetup.exe
+            artifacts/installer/WinDockGamepadProbe-win-x64.exe
+            artifacts/installer/WinDockGamepadProbe-win-arm64.exe
+          if-no-files-found: error
+
+  android:
+    name: Android APK (separate preview app)
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Android SDK platform and tools
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
+      - name: Require and load dedicated stable Android preview signing key
+        env:
+          PREVIEW_KEYSTORE_BASE64: ${{ secrets.WINDOCK_PREVIEW_KEYSTORE_BASE64 }}
+          PREVIEW_STORE_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_STORE_PASSWORD }}
+          PREVIEW_KEY_ALIAS: ${{ secrets.WINDOCK_PREVIEW_KEY_ALIAS }}
+          PREVIEW_KEY_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_KEY_PASSWORD }}
+        run: |
+          if [ -n "$PREVIEW_KEYSTORE_BASE64" ] && [ -n "$PREVIEW_STORE_PASSWORD" ] && [ -n "$PREVIEW_KEY_ALIAS" ] && [ -n "$PREVIEW_KEY_PASSWORD" ]; then
+            umask 077
+            printf '%s' "$PREVIEW_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/windock-gamepad-preview.jks"
+            echo "WINDOCK_PREVIEW_KEYSTORE_PATH=$RUNNER_TEMP/windock-gamepad-preview.jks" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_STORE_PASSWORD=$PREVIEW_STORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_ALIAS=$PREVIEW_KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_PASSWORD=$PREVIEW_KEY_PASSWORD" >> "$GITHUB_ENV"
+            echo "Stable preview signing enabled (key stored only in Actions secrets)."
+          else
+            echo "::error::Missing one or more WINDOCK_PREVIEW signing secrets. Refusing to publish an APK with an accidental ephemeral signing key."
+            exit 1
+          fi
+      - name: Build numbered APK, unit tests and lint
+        working-directory: android
+        run: |
+          BASE_VERSION=$(node -p "require('../package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          PREVIEW_CODE=$((100000 + GITHUB_RUN_NUMBER))
+          bash ./gradlew assembleDebug testDebugUnitTest lintDebug \
+            "-PwindockPreviewVersionName=$PREVIEW_VERSION" \
+            "-PwindockPreviewVersionCode=$PREVIEW_CODE" \
+            --no-daemon --console=plain
+      - name: Confirm APK was signed by the permanent preview key
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose "$APK"
+          APK_CERT=$("$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n1)
+          KEY_CERT=$(keytool -exportcert -rfc -keystore "$WINDOCK_PREVIEW_KEYSTORE_PATH"             -alias "$WINDOCK_PREVIEW_KEY_ALIAS"             -storepass:env WINDOCK_PREVIEW_STORE_PASSWORD             | openssl x509 -inform PEM -outform DER | sha256sum | awk '{print $1}')
+          if [ -z "$APK_CERT" ] || [ -z "$KEY_CERT" ] || [ "$APK_CERT" != "$KEY_CERT" ]; then
+            echo "::error::APK signing identity differs from the stable preview keystore; refusing publication."
+            exit 1
+          fi
+          mkdir -p artifacts
+          cp "$APK" artifacts/WinDockGamepadPreview-Android.apk
+          printf 'Android APK signing certificate SHA-256: %s\nSigning channel: stable-gamepad-preview\n'             "$APK_CERT" > artifacts/SIGNING-INFO.txt
+          echo "APK signature matches the private preview keystore; public certificate SHA-256: $APK_CERT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: |
+            artifacts/WinDockGamepadPreview-Android.apk
+            artifacts/SIGNING-INFO.txt
+          if-no-files-found: error
+
+  publish:
+    name: Publish versioned GitHub prerelease
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: dist
+      - name: Create checksums and prerelease from tested artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          TAG="gamepad-v$PREVIEW_VERSION-g$SHORT_SHA"
+          cd dist
+          test -s SIGNING-INFO.txt
+          grep -q 'Signing channel: stable-gamepad-preview' SIGNING-INFO.txt
+          sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe > SHA256SUMS.txt
+          printf 'Version: %s\nCommit: %s\nRun: %s\nChannel: gamepad-preview\n' \
+            "$PREVIEW_VERSION" "$GITHUB_SHA" "$GITHUB_RUN_NUMBER" > BUILD-INFO.txt
+          cat > RELEASE-NOTES.md <<EOF
+          ## WinDock Gamepad Preview $PREVIEW_VERSION
+
+          EXPERIMENTAL BUILD - THE GAMEPAD IS ONLY A UI PREVIEW, NOT A PLAYABLE XBOX CONTROLLER.
+
+          Source: https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA
+          Workflow run: $GITHUB_RUN_NUMBER
+
+          Windows: WinDockGamepadPreviewSetup.exe - separate installation and configuration. Quit regular WinDock first (both use port 8620).
+          Android: WinDockGamepadPreview-Android.apk - separate app ID. This APK is signed using the dedicated persistent Preview keystore configured via private GitHub Actions secrets. Compare its public signing certificate fingerprint in SIGNING-INFO.txt with later releases.
+
+          The first migration from an OLD CI debug signing key to this permanent key can require uninstalling ONLY the previous Preview APK once. Subsequent APKs signed with this same key and higher versionCodes should support in-place upgrades after normal Android installer consent.
+
+          Portable Windows XInput baseline: download WinDockGamepadProbe-win-x64.exe or WinDockGamepadProbe-win-arm64.exe (ARM64 Windows). Verify SHA256SUMS.txt and double-click to see the baseline; the window waits for Enter, or run from a non-admin console with --baseline. No PowerShell script, .NET SDK/runtime install, driver, certificate changes or WinDock installer required. Both EXEs are UNSIGNED; if SmartScreen, antivirus, AppLocker or system policy blocks them, report this without bypassing protection. x64 is tested on CI; ARM64 only cross-built.
+
+          No gamepad driver is bundled. Windows installer and portable probes remain unsigned. Android Preview is signed with a private development key (not Play Store signing).
+
+          Progress: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/PROGRESS.md
+          How to install: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/INSTALL-PREVIEW.md
+          Check SHA256SUMS.txt, BUILD-INFO.txt and SIGNING-INFO.txt for verifiable source, version, assets and public certificate fingerprint.
+          EOF
+          gh release create "$TAG" \
+            WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe SHA256SUMS.txt BUILD-INFO.txt SIGNING-INFO.txt \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "WinDock Gamepad Preview $PREVIEW_VERSION" --notes-file RELEASE-NOTES.md
+, '^hidmaestro_test_cert_machine_trustedpublisher=(present|not_detected|unavailable)
+            if ($LASTEXITCODE -ne 0) { throw 'Portable probe baseline failed' }
+            $report | ForEach-Object { Write-Output $_ }
+            if (-not ($report -match '^windows_version=') -or
+                -not ($report -match '^os_architecture=') -or
+                -not ($report -match '^connected_slots=[0-4]$')) {
+              throw 'Incomplete portable XInput baseline'
+            }
+            foreach ($slot in 0..3) {
+              if (-not ($report -match ("^slot={0} " -f $slot))) { throw "Missing XInput slot $slot" }
+            }
+          } finally { Pop-Location }
+          # ARM64 is cross-published; only x64 is run on the CI runner.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: |
+            artifacts/installer/WinDockGamepadPreviewSetup.exe
+            artifacts/installer/WinDockGamepadProbe-win-x64.exe
+            artifacts/installer/WinDockGamepadProbe-win-arm64.exe
+          if-no-files-found: error
+
+  android:
+    name: Android APK (separate preview app)
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Android SDK platform and tools
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
+      - name: Require and load dedicated stable Android preview signing key
+        env:
+          PREVIEW_KEYSTORE_BASE64: ${{ secrets.WINDOCK_PREVIEW_KEYSTORE_BASE64 }}
+          PREVIEW_STORE_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_STORE_PASSWORD }}
+          PREVIEW_KEY_ALIAS: ${{ secrets.WINDOCK_PREVIEW_KEY_ALIAS }}
+          PREVIEW_KEY_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_KEY_PASSWORD }}
+        run: |
+          if [ -n "$PREVIEW_KEYSTORE_BASE64" ] && [ -n "$PREVIEW_STORE_PASSWORD" ] && [ -n "$PREVIEW_KEY_ALIAS" ] && [ -n "$PREVIEW_KEY_PASSWORD" ]; then
+            umask 077
+            printf '%s' "$PREVIEW_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/windock-gamepad-preview.jks"
+            echo "WINDOCK_PREVIEW_KEYSTORE_PATH=$RUNNER_TEMP/windock-gamepad-preview.jks" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_STORE_PASSWORD=$PREVIEW_STORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_ALIAS=$PREVIEW_KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_PASSWORD=$PREVIEW_KEY_PASSWORD" >> "$GITHUB_ENV"
+            echo "Stable preview signing enabled (key stored only in Actions secrets)."
+          else
+            echo "::error::Missing one or more WINDOCK_PREVIEW signing secrets. Refusing to publish an APK with an accidental ephemeral signing key."
+            exit 1
+          fi
+      - name: Build numbered APK, unit tests and lint
+        working-directory: android
+        run: |
+          BASE_VERSION=$(node -p "require('../package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          PREVIEW_CODE=$((100000 + GITHUB_RUN_NUMBER))
+          bash ./gradlew assembleDebug testDebugUnitTest lintDebug \
+            "-PwindockPreviewVersionName=$PREVIEW_VERSION" \
+            "-PwindockPreviewVersionCode=$PREVIEW_CODE" \
+            --no-daemon --console=plain
+      - name: Confirm APK was signed by the permanent preview key
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose "$APK"
+          APK_CERT=$("$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n1)
+          KEY_CERT=$(keytool -exportcert -rfc -keystore "$WINDOCK_PREVIEW_KEYSTORE_PATH"             -alias "$WINDOCK_PREVIEW_KEY_ALIAS"             -storepass:env WINDOCK_PREVIEW_STORE_PASSWORD             | openssl x509 -inform PEM -outform DER | sha256sum | awk '{print $1}')
+          if [ -z "$APK_CERT" ] || [ -z "$KEY_CERT" ] || [ "$APK_CERT" != "$KEY_CERT" ]; then
+            echo "::error::APK signing identity differs from the stable preview keystore; refusing publication."
+            exit 1
+          fi
+          mkdir -p artifacts
+          cp "$APK" artifacts/WinDockGamepadPreview-Android.apk
+          printf 'Android APK signing certificate SHA-256: %s\nSigning channel: stable-gamepad-preview\n'             "$APK_CERT" > artifacts/SIGNING-INFO.txt
+          echo "APK signature matches the private preview keystore; public certificate SHA-256: $APK_CERT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: |
+            artifacts/WinDockGamepadPreview-Android.apk
+            artifacts/SIGNING-INFO.txt
+          if-no-files-found: error
+
+  publish:
+    name: Publish versioned GitHub prerelease
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: dist
+      - name: Create checksums and prerelease from tested artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          TAG="gamepad-v$PREVIEW_VERSION-g$SHORT_SHA"
+          cd dist
+          test -s SIGNING-INFO.txt
+          grep -q 'Signing channel: stable-gamepad-preview' SIGNING-INFO.txt
+          sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe > SHA256SUMS.txt
+          printf 'Version: %s\nCommit: %s\nRun: %s\nChannel: gamepad-preview\n' \
+            "$PREVIEW_VERSION" "$GITHUB_SHA" "$GITHUB_RUN_NUMBER" > BUILD-INFO.txt
+          cat > RELEASE-NOTES.md <<EOF
+          ## WinDock Gamepad Preview $PREVIEW_VERSION
+
+          EXPERIMENTAL BUILD - THE GAMEPAD IS ONLY A UI PREVIEW, NOT A PLAYABLE XBOX CONTROLLER.
+
+          Source: https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA
+          Workflow run: $GITHUB_RUN_NUMBER
+
+          Windows: WinDockGamepadPreviewSetup.exe - separate installation and configuration. Quit regular WinDock first (both use port 8620).
+          Android: WinDockGamepadPreview-Android.apk - separate app ID. This APK is signed using the dedicated persistent Preview keystore configured via private GitHub Actions secrets. Compare its public signing certificate fingerprint in SIGNING-INFO.txt with later releases.
+
+          The first migration from an OLD CI debug signing key to this permanent key can require uninstalling ONLY the previous Preview APK once. Subsequent APKs signed with this same key and higher versionCodes should support in-place upgrades after normal Android installer consent.
+
+          Portable Windows XInput baseline: download WinDockGamepadProbe-win-x64.exe or WinDockGamepadProbe-win-arm64.exe (ARM64 Windows). Verify SHA256SUMS.txt and double-click to see the baseline; the window waits for Enter, or run from a non-admin console with --baseline. No PowerShell script, .NET SDK/runtime install, driver, certificate changes or WinDock installer required. Both EXEs are UNSIGNED; if SmartScreen, antivirus, AppLocker or system policy blocks them, report this without bypassing protection. x64 is tested on CI; ARM64 only cross-built.
+
+          No gamepad driver is bundled. Windows installer and portable probes remain unsigned. Android Preview is signed with a private development key (not Play Store signing).
+
+          Progress: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/PROGRESS.md
+          How to install: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/INSTALL-PREVIEW.md
+          Check SHA256SUMS.txt, BUILD-INFO.txt and SIGNING-INFO.txt for verifiable source, version, assets and public certificate fingerprint.
+          EOF
+          gh release create "$TAG" \
+            WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe SHA256SUMS.txt BUILD-INFO.txt SIGNING-INFO.txt \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "WinDock Gamepad Preview $PREVIEW_VERSION" --notes-file RELEASE-NOTES.md
+, '^hidmaestro_test_cert_machine_my=(present|not_detected|unavailable)
+            if ($LASTEXITCODE -ne 0) { throw 'Portable probe baseline failed' }
+            $report | ForEach-Object { Write-Output $_ }
+            if (-not ($report -match '^windows_version=') -or
+                -not ($report -match '^os_architecture=') -or
+                -not ($report -match '^connected_slots=[0-4]$')) {
+              throw 'Incomplete portable XInput baseline'
+            }
+            foreach ($slot in 0..3) {
+              if (-not ($report -match ("^slot={0} " -f $slot))) { throw "Missing XInput slot $slot" }
+            }
+          } finally { Pop-Location }
+          # ARM64 is cross-published; only x64 is run on the CI runner.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: |
+            artifacts/installer/WinDockGamepadPreviewSetup.exe
+            artifacts/installer/WinDockGamepadProbe-win-x64.exe
+            artifacts/installer/WinDockGamepadProbe-win-arm64.exe
+          if-no-files-found: error
+
+  android:
+    name: Android APK (separate preview app)
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Android SDK platform and tools
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
+      - name: Require and load dedicated stable Android preview signing key
+        env:
+          PREVIEW_KEYSTORE_BASE64: ${{ secrets.WINDOCK_PREVIEW_KEYSTORE_BASE64 }}
+          PREVIEW_STORE_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_STORE_PASSWORD }}
+          PREVIEW_KEY_ALIAS: ${{ secrets.WINDOCK_PREVIEW_KEY_ALIAS }}
+          PREVIEW_KEY_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_KEY_PASSWORD }}
+        run: |
+          if [ -n "$PREVIEW_KEYSTORE_BASE64" ] && [ -n "$PREVIEW_STORE_PASSWORD" ] && [ -n "$PREVIEW_KEY_ALIAS" ] && [ -n "$PREVIEW_KEY_PASSWORD" ]; then
+            umask 077
+            printf '%s' "$PREVIEW_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/windock-gamepad-preview.jks"
+            echo "WINDOCK_PREVIEW_KEYSTORE_PATH=$RUNNER_TEMP/windock-gamepad-preview.jks" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_STORE_PASSWORD=$PREVIEW_STORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_ALIAS=$PREVIEW_KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_PASSWORD=$PREVIEW_KEY_PASSWORD" >> "$GITHUB_ENV"
+            echo "Stable preview signing enabled (key stored only in Actions secrets)."
+          else
+            echo "::error::Missing one or more WINDOCK_PREVIEW signing secrets. Refusing to publish an APK with an accidental ephemeral signing key."
+            exit 1
+          fi
+      - name: Build numbered APK, unit tests and lint
+        working-directory: android
+        run: |
+          BASE_VERSION=$(node -p "require('../package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          PREVIEW_CODE=$((100000 + GITHUB_RUN_NUMBER))
+          bash ./gradlew assembleDebug testDebugUnitTest lintDebug \
+            "-PwindockPreviewVersionName=$PREVIEW_VERSION" \
+            "-PwindockPreviewVersionCode=$PREVIEW_CODE" \
+            --no-daemon --console=plain
+      - name: Confirm APK was signed by the permanent preview key
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose "$APK"
+          APK_CERT=$("$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n1)
+          KEY_CERT=$(keytool -exportcert -rfc -keystore "$WINDOCK_PREVIEW_KEYSTORE_PATH"             -alias "$WINDOCK_PREVIEW_KEY_ALIAS"             -storepass:env WINDOCK_PREVIEW_STORE_PASSWORD             | openssl x509 -inform PEM -outform DER | sha256sum | awk '{print $1}')
+          if [ -z "$APK_CERT" ] || [ -z "$KEY_CERT" ] || [ "$APK_CERT" != "$KEY_CERT" ]; then
+            echo "::error::APK signing identity differs from the stable preview keystore; refusing publication."
+            exit 1
+          fi
+          mkdir -p artifacts
+          cp "$APK" artifacts/WinDockGamepadPreview-Android.apk
+          printf 'Android APK signing certificate SHA-256: %s\nSigning channel: stable-gamepad-preview\n'             "$APK_CERT" > artifacts/SIGNING-INFO.txt
+          echo "APK signature matches the private preview keystore; public certificate SHA-256: $APK_CERT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: |
+            artifacts/WinDockGamepadPreview-Android.apk
+            artifacts/SIGNING-INFO.txt
+          if-no-files-found: error
+
+  publish:
+    name: Publish versioned GitHub prerelease
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: dist
+      - name: Create checksums and prerelease from tested artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          TAG="gamepad-v$PREVIEW_VERSION-g$SHORT_SHA"
+          cd dist
+          test -s SIGNING-INFO.txt
+          grep -q 'Signing channel: stable-gamepad-preview' SIGNING-INFO.txt
+          sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe > SHA256SUMS.txt
+          printf 'Version: %s\nCommit: %s\nRun: %s\nChannel: gamepad-preview\n' \
+            "$PREVIEW_VERSION" "$GITHUB_SHA" "$GITHUB_RUN_NUMBER" > BUILD-INFO.txt
+          cat > RELEASE-NOTES.md <<EOF
+          ## WinDock Gamepad Preview $PREVIEW_VERSION
+
+          EXPERIMENTAL BUILD - THE GAMEPAD IS ONLY A UI PREVIEW, NOT A PLAYABLE XBOX CONTROLLER.
+
+          Source: https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA
+          Workflow run: $GITHUB_RUN_NUMBER
+
+          Windows: WinDockGamepadPreviewSetup.exe - separate installation and configuration. Quit regular WinDock first (both use port 8620).
+          Android: WinDockGamepadPreview-Android.apk - separate app ID. This APK is signed using the dedicated persistent Preview keystore configured via private GitHub Actions secrets. Compare its public signing certificate fingerprint in SIGNING-INFO.txt with later releases.
+
+          The first migration from an OLD CI debug signing key to this permanent key can require uninstalling ONLY the previous Preview APK once. Subsequent APKs signed with this same key and higher versionCodes should support in-place upgrades after normal Android installer consent.
+
+          Portable Windows XInput baseline: download WinDockGamepadProbe-win-x64.exe or WinDockGamepadProbe-win-arm64.exe (ARM64 Windows). Verify SHA256SUMS.txt and double-click to see the baseline; the window waits for Enter, or run from a non-admin console with --baseline. No PowerShell script, .NET SDK/runtime install, driver, certificate changes or WinDock installer required. Both EXEs are UNSIGNED; if SmartScreen, antivirus, AppLocker or system policy blocks them, report this without bypassing protection. x64 is tested on CI; ARM64 only cross-built.
+
+          No gamepad driver is bundled. Windows installer and portable probes remain unsigned. Android Preview is signed with a private development key (not Play Store signing).
+
+          Progress: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/PROGRESS.md
+          How to install: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/INSTALL-PREVIEW.md
+          Check SHA256SUMS.txt, BUILD-INFO.txt and SIGNING-INFO.txt for verifiable source, version, assets and public certificate fingerprint.
+          EOF
+          gh release create "$TAG" \
+            WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe SHA256SUMS.txt BUILD-INFO.txt SIGNING-INFO.txt \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "WinDock Gamepad Preview $PREVIEW_VERSION" --notes-file RELEASE-NOTES.md
+, '^device_or_driver_installation_performed=no
+            if ($LASTEXITCODE -ne 0) { throw 'Portable probe baseline failed' }
+            $report | ForEach-Object { Write-Output $_ }
+            if (-not ($report -match '^windows_version=') -or
+                -not ($report -match '^os_architecture=') -or
+                -not ($report -match '^connected_slots=[0-4]$')) {
+              throw 'Incomplete portable XInput baseline'
+            }
+            foreach ($slot in 0..3) {
+              if (-not ($report -match ("^slot={0} " -f $slot))) { throw "Missing XInput slot $slot" }
+            }
+          } finally { Pop-Location }
+          # ARM64 is cross-published; only x64 is run on the CI runner.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: |
+            artifacts/installer/WinDockGamepadPreviewSetup.exe
+            artifacts/installer/WinDockGamepadProbe-win-x64.exe
+            artifacts/installer/WinDockGamepadProbe-win-arm64.exe
+          if-no-files-found: error
+
+  android:
+    name: Android APK (separate preview app)
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Android SDK platform and tools
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
+      - name: Require and load dedicated stable Android preview signing key
+        env:
+          PREVIEW_KEYSTORE_BASE64: ${{ secrets.WINDOCK_PREVIEW_KEYSTORE_BASE64 }}
+          PREVIEW_STORE_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_STORE_PASSWORD }}
+          PREVIEW_KEY_ALIAS: ${{ secrets.WINDOCK_PREVIEW_KEY_ALIAS }}
+          PREVIEW_KEY_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_KEY_PASSWORD }}
+        run: |
+          if [ -n "$PREVIEW_KEYSTORE_BASE64" ] && [ -n "$PREVIEW_STORE_PASSWORD" ] && [ -n "$PREVIEW_KEY_ALIAS" ] && [ -n "$PREVIEW_KEY_PASSWORD" ]; then
+            umask 077
+            printf '%s' "$PREVIEW_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/windock-gamepad-preview.jks"
+            echo "WINDOCK_PREVIEW_KEYSTORE_PATH=$RUNNER_TEMP/windock-gamepad-preview.jks" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_STORE_PASSWORD=$PREVIEW_STORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_ALIAS=$PREVIEW_KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_PASSWORD=$PREVIEW_KEY_PASSWORD" >> "$GITHUB_ENV"
+            echo "Stable preview signing enabled (key stored only in Actions secrets)."
+          else
+            echo "::error::Missing one or more WINDOCK_PREVIEW signing secrets. Refusing to publish an APK with an accidental ephemeral signing key."
+            exit 1
+          fi
+      - name: Build numbered APK, unit tests and lint
+        working-directory: android
+        run: |
+          BASE_VERSION=$(node -p "require('../package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          PREVIEW_CODE=$((100000 + GITHUB_RUN_NUMBER))
+          bash ./gradlew assembleDebug testDebugUnitTest lintDebug \
+            "-PwindockPreviewVersionName=$PREVIEW_VERSION" \
+            "-PwindockPreviewVersionCode=$PREVIEW_CODE" \
+            --no-daemon --console=plain
+      - name: Confirm APK was signed by the permanent preview key
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose "$APK"
+          APK_CERT=$("$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n1)
+          KEY_CERT=$(keytool -exportcert -rfc -keystore "$WINDOCK_PREVIEW_KEYSTORE_PATH"             -alias "$WINDOCK_PREVIEW_KEY_ALIAS"             -storepass:env WINDOCK_PREVIEW_STORE_PASSWORD             | openssl x509 -inform PEM -outform DER | sha256sum | awk '{print $1}')
+          if [ -z "$APK_CERT" ] || [ -z "$KEY_CERT" ] || [ "$APK_CERT" != "$KEY_CERT" ]; then
+            echo "::error::APK signing identity differs from the stable preview keystore; refusing publication."
+            exit 1
+          fi
+          mkdir -p artifacts
+          cp "$APK" artifacts/WinDockGamepadPreview-Android.apk
+          printf 'Android APK signing certificate SHA-256: %s\nSigning channel: stable-gamepad-preview\n'             "$APK_CERT" > artifacts/SIGNING-INFO.txt
+          echo "APK signature matches the private preview keystore; public certificate SHA-256: $APK_CERT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: |
+            artifacts/WinDockGamepadPreview-Android.apk
+            artifacts/SIGNING-INFO.txt
+          if-no-files-found: error
+
+  publish:
+    name: Publish versioned GitHub prerelease
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: dist
+      - name: Create checksums and prerelease from tested artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          TAG="gamepad-v$PREVIEW_VERSION-g$SHORT_SHA"
+          cd dist
+          test -s SIGNING-INFO.txt
+          grep -q 'Signing channel: stable-gamepad-preview' SIGNING-INFO.txt
+          sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe > SHA256SUMS.txt
+          printf 'Version: %s\nCommit: %s\nRun: %s\nChannel: gamepad-preview\n' \
+            "$PREVIEW_VERSION" "$GITHUB_SHA" "$GITHUB_RUN_NUMBER" > BUILD-INFO.txt
+          cat > RELEASE-NOTES.md <<EOF
+          ## WinDock Gamepad Preview $PREVIEW_VERSION
+
+          EXPERIMENTAL BUILD - THE GAMEPAD IS ONLY A UI PREVIEW, NOT A PLAYABLE XBOX CONTROLLER.
+
+          Source: https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA
+          Workflow run: $GITHUB_RUN_NUMBER
+
+          Windows: WinDockGamepadPreviewSetup.exe - separate installation and configuration. Quit regular WinDock first (both use port 8620).
+          Android: WinDockGamepadPreview-Android.apk - separate app ID. This APK is signed using the dedicated persistent Preview keystore configured via private GitHub Actions secrets. Compare its public signing certificate fingerprint in SIGNING-INFO.txt with later releases.
+
+          The first migration from an OLD CI debug signing key to this permanent key can require uninstalling ONLY the previous Preview APK once. Subsequent APKs signed with this same key and higher versionCodes should support in-place upgrades after normal Android installer consent.
+
+          Portable Windows XInput baseline: download WinDockGamepadProbe-win-x64.exe or WinDockGamepadProbe-win-arm64.exe (ARM64 Windows). Verify SHA256SUMS.txt and double-click to see the baseline; the window waits for Enter, or run from a non-admin console with --baseline. No PowerShell script, .NET SDK/runtime install, driver, certificate changes or WinDock installer required. Both EXEs are UNSIGNED; if SmartScreen, antivirus, AppLocker or system policy blocks them, report this without bypassing protection. x64 is tested on CI; ARM64 only cross-built.
+
+          No gamepad driver is bundled. Windows installer and portable probes remain unsigned. Android Preview is signed with a private development key (not Play Store signing).
+
+          Progress: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/PROGRESS.md
+          How to install: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/INSTALL-PREVIEW.md
+          Check SHA256SUMS.txt, BUILD-INFO.txt and SIGNING-INFO.txt for verifiable source, version, assets and public certificate fingerprint.
+          EOF
+          gh release create "$TAG" \
+            WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe SHA256SUMS.txt BUILD-INFO.txt SIGNING-INFO.txt \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "WinDock Gamepad Preview $PREVIEW_VERSION" --notes-file RELEASE-NOTES.md
+, '^certificate_trust_changed=no
+            if ($LASTEXITCODE -ne 0) { throw 'Portable probe baseline failed' }
+            $report | ForEach-Object { Write-Output $_ }
+            if (-not ($report -match '^windows_version=') -or
+                -not ($report -match '^os_architecture=') -or
+                -not ($report -match '^connected_slots=[0-4]$')) {
+              throw 'Incomplete portable XInput baseline'
+            }
+            foreach ($slot in 0..3) {
+              if (-not ($report -match ("^slot={0} " -f $slot))) { throw "Missing XInput slot $slot" }
+            }
+          } finally { Pop-Location }
+          # ARM64 is cross-published; only x64 is run on the CI runner.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: |
+            artifacts/installer/WinDockGamepadPreviewSetup.exe
+            artifacts/installer/WinDockGamepadProbe-win-x64.exe
+            artifacts/installer/WinDockGamepadProbe-win-arm64.exe
+          if-no-files-found: error
+
+  android:
+    name: Android APK (separate preview app)
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Android SDK platform and tools
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
+      - name: Require and load dedicated stable Android preview signing key
+        env:
+          PREVIEW_KEYSTORE_BASE64: ${{ secrets.WINDOCK_PREVIEW_KEYSTORE_BASE64 }}
+          PREVIEW_STORE_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_STORE_PASSWORD }}
+          PREVIEW_KEY_ALIAS: ${{ secrets.WINDOCK_PREVIEW_KEY_ALIAS }}
+          PREVIEW_KEY_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_KEY_PASSWORD }}
+        run: |
+          if [ -n "$PREVIEW_KEYSTORE_BASE64" ] && [ -n "$PREVIEW_STORE_PASSWORD" ] && [ -n "$PREVIEW_KEY_ALIAS" ] && [ -n "$PREVIEW_KEY_PASSWORD" ]; then
+            umask 077
+            printf '%s' "$PREVIEW_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/windock-gamepad-preview.jks"
+            echo "WINDOCK_PREVIEW_KEYSTORE_PATH=$RUNNER_TEMP/windock-gamepad-preview.jks" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_STORE_PASSWORD=$PREVIEW_STORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_ALIAS=$PREVIEW_KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_PASSWORD=$PREVIEW_KEY_PASSWORD" >> "$GITHUB_ENV"
+            echo "Stable preview signing enabled (key stored only in Actions secrets)."
+          else
+            echo "::error::Missing one or more WINDOCK_PREVIEW signing secrets. Refusing to publish an APK with an accidental ephemeral signing key."
+            exit 1
+          fi
+      - name: Build numbered APK, unit tests and lint
+        working-directory: android
+        run: |
+          BASE_VERSION=$(node -p "require('../package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          PREVIEW_CODE=$((100000 + GITHUB_RUN_NUMBER))
+          bash ./gradlew assembleDebug testDebugUnitTest lintDebug \
+            "-PwindockPreviewVersionName=$PREVIEW_VERSION" \
+            "-PwindockPreviewVersionCode=$PREVIEW_CODE" \
+            --no-daemon --console=plain
+      - name: Confirm APK was signed by the permanent preview key
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose "$APK"
+          APK_CERT=$("$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n1)
+          KEY_CERT=$(keytool -exportcert -rfc -keystore "$WINDOCK_PREVIEW_KEYSTORE_PATH"             -alias "$WINDOCK_PREVIEW_KEY_ALIAS"             -storepass:env WINDOCK_PREVIEW_STORE_PASSWORD             | openssl x509 -inform PEM -outform DER | sha256sum | awk '{print $1}')
+          if [ -z "$APK_CERT" ] || [ -z "$KEY_CERT" ] || [ "$APK_CERT" != "$KEY_CERT" ]; then
+            echo "::error::APK signing identity differs from the stable preview keystore; refusing publication."
+            exit 1
+          fi
+          mkdir -p artifacts
+          cp "$APK" artifacts/WinDockGamepadPreview-Android.apk
+          printf 'Android APK signing certificate SHA-256: %s\nSigning channel: stable-gamepad-preview\n'             "$APK_CERT" > artifacts/SIGNING-INFO.txt
+          echo "APK signature matches the private preview keystore; public certificate SHA-256: $APK_CERT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: |
+            artifacts/WinDockGamepadPreview-Android.apk
+            artifacts/SIGNING-INFO.txt
+          if-no-files-found: error
+
+  publish:
+    name: Publish versioned GitHub prerelease
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: dist
+      - name: Create checksums and prerelease from tested artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          TAG="gamepad-v$PREVIEW_VERSION-g$SHORT_SHA"
+          cd dist
+          test -s SIGNING-INFO.txt
+          grep -q 'Signing channel: stable-gamepad-preview' SIGNING-INFO.txt
+          sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe > SHA256SUMS.txt
+          printf 'Version: %s\nCommit: %s\nRun: %s\nChannel: gamepad-preview\n' \
+            "$PREVIEW_VERSION" "$GITHUB_SHA" "$GITHUB_RUN_NUMBER" > BUILD-INFO.txt
+          cat > RELEASE-NOTES.md <<EOF
+          ## WinDock Gamepad Preview $PREVIEW_VERSION
+
+          EXPERIMENTAL BUILD - THE GAMEPAD IS ONLY A UI PREVIEW, NOT A PLAYABLE XBOX CONTROLLER.
+
+          Source: https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA
+          Workflow run: $GITHUB_RUN_NUMBER
+
+          Windows: WinDockGamepadPreviewSetup.exe - separate installation and configuration. Quit regular WinDock first (both use port 8620).
+          Android: WinDockGamepadPreview-Android.apk - separate app ID. This APK is signed using the dedicated persistent Preview keystore configured via private GitHub Actions secrets. Compare its public signing certificate fingerprint in SIGNING-INFO.txt with later releases.
+
+          The first migration from an OLD CI debug signing key to this permanent key can require uninstalling ONLY the previous Preview APK once. Subsequent APKs signed with this same key and higher versionCodes should support in-place upgrades after normal Android installer consent.
+
+          Portable Windows XInput baseline: download WinDockGamepadProbe-win-x64.exe or WinDockGamepadProbe-win-arm64.exe (ARM64 Windows). Verify SHA256SUMS.txt and double-click to see the baseline; the window waits for Enter, or run from a non-admin console with --baseline. No PowerShell script, .NET SDK/runtime install, driver, certificate changes or WinDock installer required. Both EXEs are UNSIGNED; if SmartScreen, antivirus, AppLocker or system policy blocks them, report this without bypassing protection. x64 is tested on CI; ARM64 only cross-built.
+
+          No gamepad driver is bundled. Windows installer and portable probes remain unsigned. Android Preview is signed with a private development key (not Play Store signing).
+
+          Progress: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/PROGRESS.md
+          How to install: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/INSTALL-PREVIEW.md
+          Check SHA256SUMS.txt, BUILD-INFO.txt and SIGNING-INFO.txt for verifiable source, version, assets and public certificate fingerprint.
+          EOF
+          gh release create "$TAG" \
+            WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe SHA256SUMS.txt BUILD-INFO.txt SIGNING-INFO.txt \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "WinDock Gamepad Preview $PREVIEW_VERSION" --notes-file RELEASE-NOTES.md
+, '^controller_created=no
+            if ($LASTEXITCODE -ne 0) { throw 'Portable probe baseline failed' }
+            $report | ForEach-Object { Write-Output $_ }
+            if (-not ($report -match '^windows_version=') -or
+                -not ($report -match '^os_architecture=') -or
+                -not ($report -match '^connected_slots=[0-4]$')) {
+              throw 'Incomplete portable XInput baseline'
+            }
+            foreach ($slot in 0..3) {
+              if (-not ($report -match ("^slot={0} " -f $slot))) { throw "Missing XInput slot $slot" }
+            }
+          } finally { Pop-Location }
+          # ARM64 is cross-published; only x64 is run on the CI runner.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: |
+            artifacts/installer/WinDockGamepadPreviewSetup.exe
+            artifacts/installer/WinDockGamepadProbe-win-x64.exe
+            artifacts/installer/WinDockGamepadProbe-win-arm64.exe
+          if-no-files-found: error
+
+  android:
+    name: Android APK (separate preview app)
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Android SDK platform and tools
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
+      - name: Require and load dedicated stable Android preview signing key
+        env:
+          PREVIEW_KEYSTORE_BASE64: ${{ secrets.WINDOCK_PREVIEW_KEYSTORE_BASE64 }}
+          PREVIEW_STORE_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_STORE_PASSWORD }}
+          PREVIEW_KEY_ALIAS: ${{ secrets.WINDOCK_PREVIEW_KEY_ALIAS }}
+          PREVIEW_KEY_PASSWORD: ${{ secrets.WINDOCK_PREVIEW_KEY_PASSWORD }}
+        run: |
+          if [ -n "$PREVIEW_KEYSTORE_BASE64" ] && [ -n "$PREVIEW_STORE_PASSWORD" ] && [ -n "$PREVIEW_KEY_ALIAS" ] && [ -n "$PREVIEW_KEY_PASSWORD" ]; then
+            umask 077
+            printf '%s' "$PREVIEW_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/windock-gamepad-preview.jks"
+            echo "WINDOCK_PREVIEW_KEYSTORE_PATH=$RUNNER_TEMP/windock-gamepad-preview.jks" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_STORE_PASSWORD=$PREVIEW_STORE_PASSWORD" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_ALIAS=$PREVIEW_KEY_ALIAS" >> "$GITHUB_ENV"
+            echo "WINDOCK_PREVIEW_KEY_PASSWORD=$PREVIEW_KEY_PASSWORD" >> "$GITHUB_ENV"
+            echo "Stable preview signing enabled (key stored only in Actions secrets)."
+          else
+            echo "::error::Missing one or more WINDOCK_PREVIEW signing secrets. Refusing to publish an APK with an accidental ephemeral signing key."
+            exit 1
+          fi
+      - name: Build numbered APK, unit tests and lint
+        working-directory: android
+        run: |
+          BASE_VERSION=$(node -p "require('../package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          PREVIEW_CODE=$((100000 + GITHUB_RUN_NUMBER))
+          bash ./gradlew assembleDebug testDebugUnitTest lintDebug \
+            "-PwindockPreviewVersionName=$PREVIEW_VERSION" \
+            "-PwindockPreviewVersionCode=$PREVIEW_CODE" \
+            --no-daemon --console=plain
+      - name: Confirm APK was signed by the permanent preview key
+        run: |
+          set -euo pipefail
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose "$APK"
+          APK_CERT=$("$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --print-certs "$APK" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -n1)
+          KEY_CERT=$(keytool -exportcert -rfc -keystore "$WINDOCK_PREVIEW_KEYSTORE_PATH"             -alias "$WINDOCK_PREVIEW_KEY_ALIAS"             -storepass:env WINDOCK_PREVIEW_STORE_PASSWORD             | openssl x509 -inform PEM -outform DER | sha256sum | awk '{print $1}')
+          if [ -z "$APK_CERT" ] || [ -z "$KEY_CERT" ] || [ "$APK_CERT" != "$KEY_CERT" ]; then
+            echo "::error::APK signing identity differs from the stable preview keystore; refusing publication."
+            exit 1
+          fi
+          mkdir -p artifacts
+          cp "$APK" artifacts/WinDockGamepadPreview-Android.apk
+          printf 'Android APK signing certificate SHA-256: %s\nSigning channel: stable-gamepad-preview\n'             "$APK_CERT" > artifacts/SIGNING-INFO.txt
+          echo "APK signature matches the private preview keystore; public certificate SHA-256: $APK_CERT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: |
+            artifacts/WinDockGamepadPreview-Android.apk
+            artifacts/SIGNING-INFO.txt
+          if-no-files-found: error
+
+  publish:
+    name: Publish versioned GitHub prerelease
+    if: github.ref == 'refs/heads/feature/universal-gamepad'
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-windows-preview
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: gamepad-android-preview
+          path: dist
+      - name: Create checksums and prerelease from tested artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          BASE_VERSION=$(node -p "require('./package.json').version")
+          PREVIEW_VERSION="$BASE_VERSION-gamepad.$GITHUB_RUN_NUMBER"
+          SHORT_SHA=$(echo "$GITHUB_SHA" | cut -c1-7)
+          TAG="gamepad-v$PREVIEW_VERSION-g$SHORT_SHA"
+          cd dist
+          test -s SIGNING-INFO.txt
+          grep -q 'Signing channel: stable-gamepad-preview' SIGNING-INFO.txt
+          sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe > SHA256SUMS.txt
+          printf 'Version: %s\nCommit: %s\nRun: %s\nChannel: gamepad-preview\n' \
+            "$PREVIEW_VERSION" "$GITHUB_SHA" "$GITHUB_RUN_NUMBER" > BUILD-INFO.txt
+          cat > RELEASE-NOTES.md <<EOF
+          ## WinDock Gamepad Preview $PREVIEW_VERSION
+
+          EXPERIMENTAL BUILD - THE GAMEPAD IS ONLY A UI PREVIEW, NOT A PLAYABLE XBOX CONTROLLER.
+
+          Source: https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA
+          Workflow run: $GITHUB_RUN_NUMBER
+
+          Windows: WinDockGamepadPreviewSetup.exe - separate installation and configuration. Quit regular WinDock first (both use port 8620).
+          Android: WinDockGamepadPreview-Android.apk - separate app ID. This APK is signed using the dedicated persistent Preview keystore configured via private GitHub Actions secrets. Compare its public signing certificate fingerprint in SIGNING-INFO.txt with later releases.
+
+          The first migration from an OLD CI debug signing key to this permanent key can require uninstalling ONLY the previous Preview APK once. Subsequent APKs signed with this same key and higher versionCodes should support in-place upgrades after normal Android installer consent.
+
+          Portable Windows XInput baseline: download WinDockGamepadProbe-win-x64.exe or WinDockGamepadProbe-win-arm64.exe (ARM64 Windows). Verify SHA256SUMS.txt and double-click to see the baseline; the window waits for Enter, or run from a non-admin console with --baseline. No PowerShell script, .NET SDK/runtime install, driver, certificate changes or WinDock installer required. Both EXEs are UNSIGNED; if SmartScreen, antivirus, AppLocker or system policy blocks them, report this without bypassing protection. x64 is tested on CI; ARM64 only cross-built.
+
+          No gamepad driver is bundled. Windows installer and portable probes remain unsigned. Android Preview is signed with a private development key (not Play Store signing).
+
+          Progress: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/PROGRESS.md
+          How to install: https://github.com/$GITHUB_REPOSITORY/blob/feature/universal-gamepad/docs/gamepad/INSTALL-PREVIEW.md
+          Check SHA256SUMS.txt, BUILD-INFO.txt and SIGNING-INFO.txt for verifiable source, version, assets and public certificate fingerprint.
+          EOF
+          gh release create "$TAG" \
+            WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe SHA256SUMS.txt BUILD-INFO.txt SIGNING-INFO.txt \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "WinDock Gamepad Preview $PREVIEW_VERSION" --notes-file RELEASE-NOTES.md
+)) {
+              if (-not ($audit -match $pattern)) { throw "Portable audit missing: $pattern" }
+            }
             $report = @(& $probe --baseline)
             if ($LASTEXITCODE -ne 0) { throw 'Portable probe baseline failed' }
             $report | ForEach-Object { Write-Output $_ }
