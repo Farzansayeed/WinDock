@@ -25,8 +25,16 @@ export function createFakeNativeSinkFactory({ onEvent = () => {}, onChild = () =
     let sequence = 0;
     let stdout = "";
     let killTimer = null;
+    let readySeen = false;
+    let readyResolve;
+    let readyReject;
+    const ready = new Promise((resolve, reject) => {
+      readyResolve = resolve;
+      readyReject = reject;
+    });
     const signalFault = () => {
       failed = true;
+      if (!readySeen) readyReject(new Error("native fake receiver stopped before readiness"));
       if (!stopped) fault?.();
     };
     const done = new Promise(resolve => child.once("close", resolve));
@@ -48,13 +56,23 @@ export function createFakeNativeSinkFactory({ onEvent = () => {}, onChild = () =
         const line = stdout.slice(0, pos).trim();
         stdout = stdout.slice(pos + 1);
         if (!line) continue;
-        try { onEvent(JSON.parse(line)); }
-        catch { signalFault(); child.kill(); return; }
+        try {
+          const event = JSON.parse(line);
+          if (event?.event === "ready" &&
+              (readySeen || event.v !== 1 || event.sink !== "fake"))
+            throw new Error("unexpected native readiness event");
+          onEvent(event);
+          if (event?.event === "ready") {
+            readySeen = true;
+            readyResolve();
+          }
+        } catch { signalFault(); child.kill(); return; }
       }
     });
     onChild(child);
 
     return {
+      ready, // Resolves only on native v1 fake-sink ACK, never on spawn alone.
       write(state) {
         if (stopped || failed || child.stdin.destroyed || sequence >= GAMEPAD_MAX_SEQ)
           throw new Error("native lab receiver unavailable");

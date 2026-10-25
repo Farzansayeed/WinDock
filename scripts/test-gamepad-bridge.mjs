@@ -24,8 +24,10 @@ function connect(url, headers = {}) {
   return new Promise(resolve => {
     const socket = new WebSocket(url, { headers });
     let done = false;
+    const messages = [];
+    socket.on("message", data => { try { messages.push(JSON.parse(String(data))); } catch {} });
     const finish = value => {
-      if (!done) { done = true; resolve({ ...value, socket }); }
+      if (!done) { done = true; resolve({ ...value, messages, socket }); }
     };
     socket.once("open", () => finish({ opened: true }));
     socket.once("unexpected-response", (_, res) => {
@@ -81,6 +83,8 @@ try {
   const first = await connect(url, { origin, cookie });
   ok(first.opened, "paired same-origin owner accepted");
   await until(() => sessions() === 1, "native sidecar started for authorized owner");
+  await until(() => first.messages.some(x => x.type === "ready"),
+    "WebSocket ready follows real native child readiness");
   ok(children.length === 1, "one native process per owner");
   const busy = await connect(url, { origin, cookie });
   ok(!busy.opened && busy.status === 409, "second session cannot take ownership");
@@ -104,6 +108,8 @@ try {
   const second = await connect(url, { origin, cookie });
   ok(second.opened, "new owner accepted after timed-out child");
   await until(() => sessions() === 2, "replacement native process started");
+  await until(() => second.messages.some(x => x.type === "ready"),
+    "replacement WebSocket waits for new native readiness");
   second.socket.send(frame(1));
   await until(() => records.filter(x => x.event === "report" && x.buttons === 0x1000).length >= 2,
     "second owner reports A through fresh native child");
@@ -118,6 +124,8 @@ try {
   const third = await connect(url, { origin, cookie });
   ok(third.opened, "owner can reconnect after cleanup");
   await until(() => sessions() === 3, "third fake sidecar active");
+  await until(() => third.messages.some(x => x.type === "ready"),
+    "third WebSocket waits for child readiness");
   third.socket.send(frame(1));
   await until(() => records.filter(x => x.event === "report" && x.buttons === 0x1000).length >= 3,
     "third session reaches native fake sink");

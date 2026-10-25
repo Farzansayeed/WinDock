@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-25 — P2/VS1 native process readiness and ownership safety (fake sink only)
+
+**Branch / code commit:** `feature/universal-gamepad`, this atomic code+tracker commit following docs-only `d859b12`. Confirmed starting HEAD `d859b124bceea9e87b6e62b540f8e3865b8e4a16`; [handoff CI #40132376572](https://github.com/Farzansayeed/WinDock/actions/runs/40132376572) PASSED and highest non-draft [Preview v32](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.32-g3d5bf3b) published. New commit's CI and any Preview release **NOT YET RUN/VERIFIED at commit time**.
+
+**Implementation:** Existing authenticated /gamepad channel with injected lab sink now requires an optional native receiver readiness promise before sending WS `ready` or accepting gamepad states; this preserves the behavior of synchronous in-memory sinks. A pending child cannot silently be treated as available; startup rejection, early frame, native fault (including synchronous onFault), late ACK, and stale owner go through neutral, sink disposal and owner release. The lab Node child bridge settles its readiness only after the .NET fake-sink v1 ready JSON event (not merely `spawn`), and rejects on failed child startup. Existing native 180ms watchdog and first-frame 1s grace are retained.
+
+**Verification:** Added `scripts/verify-gamepad-readiness.mjs` as a cross-OS Node suite oracle for delayed ACK, forwarding only after ACK, startup rejection, synchronous fault, neutral cleanup, exactly-once disposal. Expanded Windows `scripts/test-gamepad-bridge.mjs` to require actual native ready event before frame injection and on each owner reconnect. Automated tests are **queued in GitHub Actions on push**; this execution environment has no .NET SDK or GitHub network access for local compilation. Do not mark CI success until actions finish. No newly performed Windows/Android hardware testing; owner-accepted prior physical Preview, read-only 0/4 XInput baseline and Android v25 regression checks stand without repeat.
+
+**Safety:** This remains TEST-ONLY: ordinary WinDock `/gamepad` is 503; no virtual Xbox device, Windows driver, elevation, certificate trust change, licence, gameplay, cloud traffic or signing-secret access. Next: verify multi-OS CI and Preview publication; then continue driver-neutral lifecycle/security improvements or seek separately informed driver approval when ready. Spotify/indicators/brightness/Edge deferred.
+
+---
+
 ## 2026-10-25 — Clean session close, durable October 26 handoff (docs only)
 
 **User instruction:** Close work for today and continue tomorrow using repository docs; provide owner one copy-and-paste prompt and only truly unavoidable owner tasks. No unattended/background work is running.

@@ -38,6 +38,7 @@ const EXPECTED = {
   "verify-gamepad-probe.mjs": "gamepad-probe verification passed",
   "verify-gamepad-protocol.mjs": "gamepad-protocol verification passed",
   "verify-gamepad-hub.mjs": "gamepad-hub verification passed",
+  "verify-gamepad-readiness.mjs": "gamepad-readiness verification passed",
   "verify-linux.mjs": "linux verification passed",
   "verify-linux-input.mjs": "linux-input verification passed",
   "verify-linux-downloads.mjs": "linux-downloads verification passed",

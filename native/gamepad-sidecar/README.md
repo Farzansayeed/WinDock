@@ -34,4 +34,10 @@ single ownership, forwards small whole-state frames into a child process,
 and checks native independent expiration, WS disconnect, and child-crash
 cleanup. It never turns `/gamepad` on in ordinary WinDock execution.
 The Node hub now supports an optional `onFault` hook for any future safe
-sink, immediately closing a session when the sink dies.
+sink, immediately closing a session when the sink dies. The lab bridge now also
+exposes a **native-acknowledged readiness promise**: a paired WebSocket receives
+`ready` only after the child reports `{event:ready,v:1,sink:fake}`, and frames
+sent before that acknowledgement terminate the owner fail-neutral. A child exit,
+rejected startup, late ACK or synchronous fault cannot reopen the session.
+The 1-second first-frame/startup bound is independent of process-spawn success.
+The production route still returns HTTP 503 without an approved backend.

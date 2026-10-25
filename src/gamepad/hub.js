@@ -69,6 +69,8 @@ export function createGamepadHub({
     let gate;
     let disposed = false;
     let startedAt = now();
+    let nativeReady;
+    let sinkReady = false;
     let rateStart = startedAt;
     let count = 0;
     let timer;
@@ -110,9 +112,17 @@ export function createGamepadHub({
           throw new TypeError("invalid native sink failure hook");
         sink.onFault(() => cleanup(1011));
       }
+      // An optional readiness promise must reflect the CHILD receiver's own
+      // startup ACK; process.spawn and an open stdin pipe are not device readiness.
+      nativeReady = sink.ready;
+      if (nativeReady !== undefined &&
+          (!nativeReady || typeof nativeReady.then !== "function"))
+        throw new TypeError("invalid native sink readiness promise");
     } catch {
       cleanup(1011); return;
     }
+    // A synchronous onFault callback may already have closed this owner.
+    if (disposed) return;
 
     timer = setInterval(() => {
       if (disposed) return;
@@ -129,6 +139,9 @@ export function createGamepadHub({
     ws.on("error", () => cleanup(1011));
     ws.on("message", (payload, isBinary) => {
       if (disposed) return;
+      // No input can be delivered to a not-yet-initialized native receiver.
+      // The client must wait for the WS ready ACK after native readiness.
+      if (!sinkReady) { cleanup(1008); return; }
       const time = now();
       // A delayed timer callback must not admit an expired first input.
       if (!isAuthorized(req) || !Number.isFinite(time) ||
@@ -147,7 +160,18 @@ export function createGamepadHub({
       try { sink.write(verdict.state); }
       catch { cleanup(1011); }
     });
-    send({ type: "ready", v: 1 });
+    const announceReady = () => {
+      if (disposed) return; // late readiness after disconnect/fault is inert
+      // Check the deadline here too: a stalled event loop cannot resurrect
+      // an expired native-startup lease via a late promise resolution.
+      if (!isAuthorized(req) || gamepadStartupExpired(startedAt, now())) {
+        cleanup(1008); return;
+      }
+      sinkReady = true;
+      send({ type: "ready", v: 1 });
+    };
+    if (nativeReady === undefined) announceReady();
+    else Promise.resolve(nativeReady).then(announceReady, () => cleanup(1011));
   });
 
   return {
