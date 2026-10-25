@@ -68,3 +68,7 @@
 - `android/app/src/main/java/com/windock/app/GamepadPairedWebSocket.kt`: one-owner OkHttp WS adapter with exact same-origin Cookie and ready/neutral logic; can be wired to Activity in M0c only after tests.
 - `android/app/src/test/java/com/windock/app/GamepadPairedWebSocketTest.kt`: real local MockWebServer test and invalid-cookie tests.
 - `.github/workflows/ci.yml`: explicit fourth Android unit/lint job; `CI passed` now requires Android as well as Windows/macOS/Linux. No APK release job or signing secret read.
+
+## M0c Android debug action
+
+`MainActivity.kt` connects GamepadTouchView to its own GamepadPairedWebSocket only upon explicit DEBUG-only paired LAB button, with 10ms `tick()` on UI and idempotent neutral/close on pause, navigation or Activity exit. Neither the production server nor Android creates or installs any driver. The live Windows fake-lab launcher is a separate owner-invoked step.

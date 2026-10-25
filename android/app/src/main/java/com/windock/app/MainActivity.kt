@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.webkit.CookieManager
 import android.view.View
 import android.view.MotionEvent
 import android.view.KeyEvent
@@ -52,6 +53,14 @@ class MainActivity : Activity() {
     private var phoneDialog: AlertDialog? = null
     private var gamepadLayer: FrameLayout? = null
     private var gamepadTouch: GamepadTouchView? = null
+    private var gamepadLab: GamepadPairedWebSocket? = null
+    private val gamepadLabTick = object : Runnable {
+        override fun run() {
+            val session = gamepadLab ?: return
+            if (session.tick()) gamepadTouch?.postDelayed(this, 10L)
+            else gamepadTouch?.removeCallbacks(this)
+        }
+    }
     private var wakingGesture = false
     private val wakingKeys = mutableSetOf<Int>()
     private var usbOnly = false
@@ -140,7 +149,8 @@ class MainActivity : Activity() {
 
     /**
      * Native first-slice UI shares the existing WinDock Activity/WebView.
-     * It does not own a controller socket; it NEVER forwards test frames to PC.
+     * Transport remains inactive unless explicit DEBUG-only fake lab is tapped.
+     * This does NOT create an Xbox device; production /gamepad is unavailable.
      */
     private fun openNativeGamepad() {
         if (gamepadLayer != null || !trustedKeyboardPage()) return
@@ -161,6 +171,57 @@ class MainActivity : Activity() {
             leftMargin = (12 * dp).toInt()
             topMargin = (12 * dp).toInt()
         })
+        if (BuildConfig.DEBUG) {
+            val labStatus = TextView(this).apply {
+                text = "LOCAL ONLY — NO XBOX DEVICE"
+                setTextColor(0xffdceaff.toInt())
+                textSize = 12f
+                gravity = Gravity.CENTER
+            }
+            layer.addView(labStatus, FrameLayout.LayoutParams(
+                (260 * dp).toInt(), (44 * dp).toInt(),
+                Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL))
+            val labButton = Button(this).apply {
+                text = "Paired LAB (fake only)"
+                isAllCaps = false
+                contentDescription = "Explicit driver-free paired controller lab, not Xbox"
+                setOnClickListener {
+                    if (gamepadLab != null || !trustedKeyboardPage()) return@setOnClickListener
+                    val target = GamepadSocketTarget.fromTrustedPage(endpoint, web.url)
+                    val cookies = target?.let {
+                        CookieManager.getInstance().getCookie(it.origin)
+                    }
+                    val session = target?.let {
+                        GamepadPairedWebSocket.begin(it, cookies) { stage ->
+                            runOnUiThread {
+                                if (gamepadLayer === layer) {
+                                    labStatus.text = when (stage) {
+                                        "lab-ready" -> "PAIRED FAKE RECEIVER — NO XBOX"
+                                        "lab-rejected" -> "LAB protocol refused; closed"
+                                        else -> "LAB unavailable; no Xbox device"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (session == null) {
+                        labStatus.text = "Pair with WinDock first; nothing sent"
+                    } else {
+                        gamepadLab = session
+                        pad.onStateChanged = { state -> session.touch(state) }
+                        pad.postDelayed(gamepadLabTick, 10L)
+                        isEnabled = false
+                        labStatus.text = "LAB waiting for PC fake receiver"
+                    }
+                }
+            }
+            layer.addView(labButton, FrameLayout.LayoutParams(
+                (215 * dp).toInt(), (48 * dp).toInt(),
+                Gravity.TOP or Gravity.END).apply {
+                rightMargin = (8 * dp).toInt()
+                topMargin = (8 * dp).toInt()
+            })
+        }
         gamepadTouch = pad
         gamepadLayer = layer
         findViewById<FrameLayout>(R.id.root).addView(layer)
@@ -170,6 +231,10 @@ class MainActivity : Activity() {
     private fun closeNativeGamepad(returnToTouchpad: Boolean) {
         val layer = gamepadLayer ?: return
         gamepadTouch?.neutralize()
+        gamepadTouch?.removeCallbacks(gamepadLabTick)
+        gamepadTouch?.onStateChanged = null
+        gamepadLab?.stop()
+        gamepadLab = null
         (layer.parent as? FrameLayout)?.removeView(layer)
         gamepadLayer = null
         gamepadTouch = null

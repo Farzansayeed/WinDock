@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-10-25 — M0c explicit DEBUG-lab Android Activity integration
+
+**2026-10-25 M0c EXPLICIT ANDROID DEBUG-LAB UI WIRING:** Native GamepadTouchView still starts local-only. In DEBUG APK only, new `Paired LAB (fake only)` button validates the active trusted WebView origin, obtains an existing HttpOnly session cookie via CookieManager, extracts only `windock_session`, opens Kotlin WS adapter only on opt-in, forwards left-stick/A after authenticated host v1 ready, schedules 10ms heartbeat, and closes neutral on mode leave/app background/network loss. Live production `/gamepad` remains HTTP 503. This commit does NOT enable an Xbox driver, install tools, access vendor binaries, publish an APK, or merge main. Physical Android/Windows integration not field-tested. Related JVM clock compatibility fix at [`6ee5105`](https://github.com/Farzansayeed/WinDock/commit/6ee51050e332e5be455dfa232db3908a946af746); complete four-platform CI pending.
+
+**Safety:** Pressing Gamepad normally still does not open any gamepad socket. Pressing opt-in LAB first requires a trusted page/session cookie, never retransmits pre-ready state; closing Activity or switching to Touchpad issues last-neutral best effort and ends the owned socket. The separate Windows fake lab launcher remains the next step. No user hardware check is required to review this code.
+
+---
+
 ## 2026-10-25 — M0b Android JVM timing correction
 
 **2026-10-25 M0b Android CI failure diagnosed and fixed:** First new Android job [run #40189027942](https://github.com/Farzansayeed/WinDock/actions/runs/40189027942) FAILED 1/38 JVM Kotlin tests at GamepadPairedWebSocketTest.kt:52, while Windows/Linux/macOS PASSED. Root cause: construction called Android-only `SystemClock.elapsedRealtime()` from local JVM test. Switched to `System.nanoTime()/1_000_000` monotonic source, available on Android and JVM, without loosening any handshake/lease/neutral deadline. Made test readiness-status synchronization explicit to avoid cross-thread flaky assertion. **No phone or physical controller has been tested.** CI pending.

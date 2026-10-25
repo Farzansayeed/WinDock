@@ -10,7 +10,8 @@ import kotlin.math.min
 
 /**
  * Native Kotlin Android input preview with real pointer-ID multitouch.
- * The model is kept local: NOTHING is sent to the host or a virtual device.
+ * Local by default; explicit DEBUG LAB may forward native touch states over
+ * the existing paired WebSocket to a fake receiver, NEVER an Xbox driver.
  */
 internal class GamepadTouchView(context: Context) : View(context) {
     private val model = GamepadTouchModel()
@@ -25,7 +26,7 @@ internal class GamepadTouchView(context: Context) : View(context) {
 
     init {
         setBackgroundColor(background)
-        contentDescription = "Native local-only gamepad input test. Left stick and A button. Not connected to a PC controller."
+        contentDescription = "Native gamepad test. Left stick and A button. No Xbox device."
         isFocusable = true
     }
 
@@ -61,7 +62,7 @@ internal class GamepadTouchView(context: Context) : View(context) {
         canvas.drawText("A", ax, ay + paint.textSize * .35f, paint)
         paint.textSize = min(h * .053f, 20f * resources.displayMetrics.scaledDensity)
         canvas.drawText("LEFT STICK", sx, sy + r + paint.textSize * 1.6f, paint)
-        canvas.drawText("LOCAL INPUT TEST ONLY — NO PC CONTROLLER",
+        canvas.drawText("GAMEPAD LAB INPUT — NO XBOX DEVICE",
             w * .5f, h * .2f, paint)
         canvas.drawText("LX ${state.lx}   LY ${state.ly}   A ${if (state.a) "DOWN" else "UP"}",
             w * .5f, h * .92f, paint)
