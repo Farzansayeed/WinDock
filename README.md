@@ -18,7 +18,7 @@ screen — all over your local network, with no account or cloud service.
 
 ## This fork: Gamepad development preview
 
-**The upstream download links below are for original WinDock, not this fork's Gamepad changes.** Download the fork's experimental [Windows and Android preview builds](docs/gamepad/INSTALL-PREVIEW.md) from [this fork's Releases](https://github.com/Farzansayeed/WinDock/releases) **after its build workflow succeeds**. Each successful source build is versioned and gets a prerelease with checksums. The Gamepad is currently **UI preview only**, not yet a working controller.
+**The upstream download links below are for original WinDock, not this fork's Gamepad changes.** Download the fork's experimental [Windows and Android preview builds](docs/gamepad/INSTALL-PREVIEW.md) from [this fork's Releases](https://github.com/Farzansayeed/WinDock/releases) **after its build workflow succeeds**. **Private M0 branch pushes now run CI without automatic Preview publication.** The last numbered published Gamepad Preview is v46, while newer debug-only Kotlin→Windows fake-sink lab code requires a source build. There is still **no genuine Xbox/XInput device or working PC gameplay**. See [private M0 fake lab guide](docs/gamepad/M0-LAB-TESTING.md).
 
 ## Get started
 

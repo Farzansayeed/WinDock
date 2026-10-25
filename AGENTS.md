@@ -1,5 +1,7 @@
 # WinDock — binding instructions for future ChatGPT/Codex agents
 
+**2026-10-25 M0e RESUME:** See [M0-LAB-TESTING.md](docs/gamepad/M0-LAB-TESTING.md), [NEXT-SESSION.md](docs/gamepad/NEXT-SESSION.md), PROGRESS and WORKLOG. Source commit `47c3aa5` adds bounded manual fake lab A/stick notices and host processing p50/p95/p99 only; verify current CI. No physical Android test or new signed Preview, no driver/vendor/cert privileges. Newer private M0→M8 roadmap overrides historical P2 priority, preserving all safety and accepted evidence.
+
 ## PRIMARY ACTIVE OWNER DIRECTIVE — private-first development (2026-10-25)
 
 The user currently wants a **personal-and-friends local prototype**, not a public distribution, publication, or merge into main. They prioritize **free/open-source tooling, lowest practical input latency and natural touch feel, low-end performance scalability, multiple simultaneous local players, and genuinely readable/maintained code with no stale or broken paths**. These are binding design constraints in every subsequent development session.

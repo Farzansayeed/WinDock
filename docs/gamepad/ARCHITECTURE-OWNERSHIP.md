@@ -77,3 +77,9 @@
 
 - `scripts/gamepad-fake-lab-server.mjs`: explicit Windows CLI with private IPv4 only, ephemeral config, normal PIN pairing and `.NET` FAKE sink only; not started by normal WinDock or background workflow.
 - `scripts/test-gamepad-sidecar.mjs`: first A report sent immediately on child's ready output, neutral watchdog still 180ms; continue to test timeout, invalid and EOF without relaxing assertions.
+
+## M0e private fake lab observability (2026-10-25)
+
+- `scripts/lib/gamepad-lab-observer.mjs` counts fixed categories of C# **fake** receiver events and prints at most 16 redacted notices. It does not save individual frame values, address, pairing cookie/PIN, per-frame timing or player identity. Its pure Node regression `scripts/verify-gamepad-lab-observer.mjs` is included in `npm test`.
+- `scripts/gamepad-fake-lab-server.mjs`, which must be explicitly launched on Windows/private IPv4, injects this observer into the existing fake native bridge. It also opts into the preexisting `createGamepadTimingWindow(256)` metric and prints only aggregate host processing p50/p95/p99/max on Ctrl+C.
+- Production server and Android release remain unchanged. These host timings do **not** measure Android↔PC network RTT, cross-process wall-clock one-way latency, genuine Xbox/XInput submission, or gameplay. See [M0-LAB-TESTING.md](M0-LAB-TESTING.md).
