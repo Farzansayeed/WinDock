@@ -1,6 +1,10 @@
 <!-- 2026-10-23: signing security update — owner reports four GitHub Actions secrets provisioned; requires a new successful release proving signer consistency. -->
 # WinDock Universal Gamepad — LIVE PROGRESS TRACKER
 
+**2026-10-25 M0 v3 DIAGNOSTIC ARTIFACTS VERIFIED (NOT PHYSICAL PASS):** Source `27f72e44a360bb62e4ca605ebfdd47a860adbcb0` [5-job CI #40215690132](https://github.com/Farzansayeed/WinDock/actions/runs/40215690132) SUCCESS, [private artifact workflow #40215690225](https://github.com/Farzansayeed/WinDock/actions/runs/40215690225) SUCCESS (Windows fake receiver, Android debug APK, matched bundle). Download artifact `M0-FAKE-LAB-v3-diagnostic-matched-downloads` containing `WinDock-Gamepad-M0-LAB-v3-Android.apk`, `WinDock-Gamepad-M0-LAB-v3-Windows-x64.zip`, checksums and BUILD-INFO, source SHA consistent. Artifact only (not a GitHub Release), no stable Preview signer used. v2 owner physical results FAILED transport stability; the fresh v3 on-phone result remains UNTESTED. Fix exposes fixed server close reason on Android, initializes OkHttp socket before ready, removes dual-UI flash while retaining browser preview. No Xbox backend, native 180ms watchdog/1s startup unchanged, no driver/vendor/elevation/trust/main merge. Do NOT repeat previously accepted physical installation/Windows pairing/XInput audits; only recheck novel v3 connection/input/exit. 
+
+
+
 **2026-10-25 v3 CI issue/retry:** New source CI #40215553652 and initial v3 packaging #40215553983 caught obsolete `verify-pwa.mjs` source string expectation after intentionally separating Android native overlay from plain browser preview. `verify-gamepad-ui.mjs` passed 29 assertions. Updated the old PWA gate to explicitly require both PWA preview branch and Android native overlay bypass with touchpad underlay; re-trigger private v3 artifact workflow. New exact SHA CI and Kotlin test remain to verify; no host/phone real success claimed and no deadlined changed.
 
 

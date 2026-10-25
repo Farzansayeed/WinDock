@@ -1,5 +1,13 @@
 # WinDock Gamepad — chronological worklog
 
+## 2026-10-25 — M0 v3 green CI and private matched artifacts
+
+**2026-10-25 M0 v3 DIAGNOSTIC ARTIFACTS VERIFIED (NOT PHYSICAL PASS):** Source `27f72e44a360bb62e4ca605ebfdd47a860adbcb0` [5-job CI #40215690132](https://github.com/Farzansayeed/WinDock/actions/runs/40215690132) SUCCESS, [private artifact workflow #40215690225](https://github.com/Farzansayeed/WinDock/actions/runs/40215690225) SUCCESS (Windows fake receiver, Android debug APK, matched bundle). Download artifact `M0-FAKE-LAB-v3-diagnostic-matched-downloads` containing `WinDock-Gamepad-M0-LAB-v3-Android.apk`, `WinDock-Gamepad-M0-LAB-v3-Windows-x64.zip`, checksums and BUILD-INFO, source SHA consistent. Artifact only (not a GitHub Release), no stable Preview signer used. v2 owner physical results FAILED transport stability; the fresh v3 on-phone result remains UNTESTED. Fix exposes fixed server close reason on Android, initializes OkHttp socket before ready, removes dual-UI flash while retaining browser preview. No Xbox backend, native 180ms watchdog/1s startup unchanged, no driver/vendor/elevation/trust/main merge. Do NOT repeat previously accepted physical installation/Windows pairing/XInput audits; only recheck novel v3 connection/input/exit. 
+
+---
+
+
+
 **2026-10-25 v3 test correction:** All three desktop CI OS `npm test` failed the previous `verify-pwa.mjs` hardcoded comment requirement because source now routes Android into native-only controller overlay. Existing `verify-gamepad-ui.mjs` correctly passed. Updated PWA verifier to assert both isolated browser Gamepad preview and native Android touchpad-underlay design, without removing safety. Initial v3 workflow #40215553983 failed while Windows npm test ran; update its path to trigger single private-artifact rerun. CI actual outcome TBD. Physical device v2 still failed; do not claim v3 passed field checks.
 
 
