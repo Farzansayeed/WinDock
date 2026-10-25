@@ -5,7 +5,7 @@
 ## Local prerequisites and safety
 
 - Windows PC on a private LAN, Node.js 20+ (CI uses 24), and .NET 8 SDK to build the local FAKE sidecar. Windows private IPv4 must be supplied manually.
-- An Android source-built **DEBUG** APK from this branch is optional for physical testing, and must be safe to install independently. Do **NOT** uninstall, overwrite or downgrade your already installed permanently signed Preview or regular WinDock. Standard debug APK signing may conflict with existing Preview; stop and leave hardware test NOT TESTED rather than uninstall.
+- Build the independent **WinDock Gamepad LAB** APK with `cd android` then `./gradlew assembleDebug` (on Windows use `gradlew.bat assembleDebug`), without any `windockPreviewVersionName` property. The APK is `android/app/build/outputs/apk/debug/app-debug.apk`, package ID `com.windock.app.gamepadlab`, using a standard development signing key. It can install alongside regular `com.windock.app` and signed Preview `com.windock.app.gamepadpreview`. Do not uninstall/overwrite either older app or release the debug APK publicly. Cancel any installer prompt that proposes replacing regular WinDock or Preview. Independently installed LAB data/cookies are separate: connect and pair normally with the manual fake server.
 - Do not download/run HIDMaestro, install drivers, elevate, modify machine trust/certificates, disable Windows security protections, publish an APK/release, merge branches or buy licences. Never post pairing PIN, cookies, tokens, internal network address or private logs.
 
 ## Checks that do not need any physical device

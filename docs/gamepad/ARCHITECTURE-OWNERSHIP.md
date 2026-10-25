@@ -78,6 +78,10 @@
 - `scripts/gamepad-fake-lab-server.mjs`: explicit Windows CLI with private IPv4 only, ephemeral config, normal PIN pairing and `.NET` FAKE sink only; not started by normal WinDock or background workflow.
 - `scripts/test-gamepad-sidecar.mjs`: first A report sent immediately on child's ready output, neutral watchdog still 180ms; continue to test timeout, invalid and EOF without relaxing assertions.
 
+## M0f independently installable Android debug lab
+
+`android/app/build.gradle` chooses separate `com.windock.app.gamepadlab` and `WinDock Gamepad LAB` label only when the Preview-version property is absent. `android/app/src/main/AndroidManifest.xml` uses a Gradle-supplied label placeholder. Existing signed Preview property keeps `.gamepadpreview` and the normal `@string/app_name` label, and regular release remains unchanged. `.github/workflows/ci.yml` builds the actual ordinary debug APK and uses Android SDK `aapt` to assert package identity and label; no release or signing secret access. Kotlin Gamepad transport/auth and native watchdog unchanged; installing a new debug app is NOT proof of physical Android/Windows interoperability.
+
 ## M0e private fake lab observability (2026-10-25)
 
 - `scripts/lib/gamepad-lab-observer.mjs` counts fixed categories of C# **fake** receiver events and prints at most 16 redacted notices. It does not save individual frame values, address, pairing cookie/PIN, per-frame timing or player identity. Its pure Node regression `scripts/verify-gamepad-lab-observer.mjs` is included in `npm test`.
