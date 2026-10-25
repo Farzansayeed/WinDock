@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-25 — Repair backend audit workflow YAML before job execution
+
+**Branch / commit:** `feature/universal-gamepad`; correction commit after `2eb4f3f`, preserving previous code/tracker changes.
+
+**Observed failure:** [CI #40174892469](https://github.com/Farzansayeed/WinDock/actions/runs/40174892469) and [Preview #40174893194](https://github.com/Farzansayeed/WinDock/actions/runs/40174893194) failed before creating jobs: an unsafe string replacement expanded subsequent workflow source into the new regex field, making YAML invalid. No runner compiled the new C# probe; never characterize these as passing or driver failures.
+
+**Repair:** Reconstructed `.github/workflows/ci.yml` and `.github/workflows/gamepad-preview.yml` from last passing `40b82301`, preserving all previous jobs/installer/signer gates and inserting only bounded read-only `--backend-audit` smoke checks. Checked resulting text lengths and unique anchors. New CI/Preview PENDING until GitHub responds.
+
+**Safety:** Still no driver, certificate changes, administrator action, licence purchase, gameplay or owner physical retest.
+
+---
+
 ## 2026-10-25 — Read-only P2 machine audit and current virtual Xbox driver evaluation
 
 **Branch / commit:** \`feature/universal-gamepad\`; atomic code+both trackers after \`40b82301\`, verified baseline multi-platform [CI #40174183156](https://github.com/Farzansayeed/WinDock/actions/runs/40174183156) and [Preview #40174183214](https://github.com/Farzansayeed/WinDock/actions/runs/40174183214) SUCCESS, non-draft [v36](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.36-g40b8230) published.
