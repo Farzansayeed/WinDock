@@ -62,3 +62,9 @@
 - `src/gamepad/timing.js`: bounded opt-in host-only monotonic software timing; `src/gamepad/hub.js` emits samples to injectable `onTiming` after validated snapshots; `server.js` exposes only a programmatic `gamepadHubTiming` dependency for lab tests (normal production default null).
 - `scripts/verify-gamepad-timing.mjs`: paired socket + in-memory sink and bounded stats gate. Do not interpret software output timings as Wi-Fi RTT, actual XInput, or in-game input responsiveness.
 - `.github/workflows/gamepad-preview.yml`: manually triggered only and publish job explicitly disabled to respect personal prototype **no publication**. `.github/workflows/ci.yml` remains branch-push verification.
+
+## M0b native Kotlin paired WebSocket and CI (2026-10-25)
+
+- `android/app/src/main/java/com/windock/app/GamepadPairedWebSocket.kt`: one-owner OkHttp WS adapter with exact same-origin Cookie and ready/neutral logic; can be wired to Activity in M0c only after tests.
+- `android/app/src/test/java/com/windock/app/GamepadPairedWebSocketTest.kt`: real local MockWebServer test and invalid-cookie tests.
+- `.github/workflows/ci.yml`: explicit fourth Android unit/lint job; `CI passed` now requires Android as well as Windows/macOS/Linux. No APK release job or signing secret read.

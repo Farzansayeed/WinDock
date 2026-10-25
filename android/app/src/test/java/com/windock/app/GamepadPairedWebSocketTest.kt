@@ -1,0 +1,69 @@
+package com.windock.app
+
+import okhttp3.Response
+import okhttp3.WebSocket
+import okhttp3.WebSocketListener
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import org.json.JSONObject
+import org.junit.Assert.*
+import org.junit.Test
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.TimeUnit
+
+/** Driver-free real loopback WebSocket; no physical gamepad or PIN bypass. */
+class GamepadPairedWebSocketTest {
+    @Test fun forwardsOnlyOneWellFormedOriginalSessionCookie() {
+        val t = "b".repeat(43)
+        assertEquals("windock_session=" + t,
+            GamepadSessionCookie.extract("other=private; windock_session=" + t))
+        assertNull(GamepadSessionCookie.extract("other=private"))
+        assertNull(GamepadSessionCookie.extract("windock_session=short"))
+        assertNull(GamepadSessionCookie.extract("windock_session=" + t + "; windock_session=" + t))
+        assertNull(GamepadSessionCookie.extract("windock_session=" + t + "\nHeader: injected"))
+        assertNull(GamepadSessionCookie.extract(("windock_session=" + t + ";").repeat(100)))
+    }
+
+    @Test fun existingCookieAndOriginDeliverNeutralButtonAndFinalNeutral() {
+        val server=MockWebServer()
+        val states=CopyOnWriteArrayList<JSONObject>()
+        val neutral=CountDownLatch(1)
+        val pressed=CountDownLatch(1)
+        val released=CountDownLatch(1)
+        server.enqueue(MockResponse().withWebSocketUpgrade(object:WebSocketListener(){
+            override fun onOpen(ws:WebSocket,response:Response) {
+                ws.send("""{"type":"ready","v":1}""")
+            }
+            override fun onMessage(ws:WebSocket,text:String) {
+                val s=JSONObject(text)
+                states.add(s)
+                if(states.size==1 && s.getInt("buttons")==0) neutral.countDown()
+                if(s.getInt("buttons")==4096) pressed.countDown()
+                if(states.size>=3 && s.getInt("buttons")==0) released.countDown()
+            }
+        }))
+        server.start()
+        try {
+            val origin="http://127.0.0.1:"+server.port
+            val target=GamepadSocketTarget.fromTrustedPage(origin,origin+"/touchpad")
+            assertNotNull(target)
+            val statuses=CopyOnWriteArrayList<String>()
+            val session=GamepadPairedWebSocket.begin(target!!,
+                "other=not-sent; windock_session="+"b".repeat(43),{statuses.add(it)})
+            assertNotNull(session)
+            val req=server.takeRequest(3,TimeUnit.SECONDS)
+            assertNotNull(req)
+            assertEquals(origin,req!!.getHeader("Origin"))
+            assertEquals("windock_session="+"b".repeat(43),req.getHeader("Cookie"))
+            assertTrue("initial neutral",neutral.await(3,TimeUnit.SECONDS))
+            assertTrue(statuses.contains("lab-ready"))
+            assertTrue(session!!.touch(GamepadTouchModel.State(10000,0,true)))
+            assertTrue("A press reaches fake sink",pressed.await(3,TimeUnit.SECONDS))
+            session.stop()
+            assertTrue("normal close sends neutral",released.await(3,TimeUnit.SECONDS))
+            assertEquals(0,states.last().getInt("buttons"))
+            assertFalse(session.touch(GamepadTouchModel.State(a=true)))
+        } finally { server.shutdown() }
+    }
+}

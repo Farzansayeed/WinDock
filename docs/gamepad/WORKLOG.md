@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-10-25 — M0b native paired WebSocket client and Android CI
+
+**2026-10-25 M0b KOTLIN PAIRED NATIVE WS TRANSPORT FOUNDATION (NO PUB/DRIVER):** Added `GamepadPairedWebSocket.kt`: one native OkHttp socket/owner per client, exact session cookie extraction (no other cookies forwarded), Origin from trusted `GamepadSocketTarget`, server v1 `ready` gate, no pre-ready replay, bounded 4096-byte WS queue, local 10ms clock polling interface and fail-neutral on close. Real loopback MockWebServer test checks trusted Cookie/Origin, neutral→A→neutral, invalid tokens; Android Kotlin Gradle tests+lint required by new Android job in four-platform branch CI. No MainActivity UI wiring yet (next M0c), no real XInput, multiplayer or phone hardware testing. Preview workflow push disabled and publish gated `if:false` in prior M0a, last release v46. Starting M0a [`8384bad`](https://github.com/Farzansayeed/WinDock/commit/8384baddc799ef4abc95d2afca01a974046e8f89) CI #40188492185 PASS. Owner says `start the plan` and restricts privilege/trust/driver/vendor binaries/licence, publication/main merge. New CI pending.
+
+**Not yet connected to UI:** The transport module is built for debug-lab use but not automatically enabled by app launch. No PIN token is hard-coded or logged; physical Android device test outstanding. No vendor driver selected/installed. Tests in GitHub Android CI pending at commit.
+
+---
+
 ## 2026-10-25 — M0a opt-in host measurements and private-only CI
 
 **2026-10-25 M0 FIRST IMPLEMENTATION — PRIVATE NO-PUBLISH + SOFTWARE LATENCY TELEMETRY:** Owner accepted private roadmap 2/2 PASS, notes verbatim `start the plan`, authorized driver-neutral M0 only; expressly forbids vendor packages/drivers/elevation/trust changes/security bypass/fee **AND publishing or main merge**. Starting [plan commit 1ee814e](https://github.com/Farzansayeed/WinDock/commit/1ee814e21453736825c67bc40f87485aeb421b57), [CI #40187829877](https://github.com/Farzansayeed/WinDock/actions/runs/40187829877) SUCCESS, executable latest Preview v46. Disabled gamepad-preview push trigger and fenced publish job `if:false`; CI continues on branch commits without GitHub release creation. Added opt-in `gamepadHubTiming` exact monotonic host decode/validation/fake-sink-call metric; bounded p50/p95/p99/max ring utility, payload-free, no disk/network logging; CI WebSocket+PIN+fake-sink regression and adversarial samples. **These samples do not measure phone/Wi-Fi or XInput.** No physical tests, no driver, production HTTP 503. Next: Kotlin paired socket adapter and native fake-sidecar deterministic timing/EOF tests in separate small commit. CI for this code pending when committed.

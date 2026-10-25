@@ -124,13 +124,31 @@ jobs:
         run: npm run build:macos-app
       - run: npm test
 
+  android:
+    name: Android Kotlin unit tests and lint (no publication)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Install Android SDK
+        run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
+      - name: Run Kotlin tests and Android lint
+        working-directory: android
+        run: bash ./gradlew testDebugUnitTest lintDebug --no-daemon --console=plain
+
   # The single required check: green when every job above passed. always()
   # keeps it from being skipped, because GitHub counts a skipped required
   # check as passing; a cancelled or failed job makes it fail instead.
   ci-passed:
     name: CI passed
     if: always()
-    needs: [linux, windows, macos]
+    needs: [linux, windows, macos, android]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
