@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-10-25 — Verify v40 packaged diagnostic and preserve owner's unchecked audit gate
+
+**2026-10-25 VERIFIED OWNER HASH INCIDENT FIX — v40:** [Code 3ac95c0](https://github.com/Farzansayeed/WinDock/commit/3ac95c09e09fd13a595d1dbcf39f638c01624de7), [all-OS CI #40176599482](https://github.com/Farzansayeed/WinDock/actions/runs/40176599482) SUCCESS and [Preview publish #40176599479](https://github.com/Farzansayeed/WinDock/actions/runs/40176599479) SUCCESS. [Non-draft v40 release](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.40-g3ac95c0) includes unique x64 `WinDockGamepadProbe-v0.2.3-gamepad.40-g3ac95c0-win-x64.exe`, published SHA256 `10218ac0777437a546c0afe3ff5d362758cfa85ca219773c56e53bf9ae700c2d` (same bytes/hash as compatibility alias, proven by CI). Owner's prior `42db320e839f41454b5a7c0867a71447c7dd5b2731eb2e74571818708e742225` matches release v28 x64, NOT v39: stale old Downloads filename, not a verified audit fault. **Owner checksum and `--backend-audit` remain UNCHECKED/NOT RUN.** Use only uniquely named v40 x64 binary after confirming its SHA; run audit only from ordinary PowerShell, no driver/security changes. Earlier Windows/Android and XInput baseline owner checks remain PASS; don't repeat. No privileged/backend approval.
+
+**Verified checks:** All Linux/Windows/macOS CI, Windows installer and read-only x64 portable probe smoke, Android APK and preview release job succeeded. GitHub release contains versioned and legacy x64/ARM64 probe assets and SHA256SUMS. No owner Windows audit has been run; this is documentation only, no code changes. **Next:** Await physical versioned x64 digest/`--backend-audit` report before advancing; driver install, administrator privilege, certificate trust and licence remain separately approval-gated.
+
+---
+
 ## 2026-10-25 — Fix wrong downloaded probe version after owner's unchecked audit report
 
 **Branch / commit:** `feature/universal-gamepad`; atomic release-packaging fix and both trackers after verified source/hand-off `9f1ba9a`, [CI #40175405230](https://github.com/Farzansayeed/WinDock/actions/runs/40175405230) SUCCESS, [release #40175405217](https://github.com/Farzansayeed/WinDock/actions/runs/40175405217) SUCCESS, v39 published. New commit CI/publish **pending** at time of commit.
