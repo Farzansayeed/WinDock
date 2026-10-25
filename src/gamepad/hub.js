@@ -43,11 +43,14 @@ export function createGamepadHub({
   });
   let owner = null;
   let shuttingDown = false;
+  // Teardown errors mean we cannot prove the previous native device was
+  // released. Never grant a second controller session in this process.
+  let quarantined = false;
   const closeWork = new Set();
 
   server.on("upgrade", (req, socket, head) => {
     if (req.url?.split("?")[0] !== "/gamepad") return;
-    if (shuttingDown || typeof sinkFactory !== "function") {
+    if (shuttingDown || quarantined || typeof sinkFactory !== "function") {
       deny(socket, 503, "Service Unavailable"); return;
     }
     if (!originAllowed(req) || !isAuthorized(req)) {
@@ -89,8 +92,17 @@ export function createGamepadHub({
       // or throw and independently tear down its actual virtual device.
       try { sink?.write({ ...neutralGamepadState() }); } catch {}
       let close;
-      try { close = sink?.close?.(); } catch {}
-      const work = Promise.resolve(close).catch(() => {}).finally(() => {
+      // A partially initialized sink without a close method cannot prove
+      // release of a potentially allocated native device. Quarantine it.
+      if (sink && typeof sink.close !== "function") quarantined = true;
+      try { close = sink?.close?.(); }
+      catch { quarantined = true; }
+      const work = Promise.resolve(close).catch(() => {
+        // Never silently swallow failed native-device teardown and then
+        // admit a fresh owner. Subsequent upgrades return HTTP 503 until
+        // the process restarts after investigation.
+        quarantined = true;
+      }).finally(() => {
         closeWork.delete(work);
         if (owner === ws) owner = null;
       });
@@ -182,6 +194,7 @@ export function createGamepadHub({
 
   return {
     get enabled() { return typeof sinkFactory === "function"; },
+    get quarantined() { return quarantined; },
     get ownerCount() { return owner === null ? 0 : 1; },
     async close() {
       shuttingDown = true;
