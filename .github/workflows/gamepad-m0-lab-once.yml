@@ -64,19 +64,19 @@ jobs:
           Copy-Item $node -Destination (Join-Path $folder 'node.exe')
           Copy-Item $license -Destination (Join-Path $folder 'NODE-LICENSE.txt')
           Copy-Item docs/gamepad/M0-LAB-DOWNLOADS.md -Destination (Join-Path $folder 'README-LAB.md')
-          @'
-          @echo off
-          setlocal
-          cd /d "%~dp0"
-          if "%~1"=="" (
-            echo Open Command Prompt in this folder and run: Start-WinDock-LAB.cmd YOUR_PC_PRIVATE_IPV4
-            echo Example only: Start-WinDock-LAB.cmd 192.168.1.20
-            pause
-            exit /b 64
+          $cmdLines = @(
+            '@echo off',
+            'setlocal',
+            'cd /d "%~dp0"',
+            'if "%~1"=="" (',
+            ' echo Provide your Windows PC private IPv4. Example: Start-WinDock-LAB.cmd 192.168.1.20',
+            ' pause',
+            ' exit /b 64',
+            ')',
+            'node.exe scripts\\gamepad-fake-lab-server.mjs "%~1"',
+            'pause'
           )
-          node.exe scripts\gamepad-fake-lab-server.mjs "%~1"
-          pause
-          '@ | Set-Content -LiteralPath (Join-Path $folder 'Start-WinDock-LAB.cmd') -Encoding ascii
+          Set-Content -LiteralPath (Join-Path $folder 'Start-WinDock-LAB.cmd') -Value $cmdLines -Encoding ascii
           & "$folder/node.exe" --version
           if ($LASTEXITCODE -ne 0) { throw 'Bundled Node cannot start' }
           & "$native/win-x64/publish/WinDock.GamepadSidecar.exe" --help
@@ -157,13 +157,7 @@ jobs:
           cp ../docs/gamepad/M0-LAB-DOWNLOADS.md README-LAB.md
           short="${GITHUB_SHA:0:7}"
           tag="gamepad-m0-fake-lab-g$short"
-          cat > RELEASE-NOTES.md <<EOF
-          # M0 fake-controller private lab — not an Xbox controller
-          Owner-requested *separate* experimental prerelease (not a signed Preview update).
-          Source commit: $GITHUB_SHA. CI: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID
-          Download BOTH files below and read README-LAB.md. The Android APK is debug-signed and uses a distinct app ID; the Windows ZIP is a portable Node + self-contained .NET fake receiver and does not install a driver. No vendor downloads, driver/cert changes, automatic gameplay, telemetry or publication of other Preview builds.
-          No physical phone/Windows test has been performed. Host p50/p95/p99 is NOT network latency or gameplay proof.
-          EOF
+          printf 'M0 PRIVATE FAKE LAB ONLY; not a virtual Xbox controller. Source: %s. Actions: https://github.com/%s/actions/runs/%s. Read README-LAB.md. No Windows driver, no certificate change, no true RTT or game compatibility.\\n' "$GITHUB_SHA" "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" > RELEASE-NOTES.md
           gh release create "$tag" \
             WinDock-Gamepad-M0-LAB-Windows-x64.zip WinDock-Gamepad-M0-LAB-Android.apk SHA256SUMS.txt BUILD-INFO.txt README-LAB.md \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
