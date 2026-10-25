@@ -35,6 +35,11 @@ const factory = () => {
   };
   if (id === "pending" || id === "early") {
     sink.ready = new Promise(resolve => { permit = resolve; });
+  } else if (id === "native-neutral") {
+    // A verified native receiver independently emits initial all-neutral,
+    // so the host MUST defer its first child stdin frame until phone ACK.
+    sink.nativeStartupNeutral = true;
+    sink.ready = new Promise(resolve => { permit = resolve; });
   } else if (id === "write-error") {
     sink.ready = Promise.reject(new Error("simulated native startup rejection"));
     sink.write = () => { throw new Error("simulated first neutral write failure"); };
@@ -92,6 +97,25 @@ try {
     "disconnect neutralizes and disposes pending startup sink exactly once");
   ok(reports.filter(x => x.id === "pending").at(-1).state.buttons === 0,
     "disconnect after readiness ends neutral");
+
+  mode = "native-neutral";
+  const cert = await connect(url, origin, cookie);
+  ok(cert.ws.readyState === WebSocket.OPEN, "verified native-neutral sink claims one owner");
+  await sleep(30);
+  ok(reports.filter(x => x.id === "native-neutral").length === 0,
+    "host MUST NOT send redundant frame that starts native 180ms lease before ready");
+  permit();
+  await until(() => cert.messages.some(x => x.type === "ready"), "verified native neutral ACK reached phone");
+  cert.ws.send(frame);
+  await until(() => reports.filter(x => x.id === "native-neutral" &&
+    x.state.buttons === 0x1000).length === 1,
+    "first native receiver frame comes only from authenticated phone after ready");
+  cert.ws.terminate();
+  await until(() => app.gamepadHub.ownerCount === 0 &&
+    closures.filter(x => x === "native-neutral").length === 1,
+    "certified native-neutral session fails closed on disconnect");
+  ok(reports.filter(x => x.id === "native-neutral").at(-1).state.buttons === 0,
+    "certified receiver still gets final neutral on cleanup");
 
   mode = "early";
   const tooSoon = await connect(url, origin, cookie);

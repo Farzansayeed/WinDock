@@ -135,7 +135,17 @@ export function createGamepadHub({
         void nativeReady.catch(() => {}); // retains rejection for .then below
       }
       gate = createGamepadStateGate({ timeoutMs, now });
-      sink.write({ ...neutralGamepadState() });
+      if (sink.nativeStartupNeutral === true) {
+        // Trust only a sink with its own asynchronous readiness/initial-neutral
+        // proof. The C# fake child already writes seq=0 all-neutral during
+        // construction; an extra host write would start its 180ms active lease
+        // BEFORE Android receives the authenticated ready ACK.
+        if (nativeReady === undefined)
+          throw new TypeError("native startup neutral requires ready ACK");
+      } else {
+        // Every ordinary/injected sink still receives fail-neutral at startup.
+        sink.write({ ...neutralGamepadState() });
+      }
       // Optional native child-liveness hook. A crashed/stopped native sink
       // cannot keep ownership of /gamepad even if Node's socket stays open.
       // Existing synchronous in-memory test sinks remain valid.

@@ -1,0 +1,158 @@
+name: M0 Fake Lab v4 native handshake - private artifacts ONLY
+
+# Owner's v3 physical failure: prevent premature fake native lease, no release.
+# Keep 180ms native watchdog, 1000ms first-frame window, and both UIs.
+# Trigger exactly once from adding this path on the feature branch.
+on:
+  push:
+    branches: [feature/universal-gamepad]
+    paths:
+      - .github/workflows/gamepad-m0-lab-v4-artifacts.yml
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Test and package portable Windows FAKE receiver
+    if: "github.repository == 'Farzansayeed/WinDock' && startsWith(github.event.head_commit.message, 'build(gamepad): package native-neutral M0 v4 fake lab artifacts only')"
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - run: dotnet run --project native/gamepad-tests/WinDock.GamepadTests.csproj -c Release
+      - run: dotnet build native/gamepad-sidecar/WinDock.GamepadSidecar.csproj -c Release
+      - run: node scripts/test-gamepad-sidecar.mjs
+      - run: node scripts/test-gamepad-bridge.mjs
+      - name: Publish self-contained FAKE sidecar, no driver
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $out = 'native/gamepad-sidecar/bin/Release/net8.0/win-x64/publish'
+          dotnet publish native/gamepad-sidecar/WinDock.GamepadSidecar.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o $out
+          if ($LASTEXITCODE -ne 0) { throw 'Portable fake sidecar publish failed' }
+          if (!(Test-Path "$out/WinDock.GamepadSidecar.exe")) { throw 'Missing portable fake receiver' }
+      - name: Retest pairing/watchdog using actual standalone bundled receiver
+        run: node scripts/test-gamepad-bridge.mjs
+      - name: Assemble isolated Windows lab zip
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $folder = Join-Path $env:RUNNER_TEMP 'WinDock-Gamepad-M0-LAB'
+          New-Item -ItemType Directory -Path $folder -Force | Out-Null
+          Copy-Item server.js, package.json -Destination $folder
+          Copy-Item src, public, scripts, node_modules -Destination $folder -Recurse
+          $native = Join-Path $folder 'native/gamepad-sidecar/bin/Release/net8.0'
+          New-Item -ItemType Directory -Path $native -Force | Out-Null
+          Copy-Item native/gamepad-sidecar/bin/Release/net8.0/WinDock.GamepadSidecar.dll -Destination $native
+          Copy-Item native/gamepad-sidecar/bin/Release/net8.0/WinDock.GamepadSidecar.runtimeconfig.json -Destination $native
+          Copy-Item native/gamepad-sidecar/bin/Release/net8.0/WinDock.GamepadSidecar.deps.json -Destination $native
+          New-Item -ItemType Directory -Path "$native/win-x64/publish" -Force | Out-Null
+          Copy-Item native/gamepad-sidecar/bin/Release/net8.0/win-x64/publish/WinDock.GamepadSidecar.exe -Destination "$native/win-x64/publish"
+          $node = (Get-Command node.exe).Source
+          $license = Join-Path (Split-Path $node -Parent) 'LICENSE'
+          if (!(Test-Path $license)) { throw 'Node redistribution license missing; fail closed' }
+          Copy-Item $node -Destination (Join-Path $folder 'node.exe')
+          Copy-Item $license -Destination (Join-Path $folder 'NODE-LICENSE.txt')
+          Copy-Item docs/gamepad/M0-LAB-DOWNLOADS.md -Destination (Join-Path $folder 'README-LAB.md')
+          $cmdLines = @(
+            '@echo off',
+            'setlocal',
+            'cd /d "%~dp0"',
+            'if "%~1"=="" (',
+            ' echo Provide your Windows PC private IPv4. Example: Start-WinDock-LAB.cmd 192.168.1.20',
+            ' pause',
+            ' exit /b 64',
+            ')',
+            'node.exe scripts\\gamepad-fake-lab-server.mjs "%~1"',
+            'pause'
+          )
+          Set-Content -LiteralPath (Join-Path $folder 'Start-WinDock-LAB.cmd') -Value $cmdLines -Encoding ascii
+          & "$folder/node.exe" --version
+          if ($LASTEXITCODE -ne 0) { throw 'Bundled Node cannot start' }
+          # Fake receiver MUST refuse every non-test invocation with exit code 64.
+          # Start-Process isolates that EXPECTED nonzero from PowerShell's native
+          # error preference, which can terminate this packaging step prematurely.
+          $reject = Start-Process -FilePath "$native/win-x64/publish/WinDock.GamepadSidecar.exe" -ArgumentList '--help' -Wait -PassThru -NoNewWindow
+          if ($reject.ExitCode -ne 64) { throw "Fake receiver did not fail closed (exit $($reject.ExitCode))" }
+          New-Item -ItemType Directory -Path artifacts -Force | Out-Null
+          Compress-Archive -Path $folder -DestinationPath artifacts/WinDock-Gamepad-M0-LAB-v4-Windows-x64.zip -CompressionLevel Optimal
+          if ((Get-Item artifacts/WinDock-Gamepad-M0-LAB-v4-Windows-x64.zip).Length -lt 1000000) { throw 'Incomplete portable archive' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m0-fake-lab-windows-v4
+          path: artifacts/WinDock-Gamepad-M0-LAB-v4-Windows-x64.zip
+          if-no-files-found: error
+
+  android:
+    name: Test and package isolated Android LAB APK
+    if: "github.repository == 'Farzansayeed/WinDock' && startsWith(github.event.head_commit.message, 'build(gamepad): package native-neutral M0 v4 fake lab artifacts only')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
+      - name: Build separate debug LAB APK and verify Kotlin tests/lint
+        working-directory: android
+        run: bash ./gradlew testDebugUnitTest lintDebug assembleDebug --no-daemon --console=plain
+      - name: Verify APK identity/signature and copy for release
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk=android/app/build/outputs/apk/debug/app-debug.apk
+          "$ANDROID_HOME/build-tools/34.0.0/aapt" dump badging "$apk" | grep -F "package: name='com.windock.app.gamepadlab'"
+          "$ANDROID_HOME/build-tools/34.0.0/aapt" dump badging "$apk" | grep -F "application-label:'WinDock Gamepad LAB'"
+          "$ANDROID_HOME/build-tools/34.0.0/apksigner" verify --verbose "$apk"
+          mkdir -p artifacts
+          cp "$apk" artifacts/WinDock-Gamepad-M0-LAB-v4-Android.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: m0-fake-lab-android-v4
+          path: artifacts/WinDock-Gamepad-M0-LAB-v4-Android.apk
+          if-no-files-found: error
+
+  bundle:
+    name: Bundle matched v4 LAB Windows and Android files, no release
+    needs: [windows, android]
+    if: "github.repository == 'Farzansayeed/WinDock' && startsWith(github.event.head_commit.message, 'build(gamepad): package native-neutral M0 v4 fake lab artifacts only')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: m0-fake-lab-windows-v4
+          path: dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: m0-fake-lab-android-v4
+          path: dist
+      - name: Verify and identify matching artifacts (no publication)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s dist/WinDock-Gamepad-M0-LAB-v4-Windows-x64.zip
+          test -s dist/WinDock-Gamepad-M0-LAB-v4-Android.apk
+          (cd dist && sha256sum WinDock-Gamepad-M0-LAB-v4-Windows-x64.zip WinDock-Gamepad-M0-LAB-v4-Android.apk > SHA256SUMS.txt)
+          printf 'Channel: private-ci-artifact-only-M0-FAKE-LAB-v4\nCommit: %s\nRun: %s\nNO real Xbox or driver. Original Preview untouched.\n' "$GITHUB_SHA" "$GITHUB_RUN_ID" > dist/BUILD-INFO.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: M0-FAKE-LAB-v4-matched-downloads
+          path: dist
+          if-no-files-found: error
+          retention-days: 14

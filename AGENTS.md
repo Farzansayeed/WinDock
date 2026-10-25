@@ -1,5 +1,9 @@
 # WinDock — binding instructions for future ChatGPT/Codex agents
 
+**2026-10-26 ACTIVE M0 HANDOFF:** Latest v3 PHYSICAL test failed; v4 pre-ready neutral lease fix developed, NOT a physical pass. See [dedicated handoff](docs/gamepad/HANDOFF-2026-10-26-M0-FAILURE.md), [NEXT-SESSION](docs/gamepad/NEXT-SESSION.md), progress/worklog. Owner specifically requested NO further user testing/install tonight. Verify latest exact SHA/CI and private artifact, preserve 180ms/1000ms, production /gamepad 503, no driver/publish/main merge.
+
+
+
 **2026-10-25 M0 v3 DIAGNOSTIC ARTIFACTS VERIFIED (NOT PHYSICAL PASS):** Source `27f72e44a360bb62e4ca605ebfdd47a860adbcb0` [5-job CI #40215690132](https://github.com/Farzansayeed/WinDock/actions/runs/40215690132) SUCCESS, [private artifact workflow #40215690225](https://github.com/Farzansayeed/WinDock/actions/runs/40215690225) SUCCESS (Windows fake receiver, Android debug APK, matched bundle). Download artifact `M0-FAKE-LAB-v3-diagnostic-matched-downloads` containing `WinDock-Gamepad-M0-LAB-v3-Android.apk`, `WinDock-Gamepad-M0-LAB-v3-Windows-x64.zip`, checksums and BUILD-INFO, source SHA consistent. Artifact only (not a GitHub Release), no stable Preview signer used. v2 owner physical results FAILED transport stability; the fresh v3 on-phone result remains UNTESTED. Fix exposes fixed server close reason on Android, initializes OkHttp socket before ready, removes dual-UI flash while retaining browser preview. No Xbox backend, native 180ms watchdog/1s startup unchanged, no driver/vendor/elevation/trust/main merge. Do NOT repeat previously accepted physical installation/Windows pairing/XInput audits; only recheck novel v3 connection/input/exit. 
 
 

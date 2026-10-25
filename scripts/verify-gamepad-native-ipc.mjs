@@ -52,6 +52,8 @@ function greet(child) { child.emitJson(NEUTRAL); child.emitJson({ event: "ready"
   const s = setup();
   greet(s.child);
   ok(await s.settled === "ready", "only neutral initialized fake child becomes ready");
+  ok(s.sink.nativeStartupNeutral === true,
+    "verified native child's initial neutral is explicitly owned before ready ACK");
   ok(s.events.length === 2 && s.events[0].seq === 0, "neutral emitted before native readiness");
   s.sink.write({ lx: 42, ly: 0, rx: 0, ry: 0, lt: 0, rt: 0, buttons: 0x1000 });
   ok(s.child.stdin.readableLength > 0, "authorized test frame went to private stdio pipe");

@@ -111,6 +111,11 @@ export function createFakeNativeSinkFactory({ onEvent = () => {}, onChild = () =
 
     return {
       ready, // Resolves only on native v1 fake-sink ACK, never on spawn alone.
+      // This exact C# fake receiver emits seq=0 all-neutral during its
+      // constructor, and the bridge verifies it BEFORE resolving ready.
+      // Hub must NOT send an extra pre-ACK neutral frame: that prematurely
+      // starts the independent 180ms native active-frame lease.
+      nativeStartupNeutral: true,
       write(state) {
         if (stopped || failed || child.stdin.destroyed || sequence >= GAMEPAD_MAX_SEQ)
           throw new Error("native lab receiver unavailable");

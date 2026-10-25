@@ -144,6 +144,47 @@ try {
     e.activeFrames >= 0 && Object.keys(e).sort().join(",") ===
       "acceptedFrames,activeFrames,ready,reason"),
     "terminal receives only fixed reason plus bounded counts");
+
+  // Reproduce the physical v3 regression deterministically: initial native
+  // neutral must NOT start its 180ms active lease before Android's first
+  // authenticated whole-state frame. Delay the first frame by >180ms AFTER
+  // both real native and paired WS report ready, but <1000ms startup limit.
+  const previousDisposals = records.filter(x => x.event === "sink-disposed").length;
+  const fourth = await connect(url, { origin, cookie });
+  ok(fourth.opened, "fourth paired owner accepted for delayed-first-input regression");
+  await until(() => fourth.messages.some(x => x.type === "ready"),
+    "fourth ready is gated on native child neutral ACK");
+  await sleep(250);
+  ok(fourth.socket.readyState === WebSocket.OPEN &&
+    records.filter(x => x.event === "sink-disposed").length === previousDisposals,
+    "native must NOT expire 180ms after its own redundant startup neutral");
+  let seq = 0;
+  let keepalive;
+  try {
+    // Keep native and Node leases fed with genuine increasing state reports.
+    const sendNext = () => {
+      if (fourth.socket.readyState === WebSocket.OPEN)
+        fourth.socket.send(frame(++seq, seq % 3 === 0 ? 0 : 0x1000));
+    };
+    sendNext();
+    keepalive = setInterval(sendNext, 35);
+    await until(() => records.filter(x => x.event === "report" &&
+      x.buttons === 0x1000).length >= 4,
+      "first post-ACK delayed input reaches real C# fake sink");
+    await sleep(700);
+    ok(seq >= 12 && fourth.socket.readyState === WebSocket.OPEN &&
+      records.filter(x => x.event === "sink-disposed").length === previousDisposals,
+      "35ms whole-state stream holds authenticated fake receiver alive beyond 700ms");
+  } finally {
+    clearInterval(keepalive);
+  }
+  // Independent unmodified native 180ms timer must still revoke the sink
+  // immediately after real traffic stops. Never suppress watchdog expiry.
+  await until(() => records.filter(x => x.event === "sink-disposed").length === previousDisposals + 1 &&
+    app.gamepadHub.ownerCount === 0, "native still releases and neutrals without traffic");
+  ok(records.filter(x => x.event === "report").at(-1).buttons === 0,
+    "timeout after streaming ends on a neutral fake state");
+
 } finally {
   if (app) {
     await app.gamepadHub.close();
