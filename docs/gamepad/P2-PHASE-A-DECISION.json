@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-25",
+  "scope": "DOCUMENTARY_ONLY_NO_VENDOR_ARTIFACTS",
+  "consent": "NO_PERMISSION_TO_ACQUIRE_EXECUTE_INSTALL_ELEVATE_TRUST_OR_BUY",
+  "items": [
+    {
+      "id": "hidmaestro-stable",
+      "tag": "v2.0.3",
+      "disposition": "RESEARCH_ONLY_TRUST_BLOCKED",
+      "license": "MIT_REPOSITORY_THIRD_PARTY_UNREVIEWED",
+      "redistribution": "NOT_CLEARED",
+      "signing": "LOCAL_SELF_SIGNED_MACHINE_TRUST_CHANGE",
+      "offline": "VENDOR_CLAIM_NOT_PHYSICALLY_VERIFIED",
+      "rollback": "CONFLICTING_VENDOR_DOCUMENTATION",
+      "primaryBlocker": "machine-certificate-trust-change",
+      "sources": [
+        "https://github.com/hifihedgehog/HIDMaestro/blob/v2.0.3/LICENSE",
+        "https://hidmaestro.org/docs/reference/driver-install-and-signing/",
+        "https://github.com/hifihedgehog/HIDMaestro/releases/tag/v2.0.3",
+        "https://hidmaestro.org/docs/start/removing-hidmaestro/"
+      ],
+      "mitigation": "Consider only after separate owner consent and third-party notices, exact signing and USB-filter rollback assessment."
+    },
+    {
+      "id": "libvirtualhid-stable",
+      "tag": "v2026.914.1218.10",
+      "disposition": "LICENCE_REDISTRIBUTION_BLOCKED",
+      "license": "LB_SAL_WINDOWS_MSI_NOT_MIT",
+      "redistribution": "PROHIBITED_WITHOUT_SEPARATE_PERMISSION",
+      "signing": "VENDOR_PRODUCTION_SIGNED_CLAIM_UNVERIFIED",
+      "offline": "LICENCE_DEPENDENT_ONLINE_CHECKS",
+      "rollback": "BROKER_DRIVER_REMOVAL_UNVERIFIED",
+      "primaryBlocker": "lb-sal-redistribution-and-machine-licence",
+      "sources": [
+        "https://github.com/LizardByte/libvirtualhid/blob/v2026.914.1218.10/LICENSES/LicenseRef-LizardByte-SAL-1.0.md",
+        "https://github.com/LizardByte/libvirtualhid/blob/v2026.914.1218.10/LICENSES/license-map.md",
+        "https://github.com/LizardByte/libvirtualhid/blob/v2026.914.1218.10/docs/windows-driver.md"
+      ],
+      "mitigation": "Do not bundle or distribute the Windows MSI without separately documented publisher permission; no licence purchase authorized."
+    },
+    {
+      "id": "libvirtualhid-prerelease",
+      "tag": "v2026.1022.2339.24",
+      "disposition": "PRERELEASE_LICENCE_BLOCKED",
+      "license": "LB_SAL_WINDOWS_MSI_NOT_MIT",
+      "redistribution": "PROHIBITED_WITHOUT_SEPARATE_PERMISSION",
+      "signing": "VENDOR_PRODUCTION_SIGNED_CLAIM_UNVERIFIED",
+      "offline": "LICENCE_DEPENDENT_ONLINE_CHECKS",
+      "rollback": "BROKER_DRIVER_REMOVAL_UNVERIFIED",
+      "primaryBlocker": "prerelease-and-lb-sal-license",
+      "sources": [
+        "https://github.com/LizardByte/libvirtualhid/blob/v2026.1022.2339.24/LICENSES/LicenseRef-LizardByte-SAL-1.0.md",
+        "https://github.com/LizardByte/libvirtualhid/releases/tag/v2026.1022.2339.24"
+      ],
+      "mitigation": "Do not advance prerelease as substitute for stable; publisher permissions and licensing remain unresolved."
+    },
+    {
+      "id": "vigembus-retired",
+      "tag": "v1.22.0",
+      "disposition": "RETIRED_NOT_CANDIDATE",
+      "license": "NOT_REVIEWED",
+      "redistribution": "NOT_CLEARED",
+      "signing": "HISTORICAL_NOT_VERIFIED",
+      "offline": "NOT_REVIEWED",
+      "rollback": "RETIRED_UNMAINTAINED",
+      "primaryBlocker": "retired-unmaintained-driver",
+      "sources": [
+        "https://github.com/nefarius/ViGEmBus/releases/tag/v1.22.0",
+        "https://github.com/nefarius/ViGEmBus"
+      ],
+      "mitigation": "Do not select an end-of-life driver for new unattended WinDock distribution."
+    }
+  ]
+}

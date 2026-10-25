@@ -39,6 +39,7 @@ const EXPECTED = {
   "verify-gamepad-backend-policy.mjs": "gamepad-backend-policy verification passed",
   "verify-gamepad-release-evidence.mjs": "gamepad-release-evidence verification passed",
   "verify-gamepad-signing-rollback.mjs": "gamepad-signing-rollback verification passed",
+  "verify-gamepad-phase-a.mjs": "gamepad-phase-a verification passed",
   "verify-gamepad-protocol.mjs": "gamepad-protocol verification passed",
   "verify-gamepad-hub.mjs": "gamepad-hub verification passed",
   "verify-gamepad-readiness.mjs": "gamepad-readiness verification passed",

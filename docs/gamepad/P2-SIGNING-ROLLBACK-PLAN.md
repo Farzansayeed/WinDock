@@ -45,3 +45,7 @@ Microsoft documents `signtool verify /v /pa <file.cat>` for a release catalog an
 This plan alone cannot pass **any** signing or rollback check. It explicitly requires a new and separate owner decision before obtaining vendor binaries, and another approval before any privileged machine experiment. Repository documents, green CI, previous read-only diagnostics and a "Proceed" to additional **driver-neutral** analysis do not authorize a driver trial.
 
 **Physical Xbox and PC gameplay remain UNVERIFIED; production `/gamepad` stays HTTP 503.** The only owner action for this checkpoint is reviewing this plan, not touching a Windows or Android device.
+
+## Phase A 2026-10-25 finding
+
+See [P2-PHASE-A-DECISION.md](P2-PHASE-A-DECISION.md): libvirtualhid Windows MSI is source-available LB-SAL not MIT; redistributing requires separate publisher permission; HIDMaestro repository MIT alone does not resolve bundled third-party notices and self-signed machine trust. Uninstaller generic documentation conflicts with the v2.0.3 filter-removal release note. All 13 installation-related validation gates remain NOT_CLEARED.

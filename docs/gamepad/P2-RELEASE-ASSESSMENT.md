@@ -34,3 +34,7 @@ No repeat of prior Windows/Android/v40 physical tests is warranted.
 ## Nonprivileged next phase (owner v43 Proceed)
 
 A complete signing, offline/licence and driver removal consent matrix is maintained at [P2-SIGNING-ROLLBACK-PLAN.md](P2-SIGNING-ROLLBACK-PLAN.md). All 13 checks remain NOT_CLEARED and the CLI `node scripts/p2-signing-rollback-review.mjs` cannot grant driver permission. No vendor executable may be acquired or run under this approval.
+
+## 2026-10-25 Phase A tagged-license update
+
+See [P2-PHASE-A-DECISION.md](P2-PHASE-A-DECISION.md) for legal source-tag evidence: libvirtualhid Windows MSI is not MIT and LB-SAL §3(b) prohibits third-party distribution absent separate permission. HIDMaestro's repository is MIT but its bundled third-party notices have not been inspected. The v2.0.3 release root-hub restart statement takes precedence as a safety caveat over the older generic removal page.
