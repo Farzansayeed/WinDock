@@ -16,6 +16,7 @@ android {
         versionCode project.hasProperty('windockPreviewVersionCode') ? Integer.parseInt(project.property('windockPreviewVersionCode').toString()) : 4
         versionName project.hasProperty('windockPreviewVersionName') ? project.property('windockPreviewVersionName').toString() : '0.2.2-preview.1'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        manifestPlaceholders = [windockAppLabel: '@string/app_name']
     }
 
     // Stable preview signing comes from private Actions secrets, not the repo.
@@ -39,6 +40,10 @@ android {
                 applicationIdSuffix '.gamepadpreview'
                 if (signingConfigs.findByName('preview') != null)
                     signingConfig signingConfigs.preview
+            } else {
+                // Source-built debug LAB never replaces regular WinDock or signed Preview.
+                applicationIdSuffix '.gamepadlab'
+                manifestPlaceholders['windockAppLabel'] = 'WinDock Gamepad LAB'
             }
         }
         release {

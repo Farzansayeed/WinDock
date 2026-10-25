@@ -6,6 +6,12 @@
 
 ---
 
+## 2026-10-25 — M0f side-by-side debug fake receiver test packaging
+
+Baseline `9b0125e` CI #40192387021 and `47c3aa5` CI #40192280410 PASSED all required jobs. Ordinary `assembleDebug` now gives the fake-lab development app its own `.gamepadlab` application ID and label. Existing version-property `.gamepadpreview` and preview signer are preserved. Android CI builds and examines actual APK metadata, no release publication. Physical phone-to-Windows private lab, network RTT and real Xbox remain UNTESTED; no driver, native watchdog, authentication or production route changes. New exact SHA CI PENDING. Next: verify CI before optional owner lab test; accepted older hardware checks not repeated.
+
+---
+
 ## 2026-10-25 — M0e private fake lab visibility and bounded software latency
 
 **Branch/base:** `feature/universal-gamepad` at `d090a1c`; prior [CI #40189737866](https://github.com/Farzansayeed/WinDock/actions/runs/40189737866) PASS. New SHA and CI to verify after commit.

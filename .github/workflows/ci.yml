@@ -140,7 +140,15 @@ jobs:
         run: '"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-34" "build-tools;34.0.0"'
       - name: Run Kotlin tests and Android lint
         working-directory: android
-        run: bash ./gradlew testDebugUnitTest lintDebug --no-daemon --console=plain
+        run: bash ./gradlew testDebugUnitTest lintDebug assembleDebug --no-daemon --console=plain
+      - name: Verify independently installable LAB APK identity
+        shell: bash
+        run: |
+          apk=android/app/build/outputs/apk/debug/app-debug.apk
+          test -f "$apk"
+          aapt="$ANDROID_HOME/build-tools/34.0.0/aapt"
+          "$aapt" dump badging "$apk" | grep -F "package: name='com.windock.app.gamepadlab'"
+          "$aapt" dump badging "$apk" | grep -F "application-label:'WinDock Gamepad LAB'"
 
   # The single required check: green when every job above passed. always()
   # keeps it from being skipped, because GitHub counts a skipped required
