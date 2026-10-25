@@ -29,6 +29,7 @@ class GamepadPairedWebSocketTest {
         val server=MockWebServer()
         val states=CopyOnWriteArrayList<JSONObject>()
         val neutral=CountDownLatch(1)
+        val idleHeartbeats=CountDownLatch(3)
         val pressed=CountDownLatch(1)
         val released=CountDownLatch(1)
         val closed=CountDownLatch(1)
@@ -46,6 +47,7 @@ class GamepadPairedWebSocketTest {
                 val s=JSONObject(text)
                 states.add(s)
                 if(states.size==1 && s.getInt("buttons")==0) neutral.countDown()
+                if(s.getInt("buttons")==0 && pressed.count>0L) idleHeartbeats.countDown()
                 if(s.getInt("buttons")==4096) pressed.countDown()
                 if(states.size>=3 && s.getInt("buttons")==0) released.countDown()
             }
@@ -68,6 +70,7 @@ class GamepadPairedWebSocketTest {
             while (!statuses.contains("lab-ready") && System.nanoTime() < timeout)
                 Thread.sleep(5)
             assertTrue("ACK consumed before A press", statuses.contains("lab-ready"))
+            assertTrue("idle heartbeats independent of any View", idleHeartbeats.await(1500,TimeUnit.MILLISECONDS))
             assertTrue(session!!.touch(GamepadTouchModel.State(10000,0,true)))
             assertTrue("A press reaches fake sink",pressed.await(3,TimeUnit.SECONDS))
             session.stop()

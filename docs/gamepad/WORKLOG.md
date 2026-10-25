@@ -1,5 +1,13 @@
 # WinDock Gamepad — chronological worklog
 
+## 2026-10-25 — M0 owner field failure and Android heartbeat update
+
+Owner real-device issue: Windows fake receiver ready then disposed repeatedly about 1s after successful Android pairing; A/stick and Ctrl+C tests not passed. Android sender scheduled 10ms ticks via MainActivity GamepadTouchView.postDelayed on UI thread, which can starve under UI load. Switched to socket-owned single-thread daemon scheduler tick every 10ms; still 40ms whole-state heartbeats, canceled on owner close. Android real WS test now requires three neutral reports even without View. Native 180ms independent timer, Android/Node 1s startup/auth, production 503 unchanged. Hypothesis needs new Android field test; no evidence of real Xbox gameplay. Existing released fake LAB g2c3fa3a is unmodified, no additional release authorized, no driver/privileges. Exact-head CI pending.
+
+---
+
+
+
 ## 2026-10-25 — M0g fake lab release successful; fix native direct-test scheduling flake
 
 **Released:** Separate one-shot [fake LAB prerelease `gamepad-m0-fake-lab-g2c3fa3a`](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-m0-fake-lab-g2c3fa3a), with Windows fake-only ZIP, isolated Android debug APK, checksums and metadata. Exact [Actions run #40209703770](https://github.com/Farzansayeed/WinDock/actions/runs/40209703770) PASS Windows native 25 assertion fake test, paired WS 29 assertion twice, Kotlin tests/lint and APK packaging; release publication PASS. **Automated separate CI #40209704132** Windows native direct-child `A press reaches fake sink` intermittent failure; Linux/macOS SUCCESS, Android status check pending at diagnosis. Repaired test-only scheduling by enqueuing first A on inherited stdio immediately after spawn; native does not consume it until after initial neutral/ready, while production-like WS bridge still strictly ACK-gated. No native timing limits changed, no security weakened. Modified `scripts/test-gamepad-sidecar.mjs`, AGENTS.md, ownership map and trackers; no production or lab executable modifications and no additional release. New exact-head CI pending. **Owner device test NOT RUN**, no Xbox, no network RTT.

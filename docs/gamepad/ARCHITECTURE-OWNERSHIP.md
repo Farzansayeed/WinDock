@@ -87,3 +87,6 @@
 - `scripts/lib/gamepad-lab-observer.mjs` counts fixed categories of C# **fake** receiver events and prints at most 16 redacted notices. It does not save individual frame values, address, pairing cookie/PIN, per-frame timing or player identity. Its pure Node regression `scripts/verify-gamepad-lab-observer.mjs` is included in `npm test`.
 - `scripts/gamepad-fake-lab-server.mjs`, which must be explicitly launched on Windows/private IPv4, injects this observer into the existing fake native bridge. It also opts into the preexisting `createGamepadTimingWindow(256)` metric and prints only aggregate host processing p50/p95/p99/max on Ctrl+C.
 - Production server and Android release remain unchanged. These host timings do **not** measure Android↔PC network RTT, cross-process wall-clock one-way latency, genuine Xbox/XInput submission, or gameplay. See [M0-LAB-TESTING.md](M0-LAB-TESTING.md).
+
+## M0 physical lab failure — Android sender scheduling (2026-10-25)
+Android GamepadPairedWebSocket.kt now owns 10ms tick executor for the 40ms resend, instead of Android MainActivity.kt using View.postDelayed. Stops executor when socket closes. Native independent 180ms watchdog and startup 1s unchanged; no production backend, real Xbox, or driver. Old g2c3fa3a APK does not include source repair; field re-test pending.

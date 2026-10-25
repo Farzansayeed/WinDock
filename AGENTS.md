@@ -1,5 +1,9 @@
 # WinDock — binding instructions for future ChatGPT/Codex agents
 
+**M0 FIELD FAILURE 2026-10-25:** Android pairs with manual fake Windows service but fake native receiver READY then DISPOSED about a second later, A/stick not verified. Source moves periodic native sender heartbeat from Android UI View callback to socket-owned executor; root cause still unproven until physical retest. Old lab g2c3fa3a APK unmodified, no new release permission inferred, keep native 180ms and 1s startup, security/auth/driver restrictions intact.
+
+
+
 **2026-10-25 M0g LAB DOWNLOADS READY:** One-off [fake LAB prerelease `gamepad-m0-fake-lab-g2c3fa3a`](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-m0-fake-lab-g2c3fa3a) published Android `com.windock.app.gamepadlab` APK + portable Windows fake-only ZIP, release workflow [#40209703770](https://github.com/Farzansayeed/WinDock/actions/runs/40209703770) SUCCESS. Standard [CI #40209704132](https://github.com/Farzansayeed/WinDock/actions/runs/40209704132) had intermittent Windows native process test `A press reaches fake sink` failure despite this same test passing in release Windows runner. Synchronize direct stdio process test by prequeuing bytes before native ready (the native reads only after initial neutral/ready), preserving the 1-second native first-frame window and 180 ms watchdog; actual WS bridge keeps strict ACK-before-frame. Latest source CI for this test fix must be verified, and owner physical Android→Windows trial remains UNTESTED. Existing Preview v46 unaffected; no driver/real Xbox, no further releases permitted without explicit request.
 
 

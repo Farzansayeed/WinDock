@@ -5,6 +5,7 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 /** Only the existing valid WinDock pairing cookie is forwarded to the PC. */
@@ -53,6 +54,10 @@ internal class GamepadPairedWebSocket private constructor(
     }
 
     private val owner = GamepadOwnerChannel(this, { System.nanoTime() / 1_000_000L })
+    // Keep full-state heartbeats independent of Android View redraw timing.
+    private val heartbeat = Executors.newSingleThreadScheduledExecutor { work ->
+        Thread(work, "WinDock-Fake-LAB-Heartbeat").apply { isDaemon = true }
+    }
     private var wire: WebSocket? = null
     @Volatile private var stopped = false
 
@@ -77,6 +82,12 @@ internal class GamepadPairedWebSocket private constructor(
             }
         })
         synchronized(this) { if (stopped) launched.cancel() else wire = launched }
+        if (!stopped) heartbeat.scheduleAtFixedRate({
+            if (!stopped && !owner.onTick()) {
+                status("lab-phone-heartbeat-stopped")
+                owner.close()
+            }
+        }, 10L, 10L, TimeUnit.MILLISECONDS)
     }
 
     fun touch(state: GamepadTouchModel.State): Boolean {
@@ -85,7 +96,6 @@ internal class GamepadPairedWebSocket private constructor(
         return if (owner.isActive) owner.onTouch(state) else true
     }
 
-    fun tick(): Boolean = !owner.isClosed && owner.onTick()
     fun stop() { owner.close() }
 
     /** Bounded buffer: failure triggers owner abort and native PC watchdog. */
@@ -101,6 +111,7 @@ internal class GamepadPairedWebSocket private constructor(
             stopped = true
             wire.also { wire = null }
         }
+        heartbeat.shutdownNow()
         old?.close(1000, null)
     }
 }

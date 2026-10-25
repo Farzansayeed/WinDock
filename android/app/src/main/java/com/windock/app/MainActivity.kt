@@ -54,13 +54,6 @@ class MainActivity : Activity() {
     private var gamepadLayer: FrameLayout? = null
     private var gamepadTouch: GamepadTouchView? = null
     private var gamepadLab: GamepadPairedWebSocket? = null
-    private val gamepadLabTick = object : Runnable {
-        override fun run() {
-            val session = gamepadLab ?: return
-            if (session.tick()) gamepadTouch?.postDelayed(this, 10L)
-            else gamepadTouch?.removeCallbacks(this)
-        }
-    }
     private var wakingGesture = false
     private val wakingKeys = mutableSetOf<Int>()
     private var usbOnly = false
@@ -209,7 +202,6 @@ class MainActivity : Activity() {
                     } else {
                         gamepadLab = session
                         pad.onStateChanged = { state -> session.touch(state) }
-                        pad.postDelayed(gamepadLabTick, 10L)
                         isEnabled = false
                         labStatus.text = "LAB waiting for PC fake receiver"
                     }
@@ -231,7 +223,6 @@ class MainActivity : Activity() {
     private fun closeNativeGamepad(returnToTouchpad: Boolean) {
         val layer = gamepadLayer ?: return
         gamepadTouch?.neutralize()
-        gamepadTouch?.removeCallbacks(gamepadLabTick)
         gamepadTouch?.onStateChanged = null
         gamepadLab?.stop()
         gamepadLab = null
