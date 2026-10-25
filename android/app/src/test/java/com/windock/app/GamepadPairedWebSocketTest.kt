@@ -31,9 +31,16 @@ class GamepadPairedWebSocketTest {
         val neutral=CountDownLatch(1)
         val pressed=CountDownLatch(1)
         val released=CountDownLatch(1)
+        val closed=CountDownLatch(1)
         server.enqueue(MockResponse().withWebSocketUpgrade(object:WebSocketListener(){
             override fun onOpen(ws:WebSocket,response:Response) {
                 ws.send("""{"type":"ready","v":1}""")
+            }
+            override fun onClosing(webSocket:WebSocket, code:Int, reason:String) {
+                webSocket.close(code, null)
+            }
+            override fun onClosed(webSocket:WebSocket, code:Int, reason:String) {
+                closed.countDown()
             }
             override fun onMessage(ws:WebSocket,text:String) {
                 val s=JSONObject(text)
@@ -67,6 +74,7 @@ class GamepadPairedWebSocketTest {
             assertTrue("normal close sends neutral",released.await(3,TimeUnit.SECONDS))
             assertEquals(0,states.last().getInt("buttons"))
             assertFalse(session.touch(GamepadTouchModel.State(a=true)))
+            assertTrue("WebSocket close handshake completes",closed.await(3,TimeUnit.SECONDS))
         } finally { server.shutdown() }
     }
 }

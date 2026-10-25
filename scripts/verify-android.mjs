@@ -111,7 +111,22 @@ for (const word of ["pin", "cookie", "token"]) {
     `the native layer never handles ${word} in code (pairing stays in the WebView)`,
   );
 }
-t.ok(!/CookieManager|\/api\/pair/.test(kotlinCode), "native keyboard does not bypass WebView pairing");
+// The keyboard must NEVER obtain pairing tokens. The opt-in debug GAMEPAD
+// adapter now legitimately obtains only the existing scoped session cookie;
+// don't weaken the separate keyboard security boundary.
+const keyboardCode = stripComments(main.split("private inner class KeyboardBridge {")[1]
+  ?.split("override fun onWindowFocusChanged")[0] || "");
+t.ok(!/CookieManager|\/api\/pair|windock_session/.test(keyboardCode),
+  "native keyboard does not bypass WebView pairing");
+const padSocket = read("app/src/main/java/com/windock/app/GamepadPairedWebSocket.kt");
+t.ok(/GamepadSessionCookie\.extract/.test(padSocket) &&
+  /windock_session=/.test(padSocket) &&
+  /\.header\("Origin", target.origin\)/.test(padSocket),
+  "gamepad obtains only paired cookie scoped to trusted origin");
+t.ok(main.includes("if (BuildConfig.DEBUG)") &&
+  main.includes("GamepadSocketTarget.fromTrustedPage(endpoint, web.url)") &&
+  main.includes("GamepadPairedWebSocket.begin"),
+  "gamepad network activation is explicit, debug-only and same-origin scoped");
 // Positive control: the stripper must not simply blank the source, or the
 // assertions above would pass for any file at all.
 t.ok(kotlinCode.includes("DatagramSocket"), "positive control: real code survives comment stripping");

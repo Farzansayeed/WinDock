@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-10-25 — M0 failing-regression test diagnosis and strict pairing correction
+
+**2026-10-25 M0 DRIVER-NEUTRAL REGRESSION TRIAGE:** [CI #40189419789](https://github.com/Farzansayeed/WinDock/actions/runs/40189419789) failed Node `verify-android` on all three desktop OS runners because old policy forbade **all** native CookieManager references; this was an overbroad keyboard invariant now conflicting with authorized debug-only Gamepad session-cookie forwarding. Replaced it with strict `KeyboardBridge` no-cookie/no-API-pair assertion PLUS explicit DEBUG-only GamepadSocketTarget/fromTrustedPage and exactly scoped `windock_session`/Origin source checks. Android JVM MockWebServer test failure in `finally { server.shutdown() }` after WS test could not complete clean close; added standard server-side WebSocket close reply and wait-for-closed assertion before shutdown, no swallowed failure. First Android source-state failure remains visible in prior runs; no driver/XInput/physical acceptance and no automatic Preview publication. New CI pending.
+
+**Policy invariant strengthened:** Native keyboard's original no-cookie rule is preserved on its own bridge, while the gamepad DEBUG path is required to use existing paired session only, never a PIN or all cookies. Android MockWebServer test now asserts an actual close handshake instead of accepting a partially open socket. No hardware or driver trial performed.
+
+---
+
 ## 2026-10-25 — M0d manually started private Windows fake lab and deterministic native ready-frame
 
 **2026-10-25 M0d FAKE WINDOWS LAB + NATIVE FIRST-FRAME BARRIER:** Owner authorized only safe, personal driver-neutral M0. Added manually invoked Windows/private-IPv4 lab launcher requiring built .NET fake sink: uses existing PIN/Origin/cookie authentication, an ephemeral isolated config, exact LAN interface, no auto-run and no virtual Xbox. Explicit Kotlin debug UI from [`5b866ee`](https://github.com/Farzansayeed/WinDock/commit/5b866ee41011f7c42995c16f8b9b0d430f4ce92c) connects ONLY after owner taps. Changed Windows sidecar CI process test to write first A state synchronously upon native ready event (eliminates 10ms JS polling start race), no native deadline changes; timeout/EOF/replay/fault assertions still required. No device/phone tests run. M0b initial Android CI failure fixed by monotonic JVM clock; new CI will determine result. Auto Preview release remains OFF, latest executable v46; do not publish, install drivers, elevate, change cert trust or merge main.
