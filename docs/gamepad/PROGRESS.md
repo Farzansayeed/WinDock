@@ -1,6 +1,10 @@
 <!-- 2026-10-23: signing security update — owner reports four GitHub Actions secrets provisioned; requires a new successful release proving signer consistency. -->
 # WinDock Universal Gamepad — LIVE PROGRESS TRACKER
 
+**2026-10-25 M0g release VERIFIED and independent Windows CI synchronization fix (NEW CI PENDING):** One-time [LAB prerelease `gamepad-m0-fake-lab-g2c3fa3a`](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-m0-fake-lab-g2c3fa3a) published non-draft with matching Android APK, Windows portable ZIP, SHA256SUMS, BUILD-INFO, guide; [packaging run #40209703770](https://github.com/Farzansayeed/WinDock/actions/runs/40209703770) SUCCESS both build and publish. Separate standard [CI #40209704132](https://github.com/Farzansayeed/WinDock/actions/runs/40209704132) FAILED in intermittent Windows native fake-sidecar direct process `A press reaches fake sink` because real stdout-ready callback to Node can schedule later than native 1s first-frame window; Windows packaging test had PASSED 25 same sidecar assertions on that run. Fixed ONLY direct CLI test deterministic pipe prequeue. Native still initializes neutral/ready before consuming data; authenticated WS bridge still forbids pre-ACK frames. Strict 1000ms first-frame/180ms watchdog unchanged. New CI pending, no new binary or prerelease created from test-only patch. Actual Android↔Windows hardware FAKE test / RTT NOT RUN; no Xbox device, real driver or publish beyond one-shot.
+
+
+
 **2026-10-25 M0g portable Windows ZIP packaging fix (CI pending):** One-shot run [#40209513976](https://github.com/Farzansayeed/WinDock/actions/runs/40209513976) successfully executed real Windows fake sidecar 25-assertion, authenticated native WS 29-assertion, and post-publish 29-assertion tests, while Android build proceeded. Windows ZIP step exited when PowerShell treated intentional fake sidecar `--help` rejection code 64 as native-command error. Packaging check now uses `Start-Process -Wait -PassThru` and REQUIRES exactly exit 64; does not relax sink, watchdog (180ms), auth, fake-only mode or production 503. No release/hardware pass until next exact-commit CI and assets verified.
 
 

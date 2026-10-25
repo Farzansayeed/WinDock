@@ -76,7 +76,7 @@
 ## M0d manually run fake lab and native CI synchronization
 
 - `scripts/gamepad-fake-lab-server.mjs`: explicit Windows CLI with private IPv4 only, ephemeral config, normal PIN pairing and `.NET` FAKE sink only; not started by normal WinDock or background workflow.
-- `scripts/test-gamepad-sidecar.mjs`: first A report sent immediately on child's ready output, neutral watchdog still 180ms; continue to test timeout, invalid and EOF without relaxing assertions.
+- `scripts/test-gamepad-sidecar.mjs`: direct Windows .NET child test prequeues first A bytes to stdin before child starts reading (native constructs neutral + emits `ready` before read), avoiding a Windows stdout callback scheduling flake. Strict real WS-bridge ACK-before-frame remains independently verified in `scripts/test-gamepad-bridge.mjs`; native first-frame 1000 ms and active watchdog 180 ms are unchanged. Continue testing replay, timeout, invalid and EOF.
 
 ## M0f independently installable Android debug lab
 

@@ -1,5 +1,13 @@
 # WinDock Gamepad — chronological worklog
 
+## 2026-10-25 — M0g fake lab release successful; fix native direct-test scheduling flake
+
+**Released:** Separate one-shot [fake LAB prerelease `gamepad-m0-fake-lab-g2c3fa3a`](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-m0-fake-lab-g2c3fa3a), with Windows fake-only ZIP, isolated Android debug APK, checksums and metadata. Exact [Actions run #40209703770](https://github.com/Farzansayeed/WinDock/actions/runs/40209703770) PASS Windows native 25 assertion fake test, paired WS 29 assertion twice, Kotlin tests/lint and APK packaging; release publication PASS. **Automated separate CI #40209704132** Windows native direct-child `A press reaches fake sink` intermittent failure; Linux/macOS SUCCESS, Android status check pending at diagnosis. Repaired test-only scheduling by enqueuing first A on inherited stdio immediately after spawn; native does not consume it until after initial neutral/ready, while production-like WS bridge still strictly ACK-gated. No native timing limits changed, no security weakened. Modified `scripts/test-gamepad-sidecar.mjs`, AGENTS.md, ownership map and trackers; no production or lab executable modifications and no additional release. New exact-head CI pending. **Owner device test NOT RUN**, no Xbox, no network RTT.
+
+---
+
+
+
 **2026-10-25 M0g packaging follow-up:** GitHub Actions run #40209513976 compiled and ran fake-sidecar 25 assertions plus paired WS/native 29 assertions both before and after standalone executable publishing. In packaging, executing intentionally invalid `--help` exited code 64 (the mandatory fail-closed behavior) and PowerShell's native command error handling caused step failure. Changed only the workflow to capture process ExitCode separately and require 64, keeping strict refusal behavior. Android compilation / exact CI and eventual lab release still need inspection; no physical Xbox or phone tests. Both trackers updated with workflow code.
 
 

@@ -1,5 +1,9 @@
 # WinDock — binding instructions for future ChatGPT/Codex agents
 
+**2026-10-25 M0g LAB DOWNLOADS READY:** One-off [fake LAB prerelease `gamepad-m0-fake-lab-g2c3fa3a`](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-m0-fake-lab-g2c3fa3a) published Android `com.windock.app.gamepadlab` APK + portable Windows fake-only ZIP, release workflow [#40209703770](https://github.com/Farzansayeed/WinDock/actions/runs/40209703770) SUCCESS. Standard [CI #40209704132](https://github.com/Farzansayeed/WinDock/actions/runs/40209704132) had intermittent Windows native process test `A press reaches fake sink` failure despite this same test passing in release Windows runner. Synchronize direct stdio process test by prequeuing bytes before native ready (the native reads only after initial neutral/ready), preserving the 1-second native first-frame window and 180 ms watchdog; actual WS bridge keeps strict ACK-before-frame. Latest source CI for this test fix must be verified, and owner physical Android→Windows trial remains UNTESTED. Existing Preview v46 unaffected; no driver/real Xbox, no further releases permitted without explicit request.
+
+
+
 **2026-10-25 M0e RESUME:** See [M0-LAB-TESTING.md](docs/gamepad/M0-LAB-TESTING.md), [NEXT-SESSION.md](docs/gamepad/NEXT-SESSION.md), PROGRESS and WORKLOG. Source commit `47c3aa5` adds bounded manual fake lab A/stick notices and host processing p50/p95/p99 only; verify current CI. No physical Android test or new signed Preview, no driver/vendor/cert privileges. Newer private M0→M8 roadmap overrides historical P2 priority, preserving all safety and accepted evidence.
 
 ## PRIMARY ACTIVE OWNER DIRECTIVE — private-first development (2026-10-25)

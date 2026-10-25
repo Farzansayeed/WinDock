@@ -10,10 +10,17 @@ const frame = (seq, buttons = 0x1000) => JSON.stringify({
 });
 let count = 0;
 function ok(value, reason) { count++; assert.ok(value, reason); }
-function launch(args = ["--fake-sink-test"], pressOnReady = false) {
+function launch(args = ["--fake-sink-test"], prequeueFirstFrame = false) {
   const child = spawn("dotnet", [dll, ...args], {
     shell: false, windowsHide: true, stdio: ["pipe", "pipe", "pipe"],
   });
+  // This is a direct stdio process test, NOT the authenticated WebSocket
+  // ready-gated bridge. Queue bytes in the pipe before the child begins
+  // listening so Windows JS scheduling cannot consume the native 1-second
+  // first-frame window. Native code still constructs/writes initial neutral
+  // and emits "ready" BEFORE it reads any queued bytes.
+  // The real bridge's no-frame-before-ACK rule is tested separately.
+  if (prequeueFirstFrame) child.stdin.write(frame(1) + "\n");
   let buffer = "";
   const events = [];
   child.stdout.setEncoding("utf8");
@@ -26,11 +33,7 @@ function launch(args = ["--fake-sink-test"], pressOnReady = false) {
       if (line) {
         const event = JSON.parse(line);
         events.push(event);
-        // Write first frame synchronously upon observing native-ready stdout,
-        // not after a separate JS polling delay (Windows runner sensitivity).
-        // Native 180ms fail-neutral deadline remains EXACTLY unchanged.
-        if (pressOnReady && event.event === "ready")
-          child.stdin.write(frame(1) + "\n");
+        // Never inject a post-ready frame from a host callback in this timing test.
       }
     }
   });
@@ -45,8 +48,8 @@ async function waitFor(pred, reason, ms = 3000) {
   while (!pred() && Date.now() < until) await pause(10);
   ok(pred(), reason);
 }
-async function run(testFn, pressOnReady = false) {
-  const s = launch(["--fake-sink-test"], pressOnReady);
+async function run(testFn, prequeueFirstFrame = false) {
+  const s = launch(["--fake-sink-test"], prequeueFirstFrame);
   try {
     await waitFor(() => s.events.some(x => x.event === "ready" && x.sink === "fake"),
       "only fake sink becomes ready");
@@ -64,7 +67,7 @@ ok(!refused.events.some(x => x.event === "ready"), "no default real sink");
 await run(async s => {
   const reports = () => s.events.filter(x => x.event === "report");
   ok(reports()[0].buttons === 0, "new native device starts neutral");
-  // Initial A press was transmitted at native ready without JS poll lag.
+  // Initial A was already buffered in stdin; native first writes neutral.
   await waitFor(() => reports().some(x => x.buttons === 0x1000), "A press reaches fake sink");
   s.child.stdin.write(frame(1, 0) + "\n");
   await waitFor(() => s.events.some(x => x.result === "replay"), "replay detected");
@@ -75,7 +78,7 @@ await run(async s => {
   ok(s.events.filter(x => x.event === "sink-disposed").length === 1, "sink disposed once");
 }, true);
 await run(async s => {
-  // Initial A press was transmitted at native ready without JS poll lag.
+  // Initial A was already buffered in stdin; native first writes neutral.
   await waitFor(() => s.events.some(x => x.buttons === 0x1000), "invalid-frame test pressed A");
   s.child.stdin.write("{}\n");
   ok((await s.done).code === 0, "invalid state terminates");
@@ -83,7 +86,7 @@ await run(async s => {
   ok(s.events.filter(x => x.event === "report").at(-1).buttons === 0, "invalid resets buttons");
 }, true);
 await run(async s => {
-  // Initial A press was transmitted at native ready without JS poll lag.
+  // Initial A was already buffered in stdin; native first writes neutral.
   await waitFor(() => s.events.some(x => x.buttons === 0x1000), "EOF test pressed A");
   s.child.stdin.end(); // Models loss of parent-owned pipe, not a real PC/game test.
   ok((await s.done).code === 0, "stdin EOF terminates");
