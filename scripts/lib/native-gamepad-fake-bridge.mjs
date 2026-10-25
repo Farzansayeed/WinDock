@@ -4,14 +4,21 @@
  * The child has inherited pipes only, no port, shell or admin rights.
  */
 import { spawn } from "node:child_process";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { GAMEPAD_MAX_BYTES, GAMEPAD_MAX_SEQ, validateGamepadState } from "../../src/gamepad/protocol.js";
 
 const DLL = fileURLToPath(new URL("../../native/gamepad-sidecar/bin/Release/net8.0/WinDock.GamepadSidecar.dll", import.meta.url));
+// Only the explicitly packaged private M0 LAB contains this self-contained fake executable.
+const PORTABLE_FAKE_EXE = fileURLToPath(new URL("../../native/gamepad-sidecar/bin/Release/net8.0/win-x64/publish/WinDock.GamepadSidecar.exe", import.meta.url));
 
 // launchChild override is for simulated, driver-free lifecycle tests ONLY.
 function launchNativeFake() {
-  return spawn("dotnet", [DLL, "--fake-sink-test"], {
+  // The Windows lab bundle runs without installing a system .NET runtime.
+  // In source/CI builds the original fixed dotnet+DLL path remains in use.
+  const portable = process.platform === "win32" && existsSync(PORTABLE_FAKE_EXE);
+  return spawn(portable ? PORTABLE_FAKE_EXE : "dotnet",
+    portable ? ["--fake-sink-test"] : [DLL, "--fake-sink-test"], {
     shell: false, windowsHide: true,
     stdio: ["pipe", "pipe", "pipe"],
   });

@@ -1,5 +1,9 @@
 # WinDock Gamepad — chronological worklog
 
+## 2026-10-25 — M0g one-off explicitly requested prebuilt private fake-lab distribution
+
+**Branch:** `feature/universal-gamepad`. **Owner authorization:** current request explicitly asks for GitHub release/downloadable APK and Windows package. **Changed:** One-shot path+commit-message-gated fake-lab Actions workflow; independent Android DEBUG APK; portable self-contained Windows fake-sidecar and embedded Node, release SHA-256 metadata, detailed phone/PC walkthrough. Windows fake-bridge now prefers only exact packaged self-contained FAKE executable when present; normal .NET DLL test path remains. **Safety:** No driver, HIDMaestro/vendor download, elevation, certificate changes, licence, signing secrets, Preview publication automation or main merge. Existing single-owner authenticated /gamepad and 180-ms native watchdog unchanged; production gamepad remains disabled. **Evidence:** M0f GitHub Actions run #40207320869 PASS Windows/Linux/macOS/Android. **Tests for this change:** New exact-head Windows+Android CI and prerelease creation to inspect after commit; local Windows build/phone hardware NOT RUN by agent. Physical fake phone input and host-only latency unverified; no Xbox or true RTT. **Next:** verify prerelease assets/checksums and report exact download paths, then owner executes only novel phone↔fake receiver checks.\n\n---\n\n
+
 **Canonical tracker:** [PROGRESS.md](PROGRESS.md)  
 **Location:** `Farzansayeed/WinDock`, branch `feature/universal-gamepad`.  
 **Rules:** newest entries at top; don't fabricate passing checks or completion; document actual code/test/decision evidence each work session. Every code batch should update this file and PROGRESS.md in the same commit. Do not log pairing secrets/device-specific private data.
