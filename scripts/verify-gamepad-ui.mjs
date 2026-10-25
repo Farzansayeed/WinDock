@@ -40,7 +40,12 @@ const $ = (id) => {
   return nodes.get(id);
 };
 const documentMock = { getElementById: $, addEventListener() {}, hidden: false };
-const windowMock = { addEventListener() {} };
+const windowEvents = new Map();
+const windowMock = { addEventListener(type, handler) {
+  const handlers = windowEvents.get(type) ?? [];
+  handlers.push(handler);
+  windowEvents.set(type, handlers);
+} };
 class ResizeObserverMock { observe() {} }
 class GestureMock {
   constructor() { this.points = new Map(); }
@@ -105,4 +110,24 @@ t.equal($("signature-pane").hidden, false, "original Signature remains accessibl
 t.equal($("gamepad-pane").hidden, true, "Signature hides Gamepad preview");
 pad.disconnect();
 t.equal(socketCloses, 2, "all opened touchpad sessions were closed");
+
+// The Android native controller must not expose the old web Gamepad preview
+// behind its overlay; plain browsers above still retain that UI as before.
+let nativeOpens = 0;
+windowMock.WinDockAndroid = { openGamepad() { nativeOpens++; } };
+pad.open("touchpad");
+await tick();
+const beforeNative = sockets.length;
+$("touchpad-gamepad").click();
+await tick();
+t.equal(nativeOpens, 1, "Android opens exactly one native controller surface");
+t.equal($("input-pad").dataset.mode, "touchpad", "underlying Android pane remains Touchpad");
+t.equal($("gamepad-pane").hidden, true, "old web gamepad preview is hidden behind native UI");
+t.equal(sockets.length, beforeNative, "native Gamepad entry did not launch a duplicate input socket");
+for (const handler of windowEvents.get("windock-gamepad-action") ?? [])
+  handler({ detail: { action: "touchpad" } });
+await tick();
+t.equal($("input-pad").dataset.mode, "touchpad", "native exit goes directly to Touchpad");
+t.equal(sockets.length, beforeNative + 1, "native exit restores the original touchpad input");
+pad.disconnect();
 t.done("gamepad-ui verification passed");

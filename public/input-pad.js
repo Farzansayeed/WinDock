@@ -15,7 +15,7 @@ export function createInputPad({ api, notify, WebSocketClass = WebSocket, storag
   let color = "black", frame = null, pending = { move: [0, 0], scroll: [0, 0] }, speed = 1.5;
   let canInsertSignature = false;
   // The PC answered and has no touchpad support: retrying cannot change that.
-  let unsupported = false;
+  let unsupported = false, nativeGamepadActive = false;
   const keyboard = createRemoteKeyboard({ send: raw, isReady: () => ready && mode === "touchpad", onSignature: () => select("signature"), notify });
   try { const saved = Number(storage.getItem("windock-pointer-speed")); if (saved >= .5 && saved <= 3) speed = saved; } catch { /* optional preference */ }
   $("pointer-speed").value = speed;
@@ -100,15 +100,24 @@ export function createInputPad({ api, notify, WebSocketClass = WebSocket, storag
   async function select(next) {
     if (!["touchpad", "signature", "gamepad"].includes(next)) next = "touchpad";
     const ticket = ++generation;
+    // Android renders the real native LAB overlay. Never leave the second
+    // web-only Gamepad preview exposed underneath during an exit transition.
+    if (next === "gamepad" && typeof window.WinDockAndroid?.openGamepad === "function") {
+      disconnect();
+      mode = "touchpad"; available = false; unsupported = false; connecting = false; demo = false;
+      nativeGamepadActive = true; paint();
+      setStatus("Native gamepad LAB active. Touchpad paused.");
+      try { window.WinDockAndroid.openGamepad(); }
+      catch { nativeGamepadActive = false; void select("touchpad"); }
+      return;
+    }
+    nativeGamepadActive = false;
     // Switching modes first releases any held mouse button and closes the input WebSocket.
     disconnect(); mode = next; available = false; unsupported = false; connecting = next !== "gamepad"; demo = false; paint();
     $("touchpad-surface").dataset.used = "false";
     if (next === "gamepad") {
-      // Deliberately UI-only. Do not query input capabilities or open a gameplay socket.
+      // Browser/PWA preview only, NEVER gamepad output.
       setStatus("Gamepad input preview · No controller input is sent to your PC.");
-      // Trusted Android companion opens a native MotionEvent view. Ordinary
-      // browser/PWA users remain on the clearly labeled visual preview.
-      try { window.WinDockAndroid?.openGamepad?.(); } catch { /* web preview remains available */ }
       return;
     }
     setStatus(next === "touchpad" ? "Connecting to your PC…" : "Draw here. Save a transparent PNG to Pictures / WinDock / Signatures.");
@@ -230,9 +239,10 @@ export function createInputPad({ api, notify, WebSocketClass = WebSocket, storag
   $("input-signature-tab").addEventListener("click", () => select("signature"));
   $("input-gamepad-tab").addEventListener("click", () => select("gamepad"));
   window.addEventListener("windock-gamepad-action", (event) => {
-    if (event.detail?.action === "touchpad" && dialog.open && mode === "gamepad") select("touchpad");
+    if (event.detail?.action === "touchpad" && dialog.open &&
+      (mode === "gamepad" || nativeGamepadActive)) { nativeGamepadActive = false; select("touchpad"); }
   });
-  dialog.addEventListener("close", () => { generation++; disconnect(); finishStroke(); });
+  dialog.addEventListener("close", () => { generation++; nativeGamepadActive = false; disconnect(); finishStroke(); });
   document.addEventListener("visibilitychange", () => { if (document.hidden) { generation++; disconnect(); finishStroke(); if (dialog.open && mode === "touchpad") setStatus("Touchpad paused. Tap Reconnect to continue."); } });
   window.addEventListener("pagehide", disconnect);
   window.addEventListener("blur", () => { if (ready) release(); });

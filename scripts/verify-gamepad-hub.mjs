@@ -114,8 +114,14 @@ try {
   replacement.socket.send(frame(2, GAMEPAD_BUTTON.a));
   await until(() => snapshots.at(-1).buttons === GAMEPAD_BUTTON.a,
     "newer sequence accepted");
+  let invalidCloseReason = null;
+  replacement.socket.on("close", (code, reason) => {
+    invalidCloseReason = code === 1008 ? String(reason) : "unexpected-code";
+  });
   replacement.socket.send('{"unexpected":"frame"}');
   await until(() => closes >= 2, "invalid whole-state frame ends session");
+  await until(() => invalidCloseReason !== null, "invalid close reason delivered to owner");
+  t.equal(invalidCloseReason, "frame-invalid", "paired phone sees a bounded server-owned validator reason");
   t.deepEqual(snapshots.at(-1), neutralGamepadState(), "malformed input fails neutral");
 
   const next = await wsOpen(url, { headers: { cookie, origin } });

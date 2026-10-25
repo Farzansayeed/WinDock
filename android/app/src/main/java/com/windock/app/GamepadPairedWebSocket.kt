@@ -7,6 +7,8 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 
 /** Only the existing valid WinDock pairing cookie is forwarded to the PC. */
 internal object GamepadSessionCookie {
@@ -60,32 +62,66 @@ internal class GamepadPairedWebSocket private constructor(
     }
     private var wire: WebSocket? = null
     @Volatile private var stopped = false
+    private val terminalReported = AtomicBoolean(false)
+    private val lastTickMs = AtomicLong(0L)
+
+    private fun reportTerminal(stage: String) {
+        if (terminalReported.compareAndSet(false, true)) status(stage)
+    }
+
+    /** Report only fixed PC close reason categories; never echo untrusted text. */
+    private fun serverCloseStage(reason: String): String = when (reason) {
+        "heartbeat-timeout" -> "lab-pc-heartbeat-timeout"
+        "frame-expired" -> "lab-pc-frame-expired"
+        "frame-invalid" -> "lab-pc-frame-invalid"
+        "first-frame-timeout", "native-ready-after-deadline" -> "lab-pc-startup-timeout"
+        "native-receiver-stopped" -> "lab-pc-native-stopped"
+        else -> "lab-pc-closed"
+    }
 
     private fun connect() {
         val request = Request.Builder().url(target.websocketUrl)
             .header("Origin", target.origin)
             .header("Cookie", sessionCookie).build()
         val launched = client.newWebSocket(request, object : WebSocketListener() {
+            override fun onOpen(webSocket: WebSocket, response: Response) {
+                // Fast local ready frames must not race the initial wire assignment.
+                synchronized(this@GamepadPairedWebSocket) {
+                    if (stopped) webSocket.cancel() else wire = webSocket
+                }
+            }
             override fun onMessage(webSocket: WebSocket, text: String) {
                 if (owner.onServerMessage(text)) status("lab-ready")
-                else { owner.close(); status("lab-rejected") }
+                else { owner.close(); reportTerminal("lab-rejected") }
             }
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-                owner.close(); status("lab-closed")
+                owner.close()
+                reportTerminal(serverCloseStage(reason))
             }
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                owner.close(); status("lab-closed")
+                owner.close()
+                reportTerminal(serverCloseStage(reason))
             }
             override fun onFailure(webSocket: WebSocket, error: Throwable, response: Response?) {
                 // Never log exception bodies, Origin, cookie or IP address.
-                owner.close(); status("lab-unavailable")
+                owner.close()
+                reportTerminal("lab-network-failure")
             }
         })
         synchronized(this) { if (stopped) launched.cancel() else wire = launched }
         if (!stopped) heartbeat.scheduleAtFixedRate({
-            if (!stopped && !owner.onTick()) {
-                status("lab-phone-heartbeat-stopped")
-                owner.close()
+            if (!stopped) {
+                try {
+                    val now = System.nanoTime() / 1_000_000L
+                    val prior = lastTickMs.getAndSet(now)
+                    // Diagnostic only: never extend the native 180ms deadline.
+                    if (prior != 0L && now - prior > 120L && owner.isActive)
+                        status("lab-phone-scheduler-delayed")
+                    if (!owner.onTick()) reportTerminal("lab-phone-sender-stopped")
+                } catch (_: Exception) {
+                    owner.close()
+                    reportTerminal("lab-phone-sender-stopped")
+                }
             }
         }, 10L, 10L, TimeUnit.MILLISECONDS)
     }

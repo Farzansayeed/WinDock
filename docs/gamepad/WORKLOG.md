@@ -1,5 +1,13 @@
 # WinDock Gamepad — chronological worklog
 
+## 2026-10-25 — v2 owner field test failed, v3 diagnostics and native-UI transition regression
+
+**2026-10-25 M0 v2 PHYSICAL FAILURE, diagnostic v3 pending:** Owner installed and paired v2 on the same LAN (previous setup PASS); Windows C# fake sink reached READY but sessions ended as phone-disconnected accepted=0, heartbeat-timeout accepted=3 or 9, and invalid-or-expired-frame accepted=1. One fake stick-move and center was observed, not reliable A/continuous output. Exit also flashed a second, web-only gamepad view beneath the native Android view. v3 corrective scope: register native OkHttp wire in onOpen before fast ready callback; show bounded precise server-owned close reason (PC no frames / late / invalid / native fault) once on phone, detect Android 120ms scheduling gap diagnostically (not a deadline change), and keep underlying Android web mode Touchpad while native overlay is active. Preserve web/PWA Gamepad preview. Windows sends only fixed reasons to paired socket, distinguishes invalid from late. Add real Android MockWebServer reason test and Node UI/auth/close tests. **Root cause of heartbeat interruption still UNKNOWN until owner v3 hardware test; do not claim fix from CI alone.** Native 180ms fail-neutral and 1s first-frame deadlines, 40ms Android reports, single-owner PIN/cookie/origin, production /gamepad HTTP 503 unchanged. No driver, HIDMaestro binaries, privileges, certificate trust or purchases, no new public GitHub Release, no main merge; only one-off private Actions artifacts after tests pass. Prior accepted Windows start, isolated Android install and pairing, plus older hardware/Preview checks must NOT be repeated.
+
+---
+
+
+
 ## 2026-10-25 — matched private driver-neutral M0 fix test downloads (no release)
 
 **2026-10-25 M0 follow-up private owner test artifact packaging (pending CI):** Owner observed fake C# ready then disposed. Android socket heartbeat independent of View and Windows bounded reason diagnostics now pass complete cross-OS CI #40212368723 at source 8eedc2c. Added path-gated one-shot build to upload matched Windows fake LAB ZIP + independent Android debug LAB APK in ONE 14-day GitHub Actions artifact, SHA256SUMS and BUILD-INFO. No GitHub release/public release automation, signing secrets, drivers, trust/admin or production endpoint changes. APK debug signer may differ from prior standalone LAB; replacing it might require uninstalling ONLY WinDock Gamepad LAB, NEVER normal WinDock or signed Preview. Owner phone-to-fake native proof still unperformed; new artifact exact-SHA CI and packaging status must be checked.\n\n---

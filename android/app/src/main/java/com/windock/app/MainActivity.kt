@@ -190,7 +190,16 @@ class MainActivity : Activity() {
                                 if (gamepadLayer === layer) {
                                     labStatus.text = when (stage) {
                                         "lab-ready" -> "PAIRED FAKE RECEIVER — NO XBOX"
-                                        "lab-rejected" -> "LAB protocol refused; closed"
+                                        "lab-rejected" -> "LAB readiness refused; closed"
+                                        "lab-pc-heartbeat-timeout" -> "PC: no fresh input within 180 ms"
+                                        "lab-pc-frame-expired" -> "PC: a controller frame arrived too late"
+                                        "lab-pc-frame-invalid" -> "PC: invalid controller frame"
+                                        "lab-pc-startup-timeout" -> "PC: initial frame deadline missed"
+                                        "lab-pc-native-stopped" -> "PC: fake receiver stopped"
+                                        "lab-phone-scheduler-delayed" -> "Phone: input timer was delayed"
+                                        "lab-phone-sender-stopped" -> "Phone: input sender stopped"
+                                        "lab-network-failure" -> "LAB: network/socket disconnected"
+                                        "lab-pc-closed" -> "PC closed LAB connection"
                                         else -> "LAB unavailable; no Xbox device"
                                     }
                                 }

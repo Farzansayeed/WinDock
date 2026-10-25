@@ -117,7 +117,7 @@ export function createGamepadHub({
         if (owner === ws) owner = null;
       });
       closeWork.add(work);
-      if (ws.readyState === ws.OPEN) ws.close(code);
+      if (ws.readyState === ws.OPEN) ws.close(code, reason);
       else if (ws.readyState === ws.CONNECTING) ws.terminate();
     }
     try {
@@ -187,7 +187,12 @@ export function createGamepadHub({
       const state = decodeGamepadState(payload);
       const verdict = gate.accept(state);
       if (verdict.reason === "replay") return; // replay NEVER extends lease
-      if (!verdict.accepted) { cleanup(1008, "invalid-or-expired-frame"); return; }
+      if (!verdict.accepted) {
+        // The reason is a strictly internal protocol validator enum, not
+        // caller-controlled text. Do not merge late and malformed inputs.
+        cleanup(1008, verdict.reason === "expired" ? "frame-expired" : "frame-invalid");
+        return;
+      }
       startedAt = null;
       acceptedFrames = Math.min(acceptedFrames + 1, 1000000);
       if (verdict.state.buttons || verdict.state.lx || verdict.state.ly ||
