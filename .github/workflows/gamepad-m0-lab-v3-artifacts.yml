@@ -1,6 +1,7 @@
 name: M0 Fake Lab v3 diagnostics - private artifacts ONLY
 
 # Owner's v2 physical failure: diagnose drops, preserve native safety, no release.
+# CI retry: keep both web PWA preview and native Android overlay assertions.
 # Trigger exactly once from adding this path on the feature branch.
 on:
   push:

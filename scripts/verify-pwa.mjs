@@ -64,7 +64,12 @@ for (const id of ["input-pad", "input-touchpad-tab", "input-signature-tab", "inp
 }
 t.ok(html.includes('aria-label="Gamepad layout preview"'), "gamepad pane is clearly labeled as a preview");
 t.ok(html.includes("Buttons do not control your PC yet"), "Gamepad preview never claims real controller connectivity");
-t.ok(inputUi.includes('if (next === "gamepad") {') && inputUi.includes("Deliberately UI-only. Do not query input capabilities"), "preview mode explicitly bypasses PC gamepad input");
+t.ok(inputUi.includes('if (next === "gamepad") {') &&
+  inputUi.includes("Browser/PWA preview only, NEVER gamepad output.") &&
+  inputUi.includes('if (next === "gamepad" && typeof window.WinDockAndroid?.openGamepad === "function")') &&
+  inputUi.includes('mode = "touchpad"; available = false;') &&
+  inputUi.includes('nativeGamepadActive = true; paint();'),
+  "web/PWA preview stays local-only while Android native overlay hides duplicate preview");
 for (const entry of ["input-gamepad-tab", "touchpad-gamepad", "gamepad-touchpad"]) {
   t.ok(inputUi.includes(`$("${entry}").addEventListener("click"`), `Gamepad navigation wires #${entry}`);
 }
