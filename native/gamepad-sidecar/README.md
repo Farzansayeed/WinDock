@@ -41,3 +41,15 @@ sent before that acknowledgement terminate the owner fail-neutral. A child exit,
 rejected startup, late ACK or synchronous fault cannot reopen the session.
 The 1-second first-frame/startup bound is independent of process-spawn success.
 The production route still returns HTTP 503 without an approved backend.
+
+## Simulated native-child lifecycle checks
+
+`node scripts/verify-gamepad-native-ipc.mjs` is a pure-Node, driver-free
+stand-in-child oracle included in `npm test` on Linux, Windows and macOS.
+It exercises the fake bridge's neutral-before-ready handshake, malformed or
+premature/duplicate events, early native sink disposal, spawn failure, and
+bounded forced termination when graceful EOF does not finish. A production
+Xbox device and actual OS process-crash neutralization are **not** validated
+by these synthetic events. The optional `launchChild` dependency injection
+exists for this explicit lab test; normal lab bridge execution still launches
+only the fixed .NET fake-sink sidecar with `shell: false`.

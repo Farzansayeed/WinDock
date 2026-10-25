@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-25 — Supervise fake native stdout lifecycle and readiness ownership
+
+**Branch / commit:** `feature/universal-gamepad`; this code + both tracker commit after `cdea63c7`, [CI #40172171992](https://github.com/Farzansayeed/WinDock/actions/runs/40172171992) and [Preview pipeline #40172172000](https://github.com/Farzansayeed/WinDock/actions/runs/40172172000) verified SUCCESS; [Preview v35](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.35-gcdea63c) published.
+
+**Implementation:** Test-only Node→.NET bridge now requires an explicit initial native neutral fake report before v1 ready ACK; rejects premature/duplicate ready, non-neutral startup and malformed/unknown events; immediately reports native sink disposal/stop as fatal to the authenticated owner even if process has not yet exited; suppresses repeat faults; schedules 750ms forced reap after pipe shutdown, including broken stdin. Fixed child command / no shell remain defaults; child launcher dependency injection is confined to the lab oracle. Production server still has no gamepad sink.
+
+**Tests:** Added `scripts/verify-gamepad-native-ipc.mjs` with synthetic local child streams (32 assertions on local stand-in protocol) covering success, premature ready, startup non-neutral, duplicate initial neutral/ready, bad events/JSON, child startup error, native sink loss before exit and unresponsive child force-reap. Registered with `test/run.mjs`; full GitHub CI and Windows .NET sidecar integration PENDING for this commit. No physical device proof, no real driver; previously accepted owner baseline remains accepted without retesting.
+
+**Next:** Verify GitHub CI/Preview on exact commit; continue safe native ownership and failure-path work, with any real XInput driver install/rollback separately approval-gated.
+
+---
+
 ## 2026-10-25 — Native clock-provider exceptions fail neutral (fake sink only)
 
 **Branch / commit:** `feature/universal-gamepad` / this code+two-tracker commit after `aa53c71`. Baseline CI [#40170729166](https://github.com/Farzansayeed/WinDock/actions/runs/40170729166) and Preview [#40170729175](https://github.com/Farzansayeed/WinDock/actions/runs/40170729175) passed; non-draft Preview v34 published.

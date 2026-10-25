@@ -9,16 +9,22 @@ import { GAMEPAD_MAX_BYTES, GAMEPAD_MAX_SEQ, validateGamepadState } from "../../
 
 const DLL = fileURLToPath(new URL("../../native/gamepad-sidecar/bin/Release/net8.0/WinDock.GamepadSidecar.dll", import.meta.url));
 
+// launchChild override is for simulated, driver-free lifecycle tests ONLY.
+function launchNativeFake() {
+  return spawn("dotnet", [DLL, "--fake-sink-test"], {
+    shell: false, windowsHide: true,
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+}
+
 /** Only to be injected into createApp(...) by the explicitly invoked lab test. */
-export function createFakeNativeSinkFactory({ onEvent = () => {}, onChild = () => {} } = {}) {
-  if (typeof onEvent !== "function" || typeof onChild !== "function")
+export function createFakeNativeSinkFactory({ onEvent = () => {}, onChild = () => {}, launchChild = launchNativeFake } = {}) {
+  if (typeof onEvent !== "function" || typeof onChild !== "function" ||
+      typeof launchChild !== "function")
     throw new TypeError("invalid lab bridge callbacks");
 
   return () => {
-    const child = spawn("dotnet", [DLL, "--fake-sink-test"], {
-      shell: false, windowsHide: true,
-      stdio: ["pipe", "pipe", "pipe"],
-    });
+    const child = launchChild();
     let stopped = false;
     let failed = false;
     let fault = null;
@@ -26,6 +32,7 @@ export function createFakeNativeSinkFactory({ onEvent = () => {}, onChild = () =
     let stdout = "";
     let killTimer = null;
     let readySeen = false;
+    let initialNeutralSeen = false;
     let readyResolve;
     let readyReject;
     const ready = new Promise((resolve, reject) => {
@@ -33,6 +40,7 @@ export function createFakeNativeSinkFactory({ onEvent = () => {}, onChild = () =
       readyReject = reject;
     });
     const signalFault = () => {
+      if (failed) return;
       failed = true;
       if (!readySeen) readyReject(new Error("native fake receiver stopped before readiness"));
       if (!stopped) fault?.();
@@ -45,6 +53,7 @@ export function createFakeNativeSinkFactory({ onEvent = () => {}, onChild = () =
     child.stderr.resume();
     child.stdout.setEncoding("utf8");
     child.stdout.on("data", chunk => {
+      if (failed) return;
       stdout += chunk;
       if (stdout.length > 8192) {
         signalFault();
@@ -58,13 +67,35 @@ export function createFakeNativeSinkFactory({ onEvent = () => {}, onChild = () =
         if (!line) continue;
         try {
           const event = JSON.parse(line);
-          if (event?.event === "ready" &&
-              (readySeen || event.v !== 1 || event.sink !== "fake"))
-            throw new Error("unexpected native readiness event");
+          if (!event || typeof event !== "object" || typeof event.event !== "string")
+            throw new Error("invalid native IPC event");
+          if (event.event === "report") {
+            // The child must create a neutral fake sink before it can claim
+            // readiness. This is a state assertion, NOT XInput validation.
+            if (!readySeen) {
+              if (initialNeutralSeen || event.seq !== 0 ||
+                  ["buttons", "lx", "ly", "rx", "ry", "lt", "rt"].some(key => event[key] !== 0))
+                throw new Error("native startup report was not neutral");
+              initialNeutralSeen = true;
+            }
+          } else if (event.event === "ready") {
+            if (!initialNeutralSeen || readySeen || event.v !== 1 || event.sink !== "fake")
+              throw new Error("unexpected native readiness event");
+          } else if (event.event === "frame") {
+            if (!readySeen || !["ok", "replay", "invalid", "expired", "closed", "sink-error", "clock-error"].includes(event.result))
+              throw new Error("unexpected native frame acknowledgement");
+          } else if (event.event !== "sink-disposed" && event.event !== "stopped") {
+            throw new Error("unrecognized native IPC event");
+          }
           onEvent(event);
-          if (event?.event === "ready") {
+          if (event.event === "ready") {
             readySeen = true;
             readyResolve();
+          } else if (event.event === "sink-disposed" || event.event === "stopped") {
+            // Revoke socket ownership when the child releases its sink,
+            // without waiting for a delayed process exit.
+            signalFault();
+            return;
           }
         } catch { signalFault(); child.kill(); return; }
       }
@@ -98,8 +129,11 @@ export function createFakeNativeSinkFactory({ onEvent = () => {}, onChild = () =
       close() {
         if (stopped) return done;
         stopped = true;
-        child.stdin.end(); // Delivers EOF => native synchronously writes neutral.
-        killTimer = setTimeout(() => child.kill(), 750);
+        // Even when stdin has already failed, schedule eventual reaping.
+        // The graceful EOF path still lets native dispose its fake sink.
+        try { if (!child.stdin.destroyed) child.stdin.end(); }
+        catch { signalFault(); }
+        killTimer = setTimeout(() => { if (child.exitCode === null) child.kill(); }, 750);
         killTimer.unref?.();
         return done.finally(() => clearTimeout(killTimer));
       },
