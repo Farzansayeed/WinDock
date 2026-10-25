@@ -1,5 +1,7 @@
 # WinDock P2 — read-only Windows XInput diagnostic
 
+**AVAILABLE IN VERIFIED PREVIEW v38:** [Release](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.38-g6141f36) includes the portable `WinDockGamepadProbe-win-x64.exe` with new **`--backend-audit`**. The [all-platform CI](https://github.com/Farzansayeed/WinDock/actions/runs/40175034190) and [packaging workflow](https://github.com/Farzansayeed/WinDock/actions/runs/40175034205) passed. Download `SHA256SUMS.txt` from the SAME release, compare SHA256 before executing in a normal nonadmin PowerShell; do NOT reinstall WinDock or repeat the previously accepted `--baseline`. This is an audit, not a driver installer, privileged test, or gameplay. Windows x64 CI ran audit; owner's physical machine not yet checked.
+
 ## Diagnostic, NOT setup
 
 The `WinDockGamepadProbe-win-x64.exe` and `WinDockGamepadProbe-win-arm64.exe` files **only inspect XInput slots**; they do not install or start WinDock. Never delete/uninstall WinDock to run this diagnostic. For Windows Gamepad Preview installation use the **different** `WinDockGamepadPreviewSetup.exe` from the same verified [release](https://github.com/Farzansayeed/WinDock/releases), after checking SHA256SUMS. That installs a separate Preview, not the regular WinDock edition. [Full installer guidance](../../docs/gamepad/INSTALL-PREVIEW.md).

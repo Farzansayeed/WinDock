@@ -6,6 +6,16 @@
 
 ---
 
+## 2026-10-25 — Verified read-only P2 audit CI and published Preview v38 (documentation checkpoint)
+
+**Branch/commit:** `feature/universal-gamepad`; code `6141f36`; [CI #40175034190](https://github.com/Farzansayeed/WinDock/actions/runs/40175034190) and [Preview #40175034205](https://github.com/Farzansayeed/WinDock/actions/runs/40175034205) both SUCCESS. Published [Gamepad Preview v38](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.38-g6141f36) is non-draft, exact source `6141f36696fa0ef7e6117336e04c777c3a8ffafe` and contains Windows installer, stable-signed Android Preview APK, x64/ARM64 portable read-only diagnostic EXEs, BUILD-INFO/SIGNING-INFO/SHA256SUMS. Windows CI actually built and ran `--backend-audit` and x64 portable release smoke; ARM64 was only cross-compiled.
+
+**Owner verification pending:** Only new optional read-only Windows x64 `--backend-audit` report, SHA256 compare first, normal nonadmin PowerShell, no install/trust changes. Previous owner's Windows XInput 0/4 scan and WinDock Preview install/start and Android v25 checks still PASS—do not repeat. No real virtual Xbox/PC game tested, no backend approval. See probe README and P2 vendor decision.
+
+**Next:** Collect actual read-only machine audit flags if owner chooses, determine if an isolated HIDMaestro nonproduction rollback trial is acceptable; explain self-signed machine Root/TrustedPublisher and administrator risks and seek **separate explicit approval** before any such operation. Maintain local-only playback and deferred ordinary WinDock issues.
+
+---
+
 ## 2026-10-25 — Repair backend audit workflow YAML before job execution
 
 **Branch / commit:** `feature/universal-gamepad`; correction commit after `2eb4f3f`, preserving previous code/tracker changes.
