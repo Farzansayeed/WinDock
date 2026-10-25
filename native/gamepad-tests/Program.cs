@@ -180,6 +180,34 @@ internal static class Program
                 "pre-first-frame clock rollback disposes fake sink");
         }
 
+        // Inject clock faults without a driver. Both the inbound receiver
+        // and independent native watchdog must fail neutral and dispose once.
+        int receiveCalls = 0;
+        var receiveClockSink = new FakeController();
+        using (var receiver = new ControllerReceiver(receiveClockSink,
+            () => ++receiveCalls == 1 ? 0 : throw new InvalidOperationException("clock failed"),
+            startTimer: false))
+        {
+            Check.That(receiver.Receive(Valid) == "clock-error",
+                "receive fails closed on first-frame clock exception");
+            Check.That(receiver.Closed && receiveClockSink.Reports[^1] == ControllerState.Neutral,
+                "receive clock fault emits neutral");
+            Check.That(receiveClockSink.DisposeCount == 1,
+                "receive clock fault disposes fake sink once");
+        }
+        int timerCalls = 0;
+        var timerClockSink = new FakeController();
+        using (var receiver = new ControllerReceiver(timerClockSink,
+            () => ++timerCalls == 1 ? 0 : throw new InvalidOperationException("timer clock failed"),
+            startTimer: false))
+        {
+            receiver.Tick();
+            Check.That(receiver.Closed && timerClockSink.Reports[^1] == ControllerState.Neutral,
+                "watchdog clock fault emits neutral");
+            Check.That(timerClockSink.DisposeCount == 1,
+                "watchdog clock fault disposes fake sink once");
+        }
+
         // Live timer proof: expiry occurs WITHOUT a Tick call or additional
         // websocket/frame traffic. Timed fake sink, no driver/admin action.
         var timed = new FakeController();

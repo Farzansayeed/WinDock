@@ -63,16 +63,26 @@ internal sealed class ControllerReceiver : IDisposable
             if (closed) return "closed";
             // A first frame arriving after the setup grace period must not
             // resurrect a session that the periodic timer has not yet reaped.
-            if (!received)
+            string result;
+            try
             {
-                var now = elapsedMs();
-                if (now < startedAt || now - startedAt > 1000)
+                if (!received)
                 {
-                    StopCore();
-                    return "expired";
+                    var now = elapsedMs();
+                    if (now < startedAt || now - startedAt > 1000)
+                    {
+                        StopCore();
+                        return "expired";
+                    }
                 }
+                result = lease.Accept(raw);
             }
-            var result = lease.Accept(raw);
+            catch (Exception)
+            {
+                // An unexpected clock failure must never strand held inputs.
+                StopCore();
+                return "clock-error";
+            }
             if (result == "ok")
             {
                 received = true;
@@ -95,9 +105,17 @@ internal sealed class ControllerReceiver : IDisposable
             if (closed) return;
             // No first frame after handshake must also expire. The lower
             // transport can have a longer auth setup, this native sink cannot.
-            var now = elapsedMs();
-            if ((!received && (now < startedAt || now - startedAt > 1000)) || lease.Poll())
+            try
+            {
+                var now = elapsedMs();
+                if ((!received && (now < startedAt || now - startedAt > 1000)) || lease.Poll())
+                    StopCore();
+            }
+            catch (Exception)
+            {
+                // Do not crash the timer thread or strand a device on clock faults.
                 StopCore();
+            }
         }
     }
 

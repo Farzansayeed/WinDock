@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-25 — Native clock-provider exceptions fail neutral (fake sink only)
+
+**Branch / commit:** `feature/universal-gamepad` / this code+two-tracker commit after `aa53c71`. Baseline CI [#40170729166](https://github.com/Farzansayeed/WinDock/actions/runs/40170729166) and Preview [#40170729175](https://github.com/Farzansayeed/WinDock/actions/runs/40170729175) passed; non-draft Preview v34 published.
+
+**Code:** Guard native receiver state acceptance and watchdog clock reads against unexpected time-provider exceptions. Both paths stop, submit neutral, dispose future controller sink and prevent native timer callback exceptions from escaping. Existing protocol, Android UI, original WinDock behavior and production disabled /gamepad remain unchanged.
+
+**Automated tests:** Added deterministic C# fake-sink receive/watchdog injected-clock-fault assertions, verifying neutral + exactly-once disposal. New commit GitHub CI/Preview PENDING and no local .NET SDK available. Previously accepted Windows Preview and x64 read-only XInput 0/4 baseline plus Android v25 touch/regression tests are not repeated. Real virtual Xbox backend/PC gameplay remains unverified and unapproved.
+
+**Next:** Check new CI and release, continue safe IPC process lifecycle. Real driver evaluation requires separately informed explicit approval.
+
+---
+
 ## 2026-10-25 — Observe readiness before first native write; deny early/late input (fake sink only)
 
 **Branch:** `feature/universal-gamepad`; second atomic source+both-tracker commit building on [`dbd0030`](https://github.com/Farzansayeed/WinDock/commit/dbd0030528a0032edfbcbfd028551c23d6ff644e). Its [CI #40170547492](https://github.com/Farzansayeed/WinDock/actions/runs/40170547492) PASSED Linux/macOS/Windows. New commit Actions and Preview not yet verified at commit. The previous Preview packaging workflow was still in progress when this commit was prepared.
