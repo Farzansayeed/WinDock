@@ -79,8 +79,11 @@ jobs:
           Set-Content -LiteralPath (Join-Path $folder 'Start-WinDock-LAB.cmd') -Value $cmdLines -Encoding ascii
           & "$folder/node.exe" --version
           if ($LASTEXITCODE -ne 0) { throw 'Bundled Node cannot start' }
-          & "$native/win-x64/publish/WinDock.GamepadSidecar.exe" --help
-          if ($LASTEXITCODE -eq 0) { throw 'Fake sidecar unexpectedly accepted non-fake command' }
+          # Fake receiver MUST refuse every non-test invocation with exit code 64.
+          # Start-Process isolates that EXPECTED nonzero from PowerShell's native
+          # error preference, which can terminate this packaging step prematurely.
+          $reject = Start-Process -FilePath "$native/win-x64/publish/WinDock.GamepadSidecar.exe" -ArgumentList '--help' -Wait -PassThru -NoNewWindow
+          if ($reject.ExitCode -ne 64) { throw "Fake receiver did not fail closed (exit $($reject.ExitCode))" }
           New-Item -ItemType Directory -Path artifacts -Force | Out-Null
           Compress-Archive -Path $folder -DestinationPath artifacts/WinDock-Gamepad-M0-LAB-Windows-x64.zip -CompressionLevel Optimal
           if ((Get-Item artifacts/WinDock-Gamepad-M0-LAB-Windows-x64.zip).Length -lt 1000000) { throw 'Incomplete portable archive' }

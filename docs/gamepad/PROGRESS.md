@@ -1,6 +1,10 @@
 <!-- 2026-10-23: signing security update — owner reports four GitHub Actions secrets provisioned; requires a new successful release proving signer consistency. -->
 # WinDock Universal Gamepad — LIVE PROGRESS TRACKER
 
+**2026-10-25 M0g portable Windows ZIP packaging fix (CI pending):** One-shot run [#40209513976](https://github.com/Farzansayeed/WinDock/actions/runs/40209513976) successfully executed real Windows fake sidecar 25-assertion, authenticated native WS 29-assertion, and post-publish 29-assertion tests, while Android build proceeded. Windows ZIP step exited when PowerShell treated intentional fake sidecar `--help` rejection code 64 as native-command error. Packaging check now uses `Start-Process -Wait -PassThru` and REQUIRES exactly exit 64; does not relax sink, watchdog (180ms), auth, fake-only mode or production 503. No release/hardware pass until next exact-commit CI and assets verified.
+
+
+
 **2026-10-25 M0g packaging YAML correction (exact CI pending):** The two M0 one-shot GitHub workflow runs #40208816278 and #40209031738 failed with **zero jobs** before compilation. Root cause: YAML plain-scalar `if:` expressions contained a nested `: ` in the commit subject (`build(gamepad): one-shot...`), which invalidated YAML at parse time. Quoted all three job `if:` scalars without altering the gated one-time release policy, signing, drivers, authentication, native watchdog or production route. Standard CI #40209032608 PASS for preceding source. Verify packaging jobs and release at this new SHA; hardware remains untested.
 
 

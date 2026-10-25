@@ -1,5 +1,9 @@
 # WinDock Gamepad — chronological worklog
 
+**2026-10-25 M0g packaging follow-up:** GitHub Actions run #40209513976 compiled and ran fake-sidecar 25 assertions plus paired WS/native 29 assertions both before and after standalone executable publishing. In packaging, executing intentionally invalid `--help` exited code 64 (the mandatory fail-closed behavior) and PowerShell's native command error handling caused step failure. Changed only the workflow to capture process ExitCode separately and require 64, keeping strict refusal behavior. Android compilation / exact CI and eventual lab release still need inspection; no physical Xbox or phone tests. Both trackers updated with workflow code.
+
+
+
 **2026-10-25 M0g GitHub workflow syntax correction:** Investigated two startup-only failure runs (#40208816278 / #40209031738) showing zero jobs, no generated files. Found unquoted YAML plain-scalar job `if:` values containing `build(gamepad): one-shot ...` (colon+space embedded in a plain scalar). YAML syntactic fix quotes each full condition; semantics of one-off owner-approved release unchanged. Standard CI source run #40209032608 SUCCESS. New CI + packaging + release PENDING; not an Android/Windows device test. No privileges/secrets accessed.
 
 
