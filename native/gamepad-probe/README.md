@@ -1,5 +1,13 @@
 # WinDock P2 — read-only Windows XInput diagnostic
 
+## 2026-10-25 owner P2 audit hash failure — identified old v28, not executable malfunction
+
+**Owner's verbatim reported hash:** `42DB320E839F41454B5A7C0867A71447C7DD5B2731EB2E74571818708E742225`. GitHub release asset metadata for the **v28** `WinDockGamepadProbe-win-x64.exe` matches exactly. Verified v39 x64 asset digest is `A9FCD7236D22868771318CA1991725C52E92B711CA04E9765C53FABD03690048`. Therefore the path previously used in Downloads points to an older v28 binary, not the v39 audit tool. **Both owner checklist items remain UNCHECKED/NOT WORKING; `--backend-audit` NOT RUN.** This is a stale filename collision, NOT a failed P2 backend inspection; no driver or certificate changes occurred.
+
+**Fix:** Starting with the next CI-built Preview, publish the probe a second time under a **version- and commit-specific filename**, include both distinct names in SHA256SUMS and assert their hashes match the legacy aliases. Preserve old asset names for compatibility. Owner should download and execute only the newly versioned x64 asset after matching its SHA256 from the SAME GitHub release, then use `--backend-audit` in normal non-admin PowerShell. No rerun of the already accepted four-slot XInput scan, Windows Preview installer, Android app, or original WinDock regressions.
+
+
+
 **AVAILABLE IN VERIFIED PREVIEW v38:** [Release](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.38-g6141f36) includes the portable `WinDockGamepadProbe-win-x64.exe` with new **`--backend-audit`**. The [all-platform CI](https://github.com/Farzansayeed/WinDock/actions/runs/40175034190) and [packaging workflow](https://github.com/Farzansayeed/WinDock/actions/runs/40175034205) passed. Download `SHA256SUMS.txt` from the SAME release, compare SHA256 before executing in a normal nonadmin PowerShell; do NOT reinstall WinDock or repeat the previously accepted `--baseline`. This is an audit, not a driver installer, privileged test, or gameplay. Windows x64 CI ran audit; owner's physical machine not yet checked.
 
 ## Diagnostic, NOT setup

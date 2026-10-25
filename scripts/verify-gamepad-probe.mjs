@@ -36,6 +36,13 @@ t.ok(preview.includes("--self-contained true") && preview.includes("-p:PublishSi
 t.ok(preview.includes("WinDockGamepadProbe-win-x64.exe") && preview.includes("WinDockGamepadProbe-win-arm64.exe"), "both architectures are packaged");
 t.ok(preview.includes("$probe --baseline") && preview.includes("Missing XInput slot"), "x64 binary is executed in Windows CI");
 t.ok(preview.includes("sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe"), "release hashes new assets");
+t.ok(preview.includes("WinDockGamepadProbe-v$previewVersion-g$shortCommit-$rid.exe"), "Windows packaging adds unique version-and-commit probe filenames");
+t.ok(preview.includes('X64_VERSIONED="WinDockGamepadProbe-v${PREVIEW_VERSION}-g${SHORT_SHA}-win-x64.exe"'), "release expects exact version/commit x64 filename");
+t.ok(preview.includes('ARM64_VERSIONED="WinDockGamepadProbe-v${PREVIEW_VERSION}-g${SHORT_SHA}-win-arm64.exe"'), "release expects exact version/commit ARM64 filename");
+t.ok(preview.includes("cmp -s WinDockGamepadProbe-win-x64.exe"), "release enforces identical legacy and versioned probe bytes");
+t.ok(preview.includes("cmp -s WinDockGamepadProbe-win-arm64.exe"), "release checks ARM64 alias contents");
+t.ok(preview.includes('"$X64_VERSIONED" "$ARM64_VERSIONED" > SHA256SUMS.txt'), "checksums include both versioned artifacts");
+t.ok(preview.includes('"$X64_VERSIONED" "$ARM64_VERSIONED" SHA256SUMS.txt'), "versioned probes are published with checksum list");
 t.ok(preview.includes("UNSIGNED") && preview.includes("SmartScreen"), "unsigned policy restrictions are disclosed");
 t.ok(sdkFree.includes('DllImport("xinput1_4.dll"') && sdkFree.includes("XInputGetState"), "PowerShell probe reads only the Windows XInput system DLL");
 t.ok(sdkFree.includes("connected_slots=") && sdkFree.includes("slot={0} disconnected"), "SDK-free probe enumerates and reports XInput slots");

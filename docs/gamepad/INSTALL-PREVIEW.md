@@ -2,10 +2,13 @@
 
 ## Which Windows EXE should you use?
 
+**2026-10-25 stale-download correction:** An owner's SHA-256 from the fixed Downloads filename exactly matched v28 rather than v39. Never assume the unversioned downloaded probe is the latest. Prefer the per-release version+commit filename in newer releases; verify `Get-FileHash` against its `SHA256SUMS.txt` entry **before** running it. Do not run a mismatch, bypass security, or reinstall WinDock. A versioned filename only prevents accidental selection; the actual hash is still mandatory.
+
 | Release file | Purpose |
 |---|---|
 | `WinDockGamepadPreviewSetup.exe` | **INSTALLS or reinstalls Windows Gamepad Preview**, with a setup wizard |
-| `WinDockGamepadProbe-win-x64.exe` or `WinDockGamepadProbe-win-arm64.exe` | **READ-ONLY Xbox/XInput diagnostic**; opens a console, prints controller slots and exits; **NOT an installer** |
+| `WinDockGamepadProbe-v<VERSION>-g<SHA>-win-x64.exe` (or `-win-arm64.exe`) | **PREFERRED version-specific read-only diagnostic**; prevents collisions with old Downloads files; **NOT an installer** |
+| `WinDockGamepadProbe-win-x64.exe` or `WinDockGamepadProbe-win-arm64.exe` | Legacy aliases of the read-only diagnostic; can collide with older downloads |
 
 **Do not uninstall WinDock to run the probe.** The probe cannot install, launch or repair WinDock. If you have already removed the Windows Preview, restore it with the Setup installer from the latest successful numbered [owner-fork Preview release](https://github.com/Farzansayeed/WinDock/releases). If you removed **regular** WinDock, the Preview installer will not restore it: the regular edition and Preview have separate installation and configuration. Reinstall regular WinDock from its own trusted installer if desired. Previously stored configuration may or may not remain after uninstall; check rather than assuming it was restored.
 

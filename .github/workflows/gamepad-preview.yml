@@ -73,6 +73,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          $baseVersion = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $previewVersion = "$baseVersion-gamepad.$env:GITHUB_RUN_NUMBER"
+          $shortCommit = $env:GITHUB_SHA.Substring(0, 7)
           foreach ($rid in @('win-x64', 'win-arm64')) {
             $folder = Join-Path $env:RUNNER_TEMP "windock-probe-$rid"
             dotnet publish native/gamepad-probe/WinDock.GamepadProbe.csproj -c Release -r $rid --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=None -p:DebugSymbols=false -o $folder
@@ -80,7 +83,14 @@ jobs:
             $source = Join-Path $folder 'WinDockGamepadProbe.exe'
             if (-not (Test-Path -LiteralPath $source)) { throw "Missing probe for $rid" }
             if ((Get-Item -LiteralPath $source).Length -lt 1000000) { throw "Missing bundled runtime for $rid" }
-            Copy-Item -LiteralPath $source -Destination "artifacts/installer/WinDockGamepadProbe-$rid.exe"
+            $legacy = "artifacts/installer/WinDockGamepadProbe-$rid.exe"
+            $versioned = "artifacts/installer/WinDockGamepadProbe-v$previewVersion-g$shortCommit-$rid.exe"
+            Copy-Item -LiteralPath $source -Destination $legacy
+            Copy-Item -LiteralPath $source -Destination $versioned
+            if ((Get-FileHash -LiteralPath $legacy -Algorithm SHA256).Hash -ne
+                (Get-FileHash -LiteralPath $versioned -Algorithm SHA256).Hash) {
+              throw "Versioned/legacy probe contents differ for $rid"
+            }
           }
           $probe = (Resolve-Path 'artifacts/installer/WinDockGamepadProbe-win-x64.exe').Path
           Push-Location "$env:WINDIR\System32"
@@ -121,6 +131,8 @@ jobs:
             artifacts/installer/WinDockGamepadPreviewSetup.exe
             artifacts/installer/WinDockGamepadProbe-win-x64.exe
             artifacts/installer/WinDockGamepadProbe-win-arm64.exe
+            artifacts/installer/WinDockGamepadProbe-v*-win-x64.exe
+            artifacts/installer/WinDockGamepadProbe-v*-win-arm64.exe
           if-no-files-found: error
 
   android:
@@ -220,7 +232,13 @@ jobs:
           cd dist
           test -s SIGNING-INFO.txt
           grep -q 'Signing channel: stable-gamepad-preview' SIGNING-INFO.txt
-          sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe > SHA256SUMS.txt
+          X64_VERSIONED="WinDockGamepadProbe-v${PREVIEW_VERSION}-g${SHORT_SHA}-win-x64.exe"
+          ARM64_VERSIONED="WinDockGamepadProbe-v${PREVIEW_VERSION}-g${SHORT_SHA}-win-arm64.exe"
+          test -s "$X64_VERSIONED"
+          test -s "$ARM64_VERSIONED"
+          cmp -s WinDockGamepadProbe-win-x64.exe "$X64_VERSIONED"
+          cmp -s WinDockGamepadProbe-win-arm64.exe "$ARM64_VERSIONED"
+          sha256sum WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe "$X64_VERSIONED" "$ARM64_VERSIONED" > SHA256SUMS.txt
           printf 'Version: %s\nCommit: %s\nRun: %s\nChannel: gamepad-preview\n' \
             "$PREVIEW_VERSION" "$GITHUB_SHA" "$GITHUB_RUN_NUMBER" > BUILD-INFO.txt
           cat > RELEASE-NOTES.md <<EOF
@@ -236,7 +254,7 @@ jobs:
 
           The first migration from an OLD CI debug signing key to this permanent key can require uninstalling ONLY the previous Preview APK once. Subsequent APKs signed with this same key and higher versionCodes should support in-place upgrades after normal Android installer consent.
 
-          Portable Windows XInput baseline: download WinDockGamepadProbe-win-x64.exe or WinDockGamepadProbe-win-arm64.exe (ARM64 Windows). Verify SHA256SUMS.txt and double-click to see the baseline; the window waits for Enter, or run from a non-admin console with --baseline. No PowerShell script, .NET SDK/runtime install, driver, certificate changes or WinDock installer required. Both EXEs are UNSIGNED; if SmartScreen, antivirus, AppLocker or system policy blocks them, report this without bypassing protection. x64 is tested on CI; ARM64 only cross-built.
+          Portable Windows XInput baseline / P2 backend audit: prefer "$X64_VERSIONED" (x64) or "$ARM64_VERSIONED" (ARM64). The VERSIONED filename prevents accidentally running an older same-named file from Downloads; legacy WinDockGamepadProbe-win-*.exe aliases remain for compatibility and have identical SHA256 within this release. Verify SHA256SUMS.txt for the actual local filename; do not trust a filename alone. --backend-audit reads only runtime registration/public certificate-presence indicators; it does not install a driver, elevate or change trust. For the previously accepted baseline, no retest is needed. Both EXEs are UNSIGNED: if SmartScreen, antivirus, AppLocker or system policy blocks them, report this without bypassing protection. x64 portable binary runs in CI; ARM64 is only cross-built.
 
           No gamepad driver is bundled. Windows installer and portable probes remain unsigned. Android Preview is signed with a private development key (not Play Store signing).
 
@@ -245,6 +263,6 @@ jobs:
           Check SHA256SUMS.txt, BUILD-INFO.txt and SIGNING-INFO.txt for verifiable source, version, assets and public certificate fingerprint.
           EOF
           gh release create "$TAG" \
-            WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe SHA256SUMS.txt BUILD-INFO.txt SIGNING-INFO.txt \
+            WinDockGamepadPreviewSetup.exe WinDockGamepadPreview-Android.apk WinDockGamepadProbe-win-x64.exe WinDockGamepadProbe-win-arm64.exe "$X64_VERSIONED" "$ARM64_VERSIONED" SHA256SUMS.txt BUILD-INFO.txt SIGNING-INFO.txt \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
             --title "WinDock Gamepad Preview $PREVIEW_VERSION" --notes-file RELEASE-NOTES.md

@@ -6,6 +6,18 @@
 
 ---
 
+## 2026-10-25 — Fix wrong downloaded probe version after owner's unchecked audit report
+
+**Branch / commit:** `feature/universal-gamepad`; atomic release-packaging fix and both trackers after verified source/hand-off `9f1ba9a`, [CI #40175405230](https://github.com/Farzansayeed/WinDock/actions/runs/40175405230) SUCCESS, [release #40175405217](https://github.com/Farzansayeed/WinDock/actions/runs/40175405217) SUCCESS, v39 published. New commit CI/publish **pending** at time of commit.
+
+**Owner observed:** The user left checksum and audit both UNCHECKED and supplied SHA256 `42DB320E839F41454B5A7C0867A71447C7DD5B2731EB2E74571818708E742225`, which EXACTLY matches published x64 Gamepad Preview **v28**, not published **v39** (expected SHA256 `A9FCD7236D22868771318CA1991725C52E92B711CA04E9765C53FABD03690048`). The old portable diagnostic occupied the same local Downloads filename. The new `--backend-audit` never ran. This is not a failure of Windows certificate/runtime reading. Physical P2 gate remains unchecked; user provided no approval for drivers/trust.
+
+**Fix:** In CI Preview Windows packaging add both version-and-commit-tagged x64/ARM64 probe names and legacy aliases; explicitly hash-compare both copies per architecture before upload, recheck identical bytes with `cmp` after artifact download; include all four probe names in SHA256SUMS and release assets. Add static safety/oracle tests in `verify-gamepad-probe.mjs`. Improve owner probe/install docs so users choose the new versioned file, hash exactly that file and only then run its read-only audit. Preserve unversioned aliases for existing integrations, no gamepad/driver/auth modifications.
+
+**Automated/hardware:** New CI and preview publish PENDING; do not claim success before workflows finish. No user rerun requested of previously passed Windows Preview setup, Windows XInput 0/4 baseline, Android v25 or ordinary WinDock checks. Next owner check must be fresh and unchecked and cover only the new versioned download checksum + read-only audit, no privilege/security bypass.
+
+---
+
 ## 2026-10-25 — Verified read-only P2 audit CI and published Preview v38 (documentation checkpoint)
 
 **Branch/commit:** `feature/universal-gamepad`; code `6141f36`; [CI #40175034190](https://github.com/Farzansayeed/WinDock/actions/runs/40175034190) and [Preview #40175034205](https://github.com/Farzansayeed/WinDock/actions/runs/40175034205) both SUCCESS. Published [Gamepad Preview v38](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.38-g6141f36) is non-draft, exact source `6141f36696fa0ef7e6117336e04c777c3a8ffafe` and contains Windows installer, stable-signed Android Preview APK, x64/ARM64 portable read-only diagnostic EXEs, BUILD-INFO/SIGNING-INFO/SHA256SUMS. Windows CI actually built and ran `--backend-audit` and x64 portable release smoke; ARM64 was only cross-compiled.
