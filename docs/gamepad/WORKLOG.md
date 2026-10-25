@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-10-25 — Owner explicitly proceeds with next driver-neutral P2 candidate screen
+
+**Consent boundary:** Owner marked the prior v40 read-only project record review PASS, observations `none`, and explicitly submitted Proceed with the next **driver-neutral** P2 feasibility/development item; expressly forbids drivers, elevation, machine trust/security changes and licence purchases. The old confusion from a prior Report issues message is resolved for this read-only roadmap step ONLY. This is not approval of a driver candidate.
+
+**Starting source:** `feature/universal-gamepad` commit `16775b5323f2c37e3abaed0f1ef0da9aadb72118`, [CI #40177593430](https://github.com/Farzansayeed/WinDock/actions/runs/40177593430) PASSED. Last published Preview v40 source `3ac95c0` remains physically owner-audited. Previously accepted original Windows Preview, XInput baseline 0/4 disconnected, Android v25 and v40 audit remain PASS without retesting.
+
+**Actual development:** Added `docs/gamepad/P2-BACKEND-CANDIDATES.json` source-attributed facts, `scripts/lib/p2-backend-policy.mjs` pure closed-schema validator, `scripts/p2-backend-review.mjs` read-only review CLI, `scripts/verify-gamepad-backend-policy.mjs` fail-closed oracle wired into `test/run.mjs`, and `docs/gamepad/P2-BACKEND-REVIEW.md` with exact vendor/signing/offline/rollback/consent blockers. All three candidates remain BLOCKED_REVIEW_ONLY. A mathematically 'ideal' manifest is also not install authorization; installing drivers can only occur after a separate, outside-repo explicit informed owner permission.
+
+**Tests:** New commit CI/Preview PENDING when written. Tests are pure Node schema/evidence regression; NO driver, Windows device creation, OS trust/policy mutation, browser download or real virtual Xbox/gameplay. CI Windows/Linux/macOS must be checked; no physical owner task newly enabled by this internal safety screen.
+
+**Next:** Review vendor exact version, hash, licence and clean rollback proposals under a distinct later consent gate. Maintain production HTTP 503 for gamepad.
+
+---
+
 ## 2026-10-25 — Owner v40 read-only P2 audit evidence received; investigated conflicting issues action
 
 **Repo / source:** `Farzansayeed/WinDock`, `feature/universal-gamepad`. [Preview v40](https://github.com/Farzansayeed/WinDock/releases/tag/gamepad-v0.2.3-gamepad.40-g3ac95c0) is sourced from `3ac95c09e09fd13a595d1dbcf39f638c01624de7` and is verified by [CI #40176599482](https://github.com/Farzansayeed/WinDock/actions/runs/40176599482) and [Preview #40176599479](https://github.com/Farzansayeed/WinDock/actions/runs/40176599479). Subsequent docs-only `ba3c7cf3d09c37988183df43ead4f0154d3b4560` [CI #40176981660](https://github.com/Farzansayeed/WinDock/actions/runs/40176981660) succeeded. This entry is an owner evidence checkpoint, no executable code change.

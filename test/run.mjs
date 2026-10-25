@@ -36,6 +36,7 @@ const EXPECTED = {
   "verify-input.mjs": "input verification passed",
   "verify-gamepad-ui.mjs": "gamepad-ui verification passed",
   "verify-gamepad-probe.mjs": "gamepad-probe verification passed",
+  "verify-gamepad-backend-policy.mjs": "gamepad-backend-policy verification passed",
   "verify-gamepad-protocol.mjs": "gamepad-protocol verification passed",
   "verify-gamepad-hub.mjs": "gamepad-hub verification passed",
   "verify-gamepad-readiness.mjs": "gamepad-readiness verification passed",

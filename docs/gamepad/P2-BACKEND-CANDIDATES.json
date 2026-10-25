@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "reviewScope": "Windows x64 local-only XInput trial on owner Windows 10.0.26300.0; NO install",
+  "reviewedOn": "2026-10-25",
+  "consent": "NO DRIVER INSTALLATION OR SECURITY CHANGE AUTHORIZED; JSON CANNOT GRANT CONSENT",
+  "candidates": [
+    {
+      "id": "hidmaestro",
+      "source": "https://hidmaestro.org/docs/reference/driver-install-and-signing/",
+      "driverSigning": "local-self-signed",
+      "requiresElevation": true,
+      "changesMachineCertificateTrust": true,
+      "entitlement": "no-licence-claim",
+      "offline": "claimed-unverified",
+      "redistribution": "unverified",
+      "rollback": "documented-unverified",
+      "windows10": "unverified",
+      "maintained": true,
+      "xinput": "vendor-claimed"
+    },
+    {
+      "id": "libvirtualhid",
+      "source": "https://github.com/LizardByte/libvirtualhid/blob/master/docs/windows-driver.md",
+      "driverSigning": "production-signed",
+      "requiresElevation": true,
+      "changesMachineCertificateTrust": false,
+      "entitlement": "paid-machine-licence",
+      "offline": "conditional",
+      "redistribution": "restricted",
+      "rollback": "unverified",
+      "windows10": "best-effort",
+      "maintained": true,
+      "xinput": "vendor-claimed"
+    },
+    {
+      "id": "vigembus",
+      "source": "https://github.com/nefarius/ViGEmBus",
+      "driverSigning": "unverified",
+      "requiresElevation": true,
+      "changesMachineCertificateTrust": false,
+      "entitlement": "unverified",
+      "offline": "unverified",
+      "redistribution": "unverified",
+      "rollback": "unverified",
+      "windows10": "unverified",
+      "maintained": false,
+      "xinput": "historical"
+    }
+  ]
+}
