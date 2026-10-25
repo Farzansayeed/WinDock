@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "reviewedOn": "2026-10-25",
+  "scope": "OFFLINE_SIGNING_AND_ROLLBACK_PLAN_ONLY",
+  "ownerPermission": "NONPRIVILEGED_DOCUMENT_REVIEW_ONLY",
+  "activationAuthorized": false,
+  "candidateReleases": [
+    {
+      "id": "hidmaestro-stable",
+      "status": "RESEARCH_ONLY"
+    },
+    {
+      "id": "libvirtualhid-stable",
+      "status": "RESEARCH_ONLY"
+    },
+    {
+      "id": "libvirtualhid-prerelease",
+      "status": "DO_NOT_TRIAL"
+    },
+    {
+      "id": "vigembus-retired",
+      "status": "DO_NOT_TRIAL"
+    }
+  ],
+  "checks": [
+    {
+      "id": "publisher-and-redistribution",
+      "stage": "public-documents",
+      "requiresSeparateApproval": false,
+      "requiredEvidence": "Record specific publisher and driver/broker redistribution/licence text. Library-only licence is insufficient.",
+      "status": "NOT_CLEARED"
+    },
+    {
+      "id": "signed-package-claim",
+      "stage": "public-documents",
+      "requiresSeparateApproval": false,
+      "requiredEvidence": "Record official vendor signing claim and distinguish machine-local self-signed certificates from production driver signing.",
+      "status": "NOT_CLEARED"
+    },
+    {
+      "id": "offline-license-behavior",
+      "stage": "public-documents",
+      "requiresSeparateApproval": false,
+      "requiredEvidence": "Establish whether creating and maintaining an Xbox device can work with all external network access disabled indefinitely.",
+      "status": "NOT_CLEARED"
+    },
+    {
+      "id": "compatibility-and-dependencies",
+      "stage": "public-documents",
+      "requiresSeparateApproval": false,
+      "requiredEvidence": "Record support for owner Windows x64 10.0.26300.0, .NET/runtime isolation, XInput profile and all installation prerequisites.",
+      "status": "NOT_CLEARED"
+    },
+    {
+      "id": "uninstall-and-shared-drivers",
+      "stage": "public-documents",
+      "requiresSeparateApproval": false,
+      "requiredEvidence": "Record concrete uninstaller flags and usbip-win2/shared service ownership plus any USB root hub interruption or reboot impact.",
+      "status": "NOT_CLEARED"
+    },
+    {
+      "id": "vendor-package-acquisition",
+      "stage": "local-artifact-review",
+      "requiresSeparateApproval": true,
+      "requiredEvidence": "Only after separately approved acquisition, record official source, exact release tag and downloaded bytes hash matching published metadata.",
+      "status": "NOT_CLEARED"
+    },
+    {
+      "id": "msi-and-file-signatures",
+      "stage": "local-artifact-review",
+      "requiresSeparateApproval": true,
+      "requiredEvidence": "On an isolated authorized machine, independently verify MSI/executable Authenticode publisher chain and timestamp; log failure without trust override.",
+      "status": "NOT_CLEARED"
+    },
+    {
+      "id": "driver-cat-inf-membership",
+      "stage": "local-artifact-review",
+      "requiresSeparateApproval": true,
+      "requiredEvidence": "On an isolated authorized machine, verify driver CAT signature with Windows SignTool and catalog membership hashes for INF, SYS, DLL as applicable.",
+      "status": "NOT_CLEARED"
+    },
+    {
+      "id": "installed-drivers-and-ownership",
+      "stage": "physical-trial",
+      "requiresSeparateApproval": true,
+      "requiredEvidence": "After separately approved read-only inventory scope, identify existing shared USB host controllers, filter bindings and driver-store ownership before installation.",
+      "status": "NOT_CLEARED"
+    },
+    {
+      "id": "restore-and-interruption-plan",
+      "stage": "physical-trial",
+      "requiresSeparateApproval": true,
+      "requiredEvidence": "Before separately approved privileged action, confirm restore route, restart access, local keyboard/mouse availability and stop conditions.",
+      "status": "NOT_CLEARED"
+    },
+    {
+      "id": "specific-install-authorization",
+      "stage": "physical-trial",
+      "requiresSeparateApproval": true,
+      "requiredEvidence": "Obtain separate explicit owner informed authorization for exact driver release and all required elevation, certificate trust and licence terms.",
+      "status": "NOT_CLEARED"
+    },
+    {
+      "id": "device-and-fail-neutral-test",
+      "stage": "physical-trial",
+      "requiresSeparateApproval": true,
+      "requiredEvidence": "After a separately approved installation trial, validate real XInput, one-stick+A input, disconnect, crash, lock, timeouts and instant neutral.",
+      "status": "NOT_CLEARED"
+    },
+    {
+      "id": "uninstall-and-restore-proof",
+      "stage": "physical-trial",
+      "requiresSeparateApproval": true,
+      "requiredEvidence": "After separately approved trial, test actual driver/service/filter and public certificate removal without impacting other software and compare baseline.",
+      "status": "NOT_CLEARED"
+    }
+  ]
+}

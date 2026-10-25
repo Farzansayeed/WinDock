@@ -30,3 +30,7 @@ The file docs/gamepad/P2-RELEASE-EVIDENCE.json records the pinned vendor release
 Assess any proposed single trial version's exact licence/redistribution terms, independently signed certificate/catalog verification in a safe permitted setting, full installed-device/USB filter ownership inventory, tested rollback/restoration approach and crash-neutral/game visibility plan. Seek separate, explicit, informed owner consent before touching any vendor executable, machine trust, admin rights or licence. Production gamepad remains disabled and real Xbox/gameplay unverified.
 
 No repeat of prior Windows/Android/v40 physical tests is warranted.
+
+## Nonprivileged next phase (owner v43 Proceed)
+
+A complete signing, offline/licence and driver removal consent matrix is maintained at [P2-SIGNING-ROLLBACK-PLAN.md](P2-SIGNING-ROLLBACK-PLAN.md). All 13 checks remain NOT_CLEARED and the CLI `node scripts/p2-signing-rollback-review.mjs` cannot grant driver permission. No vendor executable may be acquired or run under this approval.

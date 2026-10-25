@@ -1,5 +1,8 @@
 # P2 — Windows virtual Xbox controller feasibility and acceptance gate
 
+See [nonprivileged signing and rollback verification gate plan](P2-SIGNING-ROLLBACK-PLAN.md). All 13 checks are deliberately NOT_CLEARED; owner authorized planning only, not download, signing inspection, driver trial or security changes.
+
+
 **2026-10-25 P2 VENDOR EXACT RELEASE + ROLLBACK REVIEW (OWNER APPROVED NON-PRIVILEGED ONLY):** Owner accepted v42 P2 review 1/1 PASS, notes none and explicitly requested next nonprivileged vendor release / rollback assessment, forbidding driver installs, elevation, trust changes, security bypass and purchases. Official GitHub metadata pinned: HIDMaestro v2.0.3 stable x64 ZIP SHA256 b1578a391971f4296026b692844292dfc55ddbddbeabc2bcada8cc36c6e34cd2; libvirtualhid latest stable v2026.914.1218.10 MSI SHA256 bc31539a41f71939c13decb171ccbd4306fae1fed63273434a4f5ceccaf3e71c; newer v2026.1022.2339.24 PRERELEASE MSI b667470b32e3f6e0d66893235693de008ab80863291053dbf89a7532d321ef18; ViGEmBus v1.22.0 retired and GitHub asset SHA256 NOT PROVIDED. HIDMaestro v2.0.3 usbip-win2-inclusive uninstall may restart USB 3 hubs, drop attached devices and defer service deletion to reboot; shared filter ownership unverified. libvirtualhid broker/paid offline validation + LB-SAL and Windows 10 best-effort remain blockers. Added strict offline release metadata catalog, review CLI, mutation-based CI oracle, assessment doc and both trackers atomically. **New CI / Preview PENDING on commit**. Published digest is NOT verified local binary or Authenticode evidence. NO binary download/execution or real Xbox gameplay.
 
 Details: [P2-RELEASE-ASSESSMENT.md](P2-RELEASE-ASSESSMENT.md).
