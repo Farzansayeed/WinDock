@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-10-25 — M0d manually started private Windows fake lab and deterministic native ready-frame
+
+**2026-10-25 M0d FAKE WINDOWS LAB + NATIVE FIRST-FRAME BARRIER:** Owner authorized only safe, personal driver-neutral M0. Added manually invoked Windows/private-IPv4 lab launcher requiring built .NET fake sink: uses existing PIN/Origin/cookie authentication, an ephemeral isolated config, exact LAN interface, no auto-run and no virtual Xbox. Explicit Kotlin debug UI from [`5b866ee`](https://github.com/Farzansayeed/WinDock/commit/5b866ee41011f7c42995c16f8b9b0d430f4ce92c) connects ONLY after owner taps. Changed Windows sidecar CI process test to write first A state synchronously upon native ready event (eliminates 10ms JS polling start race), no native deadline changes; timeout/EOF/replay/fault assertions still required. No device/phone tests run. M0b initial Android CI failure fixed by monotonic JVM clock; new CI will determine result. Auto Preview release remains OFF, latest executable v46; do not publish, install drivers, elevate, change cert trust or merge main.
+
+This is a real Windows C# child in a fake-controller-only pipeline, not game compatibility proof. A physical Android/Wi-Fi test remains optional for a later owner acceptance; this commit's CI checks are automation only.
+
+---
+
 ## 2026-10-25 — M0c explicit DEBUG-lab Android Activity integration
 
 **2026-10-25 M0c EXPLICIT ANDROID DEBUG-LAB UI WIRING:** Native GamepadTouchView still starts local-only. In DEBUG APK only, new `Paired LAB (fake only)` button validates the active trusted WebView origin, obtains an existing HttpOnly session cookie via CookieManager, extracts only `windock_session`, opens Kotlin WS adapter only on opt-in, forwards left-stick/A after authenticated host v1 ready, schedules 10ms heartbeat, and closes neutral on mode leave/app background/network loss. Live production `/gamepad` remains HTTP 503. This commit does NOT enable an Xbox driver, install tools, access vendor binaries, publish an APK, or merge main. Physical Android/Windows integration not field-tested. Related JVM clock compatibility fix at [`6ee5105`](https://github.com/Farzansayeed/WinDock/commit/6ee51050e332e5be455dfa232db3908a946af746); complete four-platform CI pending.

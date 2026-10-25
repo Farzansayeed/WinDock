@@ -72,3 +72,8 @@
 ## M0c Android debug action
 
 `MainActivity.kt` connects GamepadTouchView to its own GamepadPairedWebSocket only upon explicit DEBUG-only paired LAB button, with 10ms `tick()` on UI and idempotent neutral/close on pause, navigation or Activity exit. Neither the production server nor Android creates or installs any driver. The live Windows fake-lab launcher is a separate owner-invoked step.
+
+## M0d manually run fake lab and native CI synchronization
+
+- `scripts/gamepad-fake-lab-server.mjs`: explicit Windows CLI with private IPv4 only, ephemeral config, normal PIN pairing and `.NET` FAKE sink only; not started by normal WinDock or background workflow.
+- `scripts/test-gamepad-sidecar.mjs`: first A report sent immediately on child's ready output, neutral watchdog still 180ms; continue to test timeout, invalid and EOF without relaxing assertions.
