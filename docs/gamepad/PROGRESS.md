@@ -1,6 +1,8 @@
 <!-- 2026-10-23: signing security update — owner reports four GitHub Actions secrets provisioned; requires a new successful release proving signer consistency. -->
 # WinDock Universal Gamepad — LIVE PROGRESS TRACKER
 
+**2026-10-25 M0 follow-up private owner test artifact packaging (pending CI):** Owner observed fake C# ready then disposed. Android socket heartbeat independent of View and Windows bounded reason diagnostics now pass complete cross-OS CI #40212368723 at source 8eedc2c. Added path-gated one-shot build to upload matched Windows fake LAB ZIP + independent Android debug LAB APK in ONE 14-day GitHub Actions artifact, SHA256SUMS and BUILD-INFO. No GitHub release/public release automation, signing secrets, drivers, trust/admin or production endpoint changes. APK debug signer may differ from prior standalone LAB; replacing it might require uninstalling ONLY WinDock Gamepad LAB, NEVER normal WinDock or signed Preview. Owner phone-to-fake native proof still unperformed; new artifact exact-SHA CI and packaging status must be checked.\n\n
+
 **2026-10-25 M0 follow-up test correction: GitHub CI #40212018692 Android unit failed at GamepadPairedWebSocketTest.kt:78 because newly added idle neutral heartbeats caused old final-release latch to count down before the A press; asserting states.last then raced with held A. Changed test latch to require pressed.count==0 before observing the first neutral AFTER actual press. No application, timer or protocol change. New CI pending; physical phone cause still unproven.**
 
 
