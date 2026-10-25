@@ -1,5 +1,9 @@
 # M0 private fake-controller lab — manual Windows/Android verification
 
+> **CURRENT VERSION NOTICE (2026-10-25):** For the next test, use only matched private GitHub Actions artifact `M0-FAKE-LAB-v4-matched-downloads` from [run #40221419485](https://github.com/Farzansayeed/WinDock/actions/runs/40221419485), source `3a5b1a3d1736503d192347fd3d567027f5d3e988`, CI [#40221419569](https://github.com/Farzansayeed/WinDock/actions/runs/40221419569) PASS. Contains `WinDock-Gamepad-M0-LAB-v4-Windows-x64.zip` + `WinDock-Gamepad-M0-LAB-v4-Android.apk` (plus checksums/BUILD-INFO), expires 2026-11-08 18:31 UTC. **Not a GitHub Release.** The below v1/source-build instructions are HISTORICAL and do not identify v4 downloads. No user testing/install tonight; future owner steps explained **in chat** by next assistant. The v3 phone test FAILED, v4 phone test PENDING, no Xbox/driver. Read [active handoff](HANDOFF-2026-10-26-M0-FAILURE.md).
+
+
+
 **Code:** `feature/universal-gamepad`, M0e first implemented in `47c3aa5` (2026-10-25). Verify the latest GitHub commit and CI before running. Last published signed Gamepad Preview is **v46**, which does NOT include these newer debug-only M0 changes. This is a **fake** native receiver, not an Xbox controller or real in-game latency proof.
 
 ## Local prerequisites and safety

@@ -1,5 +1,11 @@
 # WinDock — Monday, October 26, 2026 handoff: M0 fake lab v3 failure and v4 repair
 
+**VERIFIED v4 DELIVERY (2026-10-25):** Source `3a5b1a3d1736503d192347fd3d567027f5d3e988`. All five [CI #40221419569](https://github.com/Farzansayeed/WinDock/actions/runs/40221419569) jobs SUCCESS, all three [private build #40221419485](https://github.com/Farzansayeed/WinDock/actions/runs/40221419485) jobs SUCCESS. Artifact `M0-FAKE-LAB-v4-matched-downloads` (ID 12609790538; expires 2026-11-08 18:31 UTC) includes matching `WinDock-Gamepad-M0-LAB-v4-Windows-x64.zip`, `WinDock-Gamepad-M0-LAB-v4-Android.apk`, SHA256SUMS.txt and BUILD-INFO.txt. Docs-only commit after this code may move branch HEAD; artifact stays linked to source `3a5b1a3`. NO GitHub Release, no signer, no driver, no owner test tonight; owner v3 physical FAIL and new v4 physical still UNVERIFIED. v4 code is driver-neutral, native 180ms watchdog and 1000ms startup remain unchanged. Don't repeat accepted setup/pairing/XInput baseline. Exact next-user steps are in [handoff](HANDOFF-2026-10-26-M0-FAILURE.md), but explain them in the chat, do not require user to read files.
+
+**Important:** The v4 matched bundle's embedded README was copied from old download guidance and may describe the previous public release; do NOT instruct owner to use it. Give exact v4 private Actions artifact tag and all steps in-chat when owner is ready. No tasks for owner tonight.
+
+
+
 > **Read this first.** On branch `feature/universal-gamepad` and repository `Farzansayeed/WinDock`, this is the active tomorrow handoff. Read current root `AGENTS.md`, `docs/gamepad/NEXT-SESSION.md`, `PROGRESS.md`, `WORKLOG.md` and `ARCHITECTURE-OWNERSHIP.md`. Do not let older v46/P2 handoff notes override current personal local fake-lab M0. No user testing or installations are requested in the closing 2026-10-25 chat.
 
 ## Owner's physical field evidence — NOT PASS

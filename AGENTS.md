@@ -1,5 +1,9 @@
 # WinDock — binding instructions for future ChatGPT/Codex agents
 
+**2026-10-25 v4 AUTOMATED GREEN / PHYSICAL M0 NOT YET ACCEPTED:** Source `3a5b1a3d1736503d192347fd3d567027f5d3e988` [CI #40221419569](https://github.com/Farzansayeed/WinDock/actions/runs/40221419569) SUCCESS all five jobs (Windows/Linux/macOS/Android + CI passed). Private-only [Actions packaging #40221419485](https://github.com/Farzansayeed/WinDock/actions/runs/40221419485) SUCCESS all three jobs; verified exact-source matched artifact `M0-FAKE-LAB-v4-matched-downloads` (artifact 12609790538) with `WinDock-Gamepad-M0-LAB-v4-Windows-x64.zip`, `WinDock-Gamepad-M0-LAB-v4-Android.apk`, checksums and BUILD-INFO. Matched bundle expires 2026-11-08 18:31 UTC (single-platform artifacts retained through 2027-01-23). NO GitHub Release and no signed Preview was published. Windows real authenticated WS -> C# fake delayed-first-frame test PASS; native 180ms/first-frame 1s unchanged. Owner's v3 field test FAILED; v4 phone test NOT PERFORMED (owner explicitly wants NO testing/install tonight). Tomorrow's chat should read [active handoff](docs/gamepad/HANDOFF-2026-10-26-M0-FAILURE.md) and give direct in-chat steps only when asked, never repeat accepted setup/Android pairing/XInput baselines; no drivers/elevation/cert trust or main merge.
+
+
+
 **2026-10-26 ACTIVE M0 HANDOFF:** Latest v3 PHYSICAL test failed; v4 pre-ready neutral lease fix developed, NOT a physical pass. See [dedicated handoff](docs/gamepad/HANDOFF-2026-10-26-M0-FAILURE.md), [NEXT-SESSION](docs/gamepad/NEXT-SESSION.md), progress/worklog. Owner specifically requested NO further user testing/install tonight. Verify latest exact SHA/CI and private artifact, preserve 180ms/1000ms, production /gamepad 503, no driver/publish/main merge.
 
 
