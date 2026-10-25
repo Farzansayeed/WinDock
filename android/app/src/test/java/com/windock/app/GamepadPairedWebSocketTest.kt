@@ -49,7 +49,7 @@ class GamepadPairedWebSocketTest {
                 if(states.size==1 && s.getInt("buttons")==0) neutral.countDown()
                 if(s.getInt("buttons")==0 && pressed.count>0L) idleHeartbeats.countDown()
                 if(s.getInt("buttons")==4096) pressed.countDown()
-                if(states.size>=3 && s.getInt("buttons")==0) released.countDown()
+                if(pressed.count==0L && s.getInt("buttons")==0) released.countDown()
             }
         }))
         server.start()

@@ -1,6 +1,10 @@
 <!-- 2026-10-23: signing security update — owner reports four GitHub Actions secrets provisioned; requires a new successful release proving signer consistency. -->
 # WinDock Universal Gamepad — LIVE PROGRESS TRACKER
 
+**2026-10-25 M0 follow-up test correction: GitHub CI #40212018692 Android unit failed at GamepadPairedWebSocketTest.kt:78 because newly added idle neutral heartbeats caused old final-release latch to count down before the A press; asserting states.last then raced with held A. Changed test latch to require pressed.count==0 before observing the first neutral AFTER actual press. No application, timer or protocol change. New CI pending; physical phone cause still unproven.**
+
+
+
 **2026-10-25 M0 fake-only lifecycle diagnostic: user observed C# READY then DISPOSED soon after paired LAB. Added optional onLifecycle callback to hub/server, wired only in manually started fake lab, with bounded reason, ready flag, accepted/active report counts but no PIN/IP/cookie/raw input. Tested with genuine paired Node WebSocket -> C# fake receiver and lifecycle record assertions. Fault callback never interrupts native cleanup. Actual cause not confirmed until owner runs new build. Release g2c3fa3a remains unchanged; 180ms native watchdog, 1s setup deadlines, production 503, security/no drivers unchanged. CI pending.**
 
 
