@@ -1,6 +1,10 @@
 <!-- 2026-10-23: signing security update — owner reports four GitHub Actions secrets provisioned; requires a new successful release proving signer consistency. -->
 # WinDock Universal Gamepad — LIVE PROGRESS TRACKER
 
+**2026-10-25 M0g packaging YAML correction (exact CI pending):** The two M0 one-shot GitHub workflow runs #40208816278 and #40209031738 failed with **zero jobs** before compilation. Root cause: YAML plain-scalar `if:` expressions contained a nested `: ` in the commit subject (`build(gamepad): one-shot...`), which invalidated YAML at parse time. Quoted all three job `if:` scalars without altering the gated one-time release policy, signing, drivers, authentication, native watchdog or production route. Standard CI #40209032608 PASS for preceding source. Verify packaging jobs and release at this new SHA; hardware remains untested.
+
+
+
 **M0g correction / GitHub packaging retry:** Initial one-shot GitHub workflow #40208816278 immediately failed with zero jobs. Removed inline shell heredocs from workflow to avoid a workflow-file YAML parse problem; no deadlines/security/auth changed. Re-run exact-commit CI and separate lab workflow before claiming any downloadable files.
 
 

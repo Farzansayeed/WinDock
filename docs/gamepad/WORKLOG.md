@@ -1,5 +1,9 @@
 # WinDock Gamepad — chronological worklog
 
+**2026-10-25 M0g GitHub workflow syntax correction:** Investigated two startup-only failure runs (#40208816278 / #40209031738) showing zero jobs, no generated files. Found unquoted YAML plain-scalar job `if:` values containing `build(gamepad): one-shot ...` (colon+space embedded in a plain scalar). YAML syntactic fix quotes each full condition; semantics of one-off owner-approved release unchanged. Standard CI source run #40209032608 SUCCESS. New CI + packaging + release PENDING; not an Android/Windows device test. No privileges/secrets accessed.
+
+
+
 **One-shot packaging follow-up:** First workflow run #40208816278 failed before any job was created; no release files were published. Simplified the workflow script to avoid inline heredoc parsing ambiguities, preserving one-shot trigger and separate fake-only publication. New GitHub run must be verified; no physical testing performed.
 
 
